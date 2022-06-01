@@ -1,13 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
 use Vconnect\IntegrityChecker\Domain\Package;
 
-class PhpFiles implements DependenciesScannerInterface
+class XmlFiles implements DependenciesScannerInterface
 {
-    private const FILE_MASKS = ['php', 'phtml'];
-
+    private const FILE_MASKS = ['di.xml', 'system.xml', 'extension_attributes.xml'];
     private FileAnalyzer $fileAnalyzer;
 
     /**
@@ -20,8 +20,8 @@ class PhpFiles implements DependenciesScannerInterface
 
     /**
      * Search for dependencies inside the module directory.
-     * Scan *.php and *.phtml files for PHP classes with regexp and collect corresponding modules which are required
-     * by the package to work properly.
+     * Scan di.xml', 'system.xml', 'extension_attributes.xml' files for PHP classes with regexp
+     * and collect corresponding modules which are required by the package to work properly.
      *
      * @param Package $package
      *
@@ -32,7 +32,7 @@ class PhpFiles implements DependenciesScannerInterface
         $collectedDependencies = [];
 
         foreach ($package->getPackageFiles() as $file) {
-            if (\in_array($file->getFileInfo()->getExtension(), self::FILE_MASKS)) {
+            if (in_array($file->getFilename(), self::FILE_MASKS)) {
                 $collectedDependencies[] = $this->fileAnalyzer->analyzeFile($file, $package->getPackageNamespaces());
             }
         }
