@@ -6,13 +6,9 @@ class DefaultPackageStructure
 {
     public const STRUCTURE = [
         'composer.json',
-        'README.md',
         'registration.php',
-        'docs' => [],
-        'src' => [
-            'etc' => [
-                'module.xml'
-            ]
-        ]
+        'etc' => [
+            'module.xml'
+        ],
     ];
 }

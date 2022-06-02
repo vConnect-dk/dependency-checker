@@ -5,17 +5,17 @@ namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
 use Vconnect\IntegrityChecker\Domain\Package;
 
-class XmlFiles implements DependenciesScannerInterface
+class XmlConfigFiles implements DependenciesScannerInterface
 {
     private const FILE_MASKS = ['di.xml', 'system.xml', 'extension_attributes.xml'];
-    private FileAnalyzer $fileAnalyzer;
+    private RegExpFileAnalysis $regExpFileAnalysis;
 
     /**
-     * @param FileAnalyzer $fileAnalyzer
+     * @param RegExpFileAnalysis $regExpFileAnalysis
      */
-    public function __construct(FileAnalyzer $fileAnalyzer)
+    public function __construct(RegExpFileAnalysis $regExpFileAnalysis)
     {
-        $this->fileAnalyzer = $fileAnalyzer;
+        $this->regExpFileAnalysis = $regExpFileAnalysis;
     }
 
     /**
@@ -33,7 +33,7 @@ class XmlFiles implements DependenciesScannerInterface
 
         foreach ($package->getPackageFiles() as $file) {
             if (in_array($file->getFilename(), self::FILE_MASKS)) {
-                $collectedDependencies[] = $this->fileAnalyzer->analyzeFile($file, $package->getPackageNamespaces());
+                $collectedDependencies[] = $this->regExpFileAnalysis->analyzeFile($file, $package->getPackageNamespaces());
             }
         }
 

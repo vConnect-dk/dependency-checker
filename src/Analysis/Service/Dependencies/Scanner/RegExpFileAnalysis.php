@@ -5,7 +5,7 @@ namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
-class FileAnalyzer
+class RegExpFileAnalysis
 {
     /**
      * Get list of required packages dependencies from php file.

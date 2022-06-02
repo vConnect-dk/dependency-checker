@@ -8,14 +8,14 @@ class PhpFiles implements DependenciesScannerInterface
 {
     private const FILE_MASKS = ['php', 'phtml'];
 
-    private FileAnalyzer $fileAnalyzer;
+    private RegExpFileAnalysis $regExpFileAnalysis;
 
     /**
-     * @param FileAnalyzer $fileAnalyzer
+     * @param RegExpFileAnalysis $regExpFileAnalysis
      */
-    public function __construct(FileAnalyzer $fileAnalyzer)
+    public function __construct(RegExpFileAnalysis $regExpFileAnalysis)
     {
-        $this->fileAnalyzer = $fileAnalyzer;
+        $this->regExpFileAnalysis = $regExpFileAnalysis;
     }
 
     /**
@@ -33,7 +33,7 @@ class PhpFiles implements DependenciesScannerInterface
 
         foreach ($package->getPackageFiles() as $file) {
             if (\in_array($file->getFileInfo()->getExtension(), self::FILE_MASKS)) {
-                $collectedDependencies[] = $this->fileAnalyzer->analyzeFile($file, $package->getPackageNamespaces());
+                $collectedDependencies[] = $this->regExpFileAnalysis->analyzeFile($file, $package->getPackageNamespaces());
             }
         }
 
