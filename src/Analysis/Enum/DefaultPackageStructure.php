@@ -9,6 +9,6 @@ class DefaultPackageStructure
         'registration.php',
         'etc' => [
             'module.xml'
-        ],
+        ]
     ];
 }

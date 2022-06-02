@@ -24,18 +24,10 @@ class Structure implements AnalyzerInterface
      * [
      *  'registration.php',
      *  'composer.json',
-     *  'src' => [
-     *          'etc' => [
-     *                  'module.xml',
-     *                  'di.xml',
-     *                  'config.xml;
-     *          ],
-     *          'Model' => [
-     *                  'Entity.php'
-     *          ]
-     *  ],
-     *  'README.md'
-     *]
+     *  'etc' => [
+     *      'module.xml'
+     *      ]
+     * ]
      *
      * @param iterable $packages
      *
