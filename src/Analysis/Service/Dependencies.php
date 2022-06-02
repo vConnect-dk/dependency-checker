@@ -5,9 +5,11 @@ namespace Vconnect\IntegrityChecker\Analysis\Service;
 use Vconnect\IntegrityChecker\Analysis\Data\Dependencies\Result;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DependenciesScannerInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 use Vconnect\IntegrityChecker\Domain\Package;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\RegExpFileAnalysis;
 
 class Dependencies implements AnalyzerInterface
 {
@@ -23,8 +25,10 @@ class Dependencies implements AnalyzerInterface
     public function __construct()
     {
         $this->packagesRegistry = PackagesRegistry::getInstance();
+        $regExpFileAnalysis = new RegExpFileAnalysis;
         $this->dependenciesScanner = [
-            new PhpFiles()
+            new PhpFiles($regExpFileAnalysis),
+            new XmlConfigFiles($regExpFileAnalysis)
         ];
     }
 
@@ -42,7 +46,7 @@ class Dependencies implements AnalyzerInterface
             foreach ($this->dependenciesScanner as $scanner) {
                 $dependencies[] = $scanner->lookupDependencies($package);
             }
-            $dependencies = array_merge([], ...$dependencies);
+            $dependencies = array_unique(array_merge([], ...$dependencies));
             yield $this->compareDependencies($package, $dependencies);
         }
     }
