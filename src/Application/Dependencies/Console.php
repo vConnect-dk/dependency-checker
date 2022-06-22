@@ -28,6 +28,7 @@ class Console implements ConsoleInterface
             return;
         }
 
+        echo "------------------------------------------------------------\n";
         echo sprintf("Package %s has defects(s).\n", $result->getPackageName());
 
         $defects = $result->getDefects();
@@ -60,18 +61,32 @@ class Console implements ConsoleInterface
     /**
      * Format and print.
      *
-     * @param string[] $missedDependencies
+     * @param array $missedDependencies
      */
     private function printComposerMissedDependencies(array $missedDependencies): void
     {
         echo "Missed dependencies in composer.json\n";
-
-        foreach ($missedDependencies as $packageName) {
-            echo sprintf("\t- \"%s\": \"*\"\n", $packageName);
+        if ($missedDependencies['soft']) {
+            echo "Missed dependencies in suggest section:\n";
+            foreach ($missedDependencies['soft'] as $suggest) {
+                echo sprintf("\t- \"%s\": \"*\"\n", $suggest);
+            }
         }
+        if ($missedDependencies['hard']) {
+            echo "Missed dependencies in require section:\n";
+            foreach ($missedDependencies['hard'] as $require) {
+                echo sprintf("\t- \"%s\": \"*\"\n", $require);
+            }
+        }
+
+//        foreach ($missedDependencies as $packageName) {
+//            echo sprintf("\t- \"%s\": \"*\"\n", $packageName);
+//        }
 
         echo PHP_EOL;
     }
+
+
 
     public function getStatusCode(): int
     {

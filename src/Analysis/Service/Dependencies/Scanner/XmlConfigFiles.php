@@ -5,7 +5,7 @@ namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
 use Vconnect\IntegrityChecker\Domain\Package;
 
-class XmlConfigFiles implements DependenciesScannerInterface
+class XmlConfigFiles
 {
     private const FILE_MASKS = ['di.xml', 'system.xml', 'extension_attributes.xml'];
     private RegExpFileAnalysis $regExpFileAnalysis;

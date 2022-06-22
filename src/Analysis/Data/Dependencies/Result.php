@@ -26,7 +26,7 @@ class Result implements ResultInterface
 
     public function hasDefects(): bool
     {
-        return !empty($this->composerDefects) || !empty($this->moduleXmlDefects);
+        return !empty($this->composerDefects['soft']) || !empty($this->composerDefects['hard']) || !empty($this->moduleXmlDefects);
     }
 
     public function getPackageName(): string

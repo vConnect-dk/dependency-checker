@@ -23,7 +23,7 @@ class ModuleXml
      */
     public function getModuleName(): ?string
     {
-        return $this->content['module']['name'] ?? null;
+        return $this->getContent()['module']['name'] ?? null;
     }
 
     /**

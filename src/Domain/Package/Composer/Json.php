@@ -62,11 +62,24 @@ class Json
      *
      * @return array
      */
-    public function getDependencies(): array
+    public function getRequire(): array
     {
         $dependencies = $this->getContent()['require'] ?? [];
-        $dependencies = array_keys($dependencies);
 
+        return $this->filterDependenciesOnlyWithVendor($dependencies);
+    }
+
+    public function getSuggest(): array
+    {
+        $dependencies = $this->getContent()['suggest'] ?? [];
+
+        return $this->filterDependenciesOnlyWithVendor($dependencies);
+
+    }
+
+    private function filterDependenciesOnlyWithVendor(array $dependencies): array
+    {
+        $dependencies = array_keys($dependencies);
         return array_filter($dependencies, function (string $dependency): bool
         {
             return strpos($dependency, '/') !== false;

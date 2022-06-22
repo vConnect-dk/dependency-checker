@@ -3,6 +3,7 @@
 namespace Vconnect\IntegrityChecker\Domain;
 
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
+use Vconnect\IntegrityChecker\Domain\Package\DiXml\DiXml;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
 
@@ -15,6 +16,8 @@ class Package
     private ?Json $composerJson = null;
 
     private ?ModuleXml $moduleXml = null;
+
+    private ?DiXml $diXml = null;
 
     /**
      * @param string $path
@@ -53,7 +56,11 @@ class Package
      */
     public function getComposerDependencies(): array
     {
-        return $this->getComposerJson()->getDependencies();
+        return [
+            'soft' => $this->getComposerJson()->getSuggest(),
+            'hard' => $this->getComposerJson()->getRequire()
+
+            ];
     }
 
     /**
@@ -192,5 +199,26 @@ class Package
             }
         }
         throw new FileNotFoundException('module.xml', $this->path);
+    }
+
+    /**
+     * Load all di.xml files. Return null if di.xml is missing in module.
+     *
+     * @return DiXml|null
+     */
+    public function getDiXml(): ?DiXml
+    {
+        if (!$this->diXml) {
+            foreach ($this->getPackageFilesList() as $file) {
+                if ($file->getFilename() === 'di.xml') {
+                    $paths[] = $file->getPathname();
+                }
+            }
+            if (isset($paths)) {
+                $this->diXml = new DiXml($paths);
+            }
+        }
+
+        return $this->diXml;
     }
 }
