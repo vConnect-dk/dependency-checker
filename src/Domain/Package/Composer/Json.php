@@ -69,6 +69,11 @@ class Json
         return $this->filterDependenciesOnlyWithVendor($dependencies);
     }
 
+    /**
+     * Return packages specified in 'suggest' section.
+     *
+     * @return array
+     */
     public function getSuggest(): array
     {
         $dependencies = $this->getContent()['suggest'] ?? [];
@@ -77,6 +82,10 @@ class Json
 
     }
 
+    /**
+     * @param array $dependencies
+     * @return array
+     */
     private function filterDependenciesOnlyWithVendor(array $dependencies): array
     {
         $dependencies = array_keys($dependencies);

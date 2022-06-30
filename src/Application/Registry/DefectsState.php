@@ -8,11 +8,18 @@ class DefectsState
 {
     private bool $hasDefects = false;
 
+    /**
+     * @param ResultInterface $result
+     * @return void
+     */
     public function registerResult(ResultInterface $result)
     {
         $this->hasDefects = $this->hasDefects || $result->hasDefects();
     }
 
+    /**
+     * @return bool
+     */
     public function hasDefects(): bool
     {
         return $this->hasDefects;

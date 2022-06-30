@@ -10,8 +10,7 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFil
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 use Vconnect\IntegrityChecker\Domain\Package;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\RegExpFileAnalysis;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Model\DependencyInterface;
 
 class Dependencies implements AnalyzerInterface
 {
@@ -27,10 +26,9 @@ class Dependencies implements AnalyzerInterface
     public function __construct()
     {
         $this->packagesRegistry = PackagesRegistry::getInstance();
-        $regExpFileAnalysis = new RegExpFileAnalysis;
         $this->dependenciesScanner = [
-            new PhpFiles($regExpFileAnalysis),
-//            new XmlConfigFiles($regExpFileAnalysis)
+            new PhpFiles(),
+            new XmlConfigFiles()
         ];
     }
 
@@ -113,18 +111,10 @@ class Dependencies implements AnalyzerInterface
      */
     private function compareComposerDependencies(Package $package, Dependency $dependencies): array
     {
-        $dependenciesPackages['soft'] = array_filter(
-            array_map(
-                fn(string $namespace) => $this->packagesRegistry->getPackageNameByNamespace($namespace),
-                $dependencies->getSoftDependency()
-            )
-        );
-        $dependenciesPackages['hard'] = array_filter(
-            array_map(
-                fn(string $namespace) => $this->packagesRegistry->getPackageNameByNamespace($namespace),
-                $dependencies->getHardDependency()
-            )
-        );
+        $dependenciesPackages[DependencyInterface::TYPE_SOFT] =
+            $this->getPackageNameByNamespace($dependencies->getSoftDependency());
+        $dependenciesPackages[DependencyInterface::TYPE_HARD] =
+            $this->getPackageNameByNamespace($dependencies->getHardDependency());
 
         try {
             $composerDeps = $package->getComposerDependencies();
@@ -132,8 +122,26 @@ class Dependencies implements AnalyzerInterface
             $composerDeps = [];
         }
 
-        $result ['soft'] = array_diff($dependenciesPackages['soft'], $composerDeps['soft']);
-        $result ['hard'] = array_diff($dependenciesPackages['hard'], $composerDeps['hard']);
+        $result[DependencyInterface::TYPE_SOFT] = array_diff(
+            $dependenciesPackages[DependencyInterface::TYPE_SOFT], $composerDeps[DependencyInterface::TYPE_SOFT]
+        );
+        $result[DependencyInterface::TYPE_HARD] = array_diff(
+            $dependenciesPackages[DependencyInterface::TYPE_HARD], $composerDeps[DependencyInterface::TYPE_HARD]
+        );
+
         return $result;
+    }
+
+    /**
+     * @param array $dependency
+     * @return array
+     */
+    private function getPackageNameByNamespace(array $dependency): array
+    {
+        return array_filter(array_map(
+                fn(string $namespace) => $this->packagesRegistry->getPackageNameByNamespace($namespace),
+                $dependency
+            )
+        );
     }
 }

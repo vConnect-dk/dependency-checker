@@ -4,18 +4,18 @@ declare(strict_types=1);
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
 use Vconnect\IntegrityChecker\Domain\Package;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Model\DependencyInterface;
 
-class XmlConfigFiles
+class XmlConfigFiles implements DependenciesScannerInterface
 {
     private const FILE_MASKS = ['di.xml', 'system.xml', 'extension_attributes.xml'];
-    private RegExpFileAnalysis $regExpFileAnalysis;
+    private XmlFileAnalysis $xmlFileAnalysis;
 
-    /**
-     * @param RegExpFileAnalysis $regExpFileAnalysis
-     */
-    public function __construct(RegExpFileAnalysis $regExpFileAnalysis)
+    public function __construct()
     {
-        $this->regExpFileAnalysis = $regExpFileAnalysis;
+        $this->xmlFileAnalysis = new XmlFileAnalysis();
     }
 
     /**
@@ -25,18 +25,40 @@ class XmlConfigFiles
      *
      * @param Package $package
      *
-     * @return string[] - list of packages founded as dependencies inside package's files.
+     * @return ScannerResultInterface - list of packages founded as dependencies inside package's files.
      */
-    public function lookupDependencies(Package $package): array
+    public function lookupDependencies(Package $package): ScannerResultInterface
     {
-        $collectedDependencies = [];
-
+        $resultDependencies = [
+            DependencyInterface::TYPE_SOFT => [],
+            DependencyInterface::TYPE_HARD => []
+        ];
         foreach ($package->getPackageFiles() as $file) {
             if (in_array($file->getFilename(), self::FILE_MASKS)) {
-                $collectedDependencies[] = $this->regExpFileAnalysis->analyzeFile($file, $package->getPackageNamespaces());
+                $collectedDependencies = $this->xmlFileAnalysis->getDependencies($file, $package->getPackageNamespaces());
+                $resultDependencies[DependencyInterface::TYPE_SOFT][] = $collectedDependencies[DependencyInterface::TYPE_SOFT];
+                $resultDependencies[DependencyInterface::TYPE_HARD][] = $collectedDependencies[DependencyInterface::TYPE_HARD];
             }
         }
 
-        return array_unique(array_merge([], ...$collectedDependencies));
+        return $this->setUpScannerResult($resultDependencies);
+    }
+
+    /**
+     * @param array $resultDependencies
+     * @return ScannerResult
+     */
+    private function setUpScannerResult(array $resultDependencies): ScannerResultInterface
+    {
+        $scannerResult = new ScannerResult();
+
+        $scannerResult->setSoftDependencies(array_unique(
+            array_merge([], ...$resultDependencies[DependencyInterface::TYPE_SOFT]))
+        );
+        $scannerResult->setHardDependencies(array_unique(
+            array_merge([], ...$resultDependencies[DependencyInterface::TYPE_HARD]))
+        );
+
+        return $scannerResult;
     }
 }

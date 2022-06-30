@@ -14,6 +14,18 @@ interface DependencyInterface
     public const TYPE_HARD = 'hard';
 
     /**
+     * @param array $hardDependency
+     * @return void
+     */
+    public function setHardDependency(array $hardDependency): void;
+
+    /**
+     * @param array $softDependency
+     * @return void
+     */
+    public function setSoftDependency(array $softDependency): void;
+
+    /**
      * @return array
      */
     public function getHardDependency(): array;

@@ -5,6 +5,7 @@ namespace Vconnect\IntegrityChecker\Application\Dependencies;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
 use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Model\DependencyInterface;
 
 class Console implements ConsoleInterface
 {
@@ -66,23 +67,18 @@ class Console implements ConsoleInterface
     private function printComposerMissedDependencies(array $missedDependencies): void
     {
         echo "Missed dependencies in composer.json\n";
-        if ($missedDependencies['soft']) {
+        if ($missedDependencies[DependencyInterface::TYPE_SOFT]) {
             echo "Missed dependencies in suggest section:\n";
-            foreach ($missedDependencies['soft'] as $suggest) {
+            foreach ($missedDependencies[DependencyInterface::TYPE_SOFT] as $suggest) {
                 echo sprintf("\t- \"%s\": \"*\"\n", $suggest);
             }
         }
-        if ($missedDependencies['hard']) {
+        if ($missedDependencies[DependencyInterface::TYPE_HARD]) {
             echo "Missed dependencies in require section:\n";
-            foreach ($missedDependencies['hard'] as $require) {
+            foreach ($missedDependencies[DependencyInterface::TYPE_HARD] as $require) {
                 echo sprintf("\t- \"%s\": \"*\"\n", $require);
             }
         }
-
-//        foreach ($missedDependencies as $packageName) {
-//            echo sprintf("\t- \"%s\": \"*\"\n", $packageName);
-//        }
-
         echo PHP_EOL;
     }
 

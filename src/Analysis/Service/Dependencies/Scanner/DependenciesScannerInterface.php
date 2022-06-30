@@ -7,5 +7,9 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResul
 
 interface DependenciesScannerInterface
 {
+    /**
+     * @param Package $package
+     * @return ScannerResultInterface
+     */
     public function lookupDependencies(Package $package): ScannerResultInterface;
 }
