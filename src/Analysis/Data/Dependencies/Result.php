@@ -3,7 +3,7 @@
 namespace Vconnect\IntegrityChecker\Analysis\Data\Dependencies;
 
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Model\DependencyInterface;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
 class Result implements ResultInterface
 {

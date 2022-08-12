@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Model\DependencyInterface;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
 class XmlFileAnalysis
 {
@@ -27,56 +27,60 @@ class XmlFileAnalysis
     private const NODE_MAP_HARD_DEPENDENCY = [
         'extension_attributes' => ['for'],
         'attribute' => ['type'],
-        self::TEXT_NODES => ['//*[@xsi:type="object"]']
+        self::TEXT_NODES => [
+            '//*[@xsi:type="object"]',
+            './/frontend_model',
+            './/backend_model'
+        ]
     ];
 
     /**
      * Get array of dependencies that are specified as 'soft' and 'hard'
      *
-     * @param \SplFileInfo $file
+     * @param \DOMDocument[] $xmlFilesDomDocuments
      * @param array $currentModuleNamespaces
      * @return array
      */
-    public function getDependencies(\SplFileInfo $file, array $currentModuleNamespaces): array
+    public function getDependencies(array $xmlFilesDomDocuments, array $currentModuleNamespaces): array
     {
         return [
             DependencyInterface::TYPE_SOFT =>
-                $this->analyzeFile($file, $currentModuleNamespaces, self::NODE_MAP_SOFT_DEPENDENCY),
+                $this->analyze($xmlFilesDomDocuments, $currentModuleNamespaces, self::NODE_MAP_SOFT_DEPENDENCY),
             DependencyInterface::TYPE_HARD =>
-                $this->analyzeFile($file, $currentModuleNamespaces, self::NODE_MAP_HARD_DEPENDENCY)
+                $this->analyze($xmlFilesDomDocuments, $currentModuleNamespaces, self::NODE_MAP_HARD_DEPENDENCY)
         ];
     }
 
     /**
      * Analyze file to find dependencies
      *
-     * @param \SplFileInfo $file
+     * @param \DOMDocument[] $xmlFilesDomDocuments
      * @param array $currentModuleNamespaces
      * @param array $nodeMap
      * @return array
      */
-    private function analyzeFile(\SplFileInfo $file, array $currentModuleNamespaces, array $nodeMap): array
+    private function analyze(array $xmlFilesDomDocuments, array $currentModuleNamespaces, array $nodeMap): array
     {
         $dependencies = [];
-        $dom = new \DOMDocument();
-        $dom->loadXML(\file_get_contents($file->getPathname()));
-        foreach ($nodeMap as $tagName => $attributeNames) {
-            if ($tagName === self::TEXT_NODES) {
-                $dependencies = array_merge(
-                    $this->getDependenciesByTextNodes($dom, $attributeNames, $currentModuleNamespaces),
-                    $dependencies
-                );
-                continue;
-            }
-            $nodes = $dom->getElementsByTagName($tagName);
-            /** @var \DOMElement $node */
-            foreach ($nodes as $node) {
-                foreach ($attributeNames as $attributeName) {
-                    $referenceModule = $this->getModuleNamespace($node->getAttribute($attributeName));
-                    if (!$referenceModule || \in_array($referenceModule, $currentModuleNamespaces)) {
-                        continue;
+        foreach ($xmlFilesDomDocuments as $dom) {
+            foreach ($nodeMap as $tagName => $attributeNames) {
+                if ($tagName === self::TEXT_NODES) {
+                    $dependencies = array_merge(
+                        $this->getDependenciesByTextNodes($dom, $attributeNames, $currentModuleNamespaces),
+                        $dependencies
+                    );
+                    continue;
+                }
+                $nodes = $dom->getElementsByTagName($tagName);
+                /** @var \DOMElement $node */
+                foreach ($nodes as $node) {
+                    foreach ($attributeNames as $attributeName) {
+                        $referenceModule = $this->getModuleNamespace($node->getAttribute($attributeName));
+                        if (!$referenceModule || \in_array($referenceModule, $currentModuleNamespaces)) {
+                            continue;
+                        }
+                        $dependencies[] = $referenceModule;
                     }
-                    $dependencies[] = $referenceModule;
                 }
             }
         }

@@ -3,14 +3,14 @@
 namespace Vconnect\IntegrityChecker\Analysis\Service;
 
 use Vconnect\IntegrityChecker\Analysis\Data\Dependencies\Result;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Model\Dependency;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Dependency;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DependenciesScannerInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 use Vconnect\IntegrityChecker\Domain\Package;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Model\DependencyInterface;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
 class Dependencies implements AnalyzerInterface
 {
@@ -117,7 +117,8 @@ class Dependencies implements AnalyzerInterface
             $this->getPackageNameByNamespace($dependencies->getHardDependency());
 
         try {
-            $composerDeps = $package->getComposerDependencies();
+            $composerDeps[DependencyInterface::TYPE_HARD] = $package->getComposerRequiredPackages();
+            $composerDeps[DependencyInterface::TYPE_SOFT] = $package->getComposerSuggestPackages();
         } catch (FileNotFoundException $exception) {
             $composerDeps = [];
         }

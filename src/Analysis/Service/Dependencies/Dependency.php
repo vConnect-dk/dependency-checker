@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Model;
+namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies;
 
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
 

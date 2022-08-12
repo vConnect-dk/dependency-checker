@@ -66,7 +66,7 @@ class Json
     {
         $dependencies = $this->getContent()['require'] ?? [];
 
-        return $this->filterDependenciesOnlyWithVendor($dependencies);
+        return $this->filterComposerPackages($dependencies);
     }
 
     /**
@@ -78,7 +78,7 @@ class Json
     {
         $dependencies = $this->getContent()['suggest'] ?? [];
 
-        return $this->filterDependenciesOnlyWithVendor($dependencies);
+        return $this->filterComposerPackages($dependencies);
 
     }
 
@@ -86,7 +86,7 @@ class Json
      * @param array $dependencies
      * @return array
      */
-    private function filterDependenciesOnlyWithVendor(array $dependencies): array
+    private function filterComposerPackages(array $dependencies): array
     {
         $dependencies = array_keys($dependencies);
         return array_filter($dependencies, function (string $dependency): bool

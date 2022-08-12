@@ -6,11 +6,10 @@ namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Model\DependencyInterface;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
 class XmlConfigFiles implements DependenciesScannerInterface
 {
-    private const FILE_MASKS = ['di.xml', 'system.xml', 'extension_attributes.xml'];
     private XmlFileAnalysis $xmlFileAnalysis;
 
     public function __construct()
@@ -19,9 +18,7 @@ class XmlConfigFiles implements DependenciesScannerInterface
     }
 
     /**
-     * Search for dependencies inside the module directory.
-     * Scan di.xml', 'system.xml', 'extension_attributes.xml' files for PHP classes with regexp
-     * and collect corresponding modules which are required by the package to work properly.
+     * Search for dependencies in .xml inside the module directory.
      *
      * @param Package $package
      *
@@ -33,12 +30,12 @@ class XmlConfigFiles implements DependenciesScannerInterface
             DependencyInterface::TYPE_SOFT => [],
             DependencyInterface::TYPE_HARD => []
         ];
-        foreach ($package->getPackageFiles() as $file) {
-            if (in_array($file->getFilename(), self::FILE_MASKS)) {
-                $collectedDependencies = $this->xmlFileAnalysis->getDependencies($file, $package->getPackageNamespaces());
-                $resultDependencies[DependencyInterface::TYPE_SOFT][] = $collectedDependencies[DependencyInterface::TYPE_SOFT];
-                $resultDependencies[DependencyInterface::TYPE_HARD][] = $collectedDependencies[DependencyInterface::TYPE_HARD];
-            }
+        if ($package->getXmlFilesDomDocuments()) {
+            $collectedDependencies = $this->xmlFileAnalysis->getDependencies(
+                $package->getXmlFilesDomDocuments(), $package->getPackageNamespaces()
+            );
+            $resultDependencies[DependencyInterface::TYPE_SOFT][] = $collectedDependencies[DependencyInterface::TYPE_SOFT];
+            $resultDependencies[DependencyInterface::TYPE_HARD][] = $collectedDependencies[DependencyInterface::TYPE_HARD];
         }
 
         return $this->setUpScannerResult($resultDependencies);

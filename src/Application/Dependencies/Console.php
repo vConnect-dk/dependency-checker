@@ -5,7 +5,7 @@ namespace Vconnect\IntegrityChecker\Application\Dependencies;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
 use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Model\DependencyInterface;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
 class Console implements ConsoleInterface
 {
@@ -68,21 +68,19 @@ class Console implements ConsoleInterface
     {
         echo "Missed dependencies in composer.json\n";
         if ($missedDependencies[DependencyInterface::TYPE_SOFT]) {
-            echo "Missed dependencies in suggest section:\n";
+            echo "Suggest:\n";
             foreach ($missedDependencies[DependencyInterface::TYPE_SOFT] as $suggest) {
                 echo sprintf("\t- \"%s\": \"*\"\n", $suggest);
             }
         }
         if ($missedDependencies[DependencyInterface::TYPE_HARD]) {
-            echo "Missed dependencies in require section:\n";
+            echo "Require:\n";
             foreach ($missedDependencies[DependencyInterface::TYPE_HARD] as $require) {
                 echo sprintf("\t- \"%s\": \"*\"\n", $require);
             }
         }
         echo PHP_EOL;
     }
-
-
 
     public function getStatusCode(): int
     {
@@ -92,7 +90,7 @@ class Console implements ConsoleInterface
     public function validateParameters(): bool
     {
         $argc = $_SERVER['argc'];
-        $argv = $_SERVER['argv'];
+        $argv = array_unique($_SERVER['argv']);
 
         if ($argc < 2) {
             echo "\e[31mExpected first parameter as Magento 2 Root Directory.\e[30m" . PHP_EOL;
