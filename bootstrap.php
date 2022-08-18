@@ -3,8 +3,9 @@
 if (isset($argv[1])) {
     define('ROOT_DIR', realpath($argv[1]) . '/');
 }
-
-if (is_file(__DIR__ . '/../autoload.php')) {
+if (!empty($GLOBALS['_composer_autoload_path'])) {
+    require_once $GLOBALS['_composer_autoload_path'];
+} elseif (is_file(__DIR__ . '/../autoload.php')) {
     //Installed as package.
     include_once __DIR__ . '/../autoload.php';
 } elseif (is_file(__DIR__ . '/../../../vendor/autoload.php')) {
