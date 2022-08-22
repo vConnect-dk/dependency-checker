@@ -92,7 +92,7 @@ class Dependencies implements AnalyzerInterface
         }
 
         // leave only Magento 2 modules
-        $dependenciesModules = array_filter($dependencies->getHardDependency(),
+        $dependenciesModules = array_filter($dependencies->getHardDependencies(),
             fn(string $namespace) => $this->packagesRegistry->getPackageType(
                     (string)$this->packagesRegistry->getPackageNameByNamespace($namespace)
                 ) === self::MAGENTO_MODULE_PACKAGE_TYPE
@@ -112,12 +112,12 @@ class Dependencies implements AnalyzerInterface
     private function compareComposerDependencies(Package $package, Dependency $dependencies): array
     {
         $dependenciesPackages[DependencyInterface::TYPE_SOFT] =
-            $this->getPackageNameByNamespace($dependencies->getSoftDependency());
+            $this->getPackageNameByNamespace($dependencies->getSoftDependencies());
         $dependenciesPackages[DependencyInterface::TYPE_HARD] =
-            $this->getPackageNameByNamespace($dependencies->getHardDependency());
+            $this->getPackageNameByNamespace($dependencies->getHardDependencies());
 
         try {
-            $composerDeps[DependencyInterface::TYPE_HARD] = $package->getComposerRequiredPackages();
+            $composerDeps[DependencyInterface::TYPE_HARD] = $package->getComposerRequirePackages();
             $composerDeps[DependencyInterface::TYPE_SOFT] = $package->getComposerSuggestPackages();
         } catch (FileNotFoundException $exception) {
             $composerDeps = [];

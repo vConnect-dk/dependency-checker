@@ -71,7 +71,30 @@ class Console implements ConsoleInterface
             return false;
         }
 
-        return true;
+        $result =  true;
+        for ($i = 2; $i < $argc; $i++) {
+
+            if (!is_dir(ROOT_DIR . $argv[$i])) {
+
+                echo  sprintf(
+
+                        "\e[31mCan not find directory \"%s\". Please check your input parameters.\e[30m",
+
+                        ROOT_DIR . $argv[$i]
+
+                    ) . PHP_EOL
+
+                    . sprintf("Path \"%s\" should be relative to Magento 2 Directory.\e[30m", $argv[$i])
+
+                    . PHP_EOL;
+
+                $result = false;
+
+            }
+
+        }
+
+        return $result;
     }
 
     public function printHelp(): void

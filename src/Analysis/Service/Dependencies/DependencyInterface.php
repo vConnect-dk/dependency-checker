@@ -17,23 +17,23 @@ interface DependencyInterface
      * @param array $hardDependency
      * @return void
      */
-    public function setHardDependency(array $hardDependency): void;
+    public function setHardDependencies(array $hardDependency): void;
 
     /**
      * @param array $softDependency
      * @return void
      */
-    public function setSoftDependency(array $softDependency): void;
+    public function setSoftDependencies(array $softDependency): void;
 
     /**
      * @return array
      */
-    public function getHardDependency(): array;
+    public function getHardDependencies(): array;
 
     /**
      * @return array
      */
-    public function getSoftDependency(): array;
+    public function getSoftDependencies(): array;
 
     /**
      * @param ScannerResultInterface $scannerResult

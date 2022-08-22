@@ -51,7 +51,7 @@ class Package
      * @return array
      * @throws FileNotFoundException
      */
-    public function getComposerRequiredPackages(): array
+    public function getComposerRequirePackages(): array
     {
         return $this->getComposerJson()->getRequire();
     }

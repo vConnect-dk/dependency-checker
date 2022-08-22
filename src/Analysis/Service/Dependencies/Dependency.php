@@ -15,7 +15,7 @@ class Dependency implements DependencyInterface
     /**
      * @return array
      */
-    public function getHardDependency(): array
+    public function getHardDependencies(): array
     {
         return $this->dependencies[DependencyInterface::TYPE_HARD];
     }
@@ -23,7 +23,7 @@ class Dependency implements DependencyInterface
     /**
      * @return array
      */
-    public function getSoftDependency(): array
+    public function getSoftDependencies(): array
     {
         return $this->dependencies[DependencyInterface::TYPE_SOFT];
     }
@@ -34,8 +34,8 @@ class Dependency implements DependencyInterface
      */
     public function mergeDependencies(ScannerResultInterface $scannerResult): void
     {
-        $this->setSoftDependency($scannerResult->getSoftDependencies());
-        $this->setHardDependency($scannerResult->getHardDependencies());
+        $this->setSoftDependencies($scannerResult->getSoftDependencies());
+        $this->setHardDependencies($scannerResult->getHardDependencies());
         $this->filterSoftDependencies();
     }
 
@@ -51,19 +51,19 @@ class Dependency implements DependencyInterface
      * @param array $hardDependency
      * @return void
      */
-    public function setHardDependency(array $hardDependency): void
+    public function setHardDependencies(array $hardDependency): void
     {
         $this->dependencies[DependencyInterface::TYPE_HARD] =
-            array_unique(array_merge($this->getHardDependency(), $hardDependency));
+            array_unique(array_merge($this->getHardDependencies(), $hardDependency));
     }
 
     /**
      * @param array $softDependency
      * @return void
      */
-    public function setSoftDependency(array $softDependency): void
+    public function setSoftDependencies(array $softDependency): void
     {
         $this->dependencies[DependencyInterface::TYPE_SOFT] =
-            array_unique(array_merge($this->getSoftDependency(), $softDependency));
+            array_unique(array_merge($this->getSoftDependencies(), $softDependency));
     }
 }
