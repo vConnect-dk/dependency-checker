@@ -26,35 +26,26 @@ class XmlConfigFiles implements DependenciesScannerInterface
      */
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
-        $resultDependencies = [
-            DependencyInterface::TYPE_SOFT => [],
-            DependencyInterface::TYPE_HARD => []
-        ];
+        $collectedDependencies = [];
         if ($package->getXmlFilesDomDocuments()) {
             $collectedDependencies = $this->xmlFileAnalysis->getDependencies(
                 $package->getXmlFilesDomDocuments(), $package->getPackageNamespaces()
             );
-            $resultDependencies[DependencyInterface::TYPE_SOFT][] = $collectedDependencies[DependencyInterface::TYPE_SOFT];
-            $resultDependencies[DependencyInterface::TYPE_HARD][] = $collectedDependencies[DependencyInterface::TYPE_HARD];
         }
 
-        return $this->setUpScannerResult($resultDependencies);
+        return $this->setUpScannerResult($collectedDependencies);
     }
 
     /**
-     * @param array $resultDependencies
+     * @param array $collectedDependencies
      * @return ScannerResult
      */
-    private function setUpScannerResult(array $resultDependencies): ScannerResultInterface
+    private function setUpScannerResult(array $collectedDependencies): ScannerResultInterface
     {
         $scannerResult = new ScannerResult();
 
-        $scannerResult->setSoftDependencies(array_unique(
-            array_merge([], ...$resultDependencies[DependencyInterface::TYPE_SOFT]))
-        );
-        $scannerResult->setHardDependencies(array_unique(
-            array_merge([], ...$resultDependencies[DependencyInterface::TYPE_HARD]))
-        );
+        $scannerResult->setSoftDependencies(array_unique($collectedDependencies[DependencyInterface::TYPE_SOFT]));
+        $scannerResult->setHardDependencies(array_unique($collectedDependencies[DependencyInterface::TYPE_HARD]));
 
         return $scannerResult;
     }
