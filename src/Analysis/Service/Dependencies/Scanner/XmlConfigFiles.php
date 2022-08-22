@@ -10,6 +10,34 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
 class XmlConfigFiles implements DependenciesScannerInterface
 {
+    public const TEXT_NODES = 'textNodes';
+
+    /**
+     * Array of nodes for DOMDocument to specify dependencies as 'soft'
+     */
+    private const NODE_MAP_SOFT_DEPENDENCY = [
+        'type' => ['name'],
+        'preference' => [
+            'type',
+            'for'
+        ],
+        'plugin' => ['type'],
+        'virtualType' => ['type'],
+    ];
+
+    /**
+     * Array of nodes for DOMDocument to specify dependencies as 'hard'
+     */
+    private const NODE_MAP_HARD_DEPENDENCY = [
+        'extension_attributes' => ['for'],
+        'attribute' => ['type'],
+        self::TEXT_NODES => [
+            '//*[@xsi:type="object"]',
+            './/frontend_model',
+            './/backend_model'
+        ]
+    ];
+
     private XmlFileAnalysis $xmlFileAnalysis;
 
     public function __construct()
@@ -28,8 +56,15 @@ class XmlConfigFiles implements DependenciesScannerInterface
     {
         $collectedDependencies = [];
         if ($package->getXmlFilesDomDocuments()) {
-            $collectedDependencies = $this->xmlFileAnalysis->getDependencies(
-                $package->getXmlFilesDomDocuments(), $package->getPackageNamespaces()
+            $collectedDependencies[DependencyInterface::TYPE_SOFT] = $this->xmlFileAnalysis->analyze(
+                $package->getXmlFilesDomDocuments(),
+                $package->getPackageNamespaces(),
+                self::NODE_MAP_SOFT_DEPENDENCY
+            );
+            $collectedDependencies[DependencyInterface::TYPE_HARD] = $this->xmlFileAnalysis->analyze(
+                $package->getXmlFilesDomDocuments(),
+                $package->getPackageNamespaces(),
+                self::NODE_MAP_HARD_DEPENDENCY
             );
         }
 

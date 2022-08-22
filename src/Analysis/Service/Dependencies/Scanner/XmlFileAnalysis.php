@@ -3,54 +3,8 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
-
 class XmlFileAnalysis
 {
-    private const TEXT_NODES = 'textNodes';
-    /**
-     * Array of nodes for DOMDocument to specify dependencies as 'soft'
-     */
-    private const NODE_MAP_SOFT_DEPENDENCY = [
-        'type' => ['name'],
-        'preference' => [
-            'type',
-            'for'
-        ],
-        'plugin' => ['type'],
-        'virtualType' => ['type'],
-    ];
-
-    /**
-     * Array of nodes for DOMDocument to specify dependencies as 'hard'
-     */
-    private const NODE_MAP_HARD_DEPENDENCY = [
-        'extension_attributes' => ['for'],
-        'attribute' => ['type'],
-        self::TEXT_NODES => [
-            '//*[@xsi:type="object"]',
-            './/frontend_model',
-            './/backend_model'
-        ]
-    ];
-
-    /**
-     * Get array of dependencies that are specified as 'soft' and 'hard'
-     *
-     * @param \DOMDocument[] $xmlFilesDomDocuments
-     * @param array $currentModuleNamespaces
-     * @return array
-     */
-    public function getDependencies(array $xmlFilesDomDocuments, array $currentModuleNamespaces): array
-    {
-        return [
-            DependencyInterface::TYPE_SOFT =>
-                $this->analyze($xmlFilesDomDocuments, $currentModuleNamespaces, self::NODE_MAP_SOFT_DEPENDENCY),
-            DependencyInterface::TYPE_HARD =>
-                $this->analyze($xmlFilesDomDocuments, $currentModuleNamespaces, self::NODE_MAP_HARD_DEPENDENCY)
-        ];
-    }
-
     /**
      * Analyze file to find dependencies
      *
@@ -59,12 +13,12 @@ class XmlFileAnalysis
      * @param array $nodeMap
      * @return array
      */
-    private function analyze(array $xmlFilesDomDocuments, array $currentModuleNamespaces, array $nodeMap): array
+    public function analyze(array $xmlFilesDomDocuments, array $currentModuleNamespaces, array $nodeMap): array
     {
         $dependencies = [];
         foreach ($xmlFilesDomDocuments as $dom) {
             foreach ($nodeMap as $tagName => $attributeNames) {
-                if ($tagName === self::TEXT_NODES) {
+                if ($tagName === XmlConfigFiles::TEXT_NODES) {
                     $dependencies = array_merge(
                         $this->getDependenciesByTextNodes($dom, $attributeNames, $currentModuleNamespaces),
                         $dependencies
