@@ -44,8 +44,8 @@ class PackagesRegistry
     {
         $parts = explode('\\', $namespace);
 
-        for ($i = 1; $i <= count($parts); $i++) {
-            $namespace = implode('\\', array_slice($parts, 0, $i));
+        for ($i = count($parts); $i >= 1; $i--) {
+                $namespace = implode('\\', array_slice($parts, 0, $i));
             if (isset($this->packages[$namespace])) {
                 return $this->packages[$namespace];
             }

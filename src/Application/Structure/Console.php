@@ -59,7 +59,7 @@ class Console implements ConsoleInterface
     public function validateParameters(): bool
     {
         $argc = $_SERVER['argc'];
-        $argv = $_SERVER['argv'];
+        $argv = array_unique($_SERVER['argv']);
 
         if ($argc < 2) {
             echo "\e[31mExpected first parameter as Magento 2 Root Directory.\e[30m" . PHP_EOL;
@@ -71,20 +71,18 @@ class Console implements ConsoleInterface
             return false;
         }
 
-        $result = true;
         for ($i = 2; $i < $argc; $i++) {
             if (!is_dir(ROOT_DIR . $argv[$i])) {
                 echo  sprintf(
-                        "\e[31mCan not find directory \"%s\". Please check your input parameters.\e[30m",
-                        ROOT_DIR . $argv[$i]
+                    "Notice: Can not find directory \"%s\". Please check your input parameters.",
+                    ROOT_DIR . $argv[$i]
                     ) . PHP_EOL
-                    . sprintf("Path \"%s\" should be relative to Magento 2 Directory.\e[30m", $argv[$i])
+                    . sprintf("Path \"%s\" should be relative to Magento 2 Directory.", $argv[$i])
                     . PHP_EOL;
-                $result = false;
             }
         }
 
-        return $result;
+        return true;
     }
 
     public function printHelp(): void

@@ -3,6 +3,7 @@
 namespace Vconnect\IntegrityChecker\Analysis\Data\Dependencies;
 
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
 class Result implements ResultInterface
 {
@@ -24,11 +25,19 @@ class Result implements ResultInterface
         $this->moduleXmlDefects = $moduleXmlDefects;
     }
 
+    /**
+     * @return bool
+     */
     public function hasDefects(): bool
     {
-        return !empty($this->composerDefects) || !empty($this->moduleXmlDefects);
+        return !empty($this->composerDefects[DependencyInterface::TYPE_SOFT]) ||
+            !empty($this->composerDefects[DependencyInterface::TYPE_HARD]) ||
+            !empty($this->moduleXmlDefects);
     }
 
+    /**
+     * @return string
+     */
     public function getPackageName(): string
     {
         return $this->packageName;

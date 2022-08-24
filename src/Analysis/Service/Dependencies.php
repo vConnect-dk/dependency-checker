@@ -3,13 +3,14 @@
 namespace Vconnect\IntegrityChecker\Analysis\Service;
 
 use Vconnect\IntegrityChecker\Analysis\Data\Dependencies\Result;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Dependency;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DependenciesScannerInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 use Vconnect\IntegrityChecker\Domain\Package;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\RegExpFileAnalysis;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
 class Dependencies implements AnalyzerInterface
 {
@@ -25,10 +26,9 @@ class Dependencies implements AnalyzerInterface
     public function __construct()
     {
         $this->packagesRegistry = PackagesRegistry::getInstance();
-        $regExpFileAnalysis = new RegExpFileAnalysis;
         $this->dependenciesScanner = [
-            new PhpFiles($regExpFileAnalysis),
-            new XmlConfigFiles($regExpFileAnalysis)
+            new PhpFiles(),
+            new XmlConfigFiles()
         ];
     }
 
@@ -42,12 +42,11 @@ class Dependencies implements AnalyzerInterface
     public function analyse(iterable $packages): \Generator
     {
         foreach ($packages as $package) {
-            $dependencies = [];
+            $dependencyModel = new Dependency();
             foreach ($this->dependenciesScanner as $scanner) {
-                $dependencies[] = $scanner->lookupDependencies($package);
+                $dependencyModel->mergeDependencies($scanner->lookupDependencies($package));
             }
-            $dependencies = array_unique(array_merge([], ...$dependencies));
-            yield $this->compareDependencies($package, $dependencies);
+            yield $this->compareDependencies($package, $dependencyModel);
         }
     }
 
@@ -55,11 +54,11 @@ class Dependencies implements AnalyzerInterface
      * Compare package dependencies with discovered dependencies.
      *
      * @param Package $package
-     * @param array $dependencies
+     * @param Dependency $dependencies
      *
      * @return Result
      */
-    private function compareDependencies(Package $package, array $dependencies): Result
+    private function compareDependencies(Package $package, Dependency $dependencies): Result
     {
         return new Result(
             $package->getPackageName(),
@@ -72,11 +71,11 @@ class Dependencies implements AnalyzerInterface
      * Compare found dependencies with dependencies in module.xml.
      *
      * @param Package $package
-     * @param array $dependencies
+     * @param Dependency $dependencies
      *
      * @return array
      */
-    private function compareModuleXmlDependencies(Package $package, array $dependencies): array
+    private function compareModuleXmlDependencies(Package $package, Dependency $dependencies): array
     {
         if ($package->getPackageType() !== self::MAGENTO_MODULE_PACKAGE_TYPE) {
             return [];
@@ -93,7 +92,7 @@ class Dependencies implements AnalyzerInterface
         }
 
         // leave only Magento 2 modules
-        $dependenciesModules = array_filter($dependencies,
+        $dependenciesModules = array_filter($dependencies->getHardDependencies(),
             fn(string $namespace) => $this->packagesRegistry->getPackageType(
                     (string)$this->packagesRegistry->getPackageNameByNamespace($namespace)
                 ) === self::MAGENTO_MODULE_PACKAGE_TYPE
@@ -106,25 +105,44 @@ class Dependencies implements AnalyzerInterface
      * Compare found dependencies with dependencies in composer.json.
      *
      * @param Package $package
-     * @param array $dependencies
+     * @param Dependency $dependencies
      *
      * @return array
      */
-    private function compareComposerDependencies(Package $package, array $dependencies): array
+    private function compareComposerDependencies(Package $package, Dependency $dependencies): array
     {
-        $dependenciesPackages = array_filter(
-            array_map(
-                fn(string $namespace) => $this->packagesRegistry->getPackageNameByNamespace($namespace),
-                $dependencies
-            )
-        );
+        $dependenciesPackages[DependencyInterface::TYPE_SOFT] =
+            $this->getPackageNameByNamespace($dependencies->getSoftDependencies());
+        $dependenciesPackages[DependencyInterface::TYPE_HARD] =
+            $this->getPackageNameByNamespace($dependencies->getHardDependencies());
 
         try {
-            $composerDeps = $package->getComposerDependencies();
+            $composerDeps[DependencyInterface::TYPE_HARD] = $package->getComposerRequirePackages();
+            $composerDeps[DependencyInterface::TYPE_SOFT] = $package->getComposerSuggestPackages();
         } catch (FileNotFoundException $exception) {
             $composerDeps = [];
         }
 
-        return array_diff($dependenciesPackages, $composerDeps);
+        $result[DependencyInterface::TYPE_SOFT] = array_diff(
+            $dependenciesPackages[DependencyInterface::TYPE_SOFT], $composerDeps[DependencyInterface::TYPE_SOFT]
+        );
+        $result[DependencyInterface::TYPE_HARD] = array_diff(
+            $dependenciesPackages[DependencyInterface::TYPE_HARD], $composerDeps[DependencyInterface::TYPE_HARD]
+        );
+
+        return $result;
+    }
+
+    /**
+     * @param array $dependency
+     * @return array
+     */
+    private function getPackageNameByNamespace(array $dependency): array
+    {
+        return array_filter(array_map(
+                fn(string $namespace) => $this->packagesRegistry->getPackageNameByNamespace($namespace),
+                $dependency
+            )
+        );
     }
 }

@@ -5,16 +5,16 @@ namespace Vconnect\IntegrityChecker\Domain;
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
 
 class Package
 {
+    private const XML_FILE_MASKS = ['di.xml', 'system.xml', 'extension_attributes.xml'];
     private string $path;
-
     private ?array $packageFiles = null;
-
     private ?Json $composerJson = null;
-
     private ?ModuleXml $moduleXml = null;
+    private ?array $xmlFilesDomDocument = null;
 
     /**
      * @param string $path
@@ -46,14 +46,25 @@ class Package
     }
 
     /**
-     * Get dependencies from 'require' section of composer.json file.
+     * Get dependencies from 'require' section
      *
      * @return array
      * @throws FileNotFoundException
      */
-    public function getComposerDependencies(): array
+    public function getComposerRequirePackages(): array
     {
-        return $this->getComposerJson()->getDependencies();
+        return $this->getComposerJson()->getRequire();
+    }
+
+    /**
+     * Get dependencies from 'suggest' section
+     *
+     * @return array
+     * @throws FileNotFoundException
+     */
+    public function getComposerSuggestPackages(): array
+    {
+        return $this->getComposerJson()->getSuggest();
     }
 
     /**
@@ -192,5 +203,21 @@ class Package
             }
         }
         throw new FileNotFoundException('module.xml', $this->path);
+    }
+
+    public function getXmlFilesDomDocuments(): ?array
+    {
+        if (!isset($this->xmlFilesDomDocument)) {
+            $this->xmlFilesDomDocument = [];
+            foreach ($this->getPackageFiles() as $file) {
+                if (in_array($file->getFilename(), self::XML_FILE_MASKS)) {
+                    $dom = new \DOMDocument();
+                    $dom->loadXML(\file_get_contents($file->getPathname()));
+                    $this->xmlFilesDomDocument[$file->getFilename()] = $dom;
+                }
+            }
+        }
+
+        return $this->xmlFilesDomDocument;
     }
 }

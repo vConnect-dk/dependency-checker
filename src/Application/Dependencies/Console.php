@@ -5,6 +5,7 @@ namespace Vconnect\IntegrityChecker\Application\Dependencies;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
 use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
 class Console implements ConsoleInterface
 {
@@ -28,6 +29,7 @@ class Console implements ConsoleInterface
             return;
         }
 
+        echo "------------------------------------------------------------\n";
         echo sprintf("Package %s has defects(s).\n", $result->getPackageName());
 
         $defects = $result->getDefects();
@@ -60,16 +62,23 @@ class Console implements ConsoleInterface
     /**
      * Format and print.
      *
-     * @param string[] $missedDependencies
+     * @param array $missedDependencies
      */
     private function printComposerMissedDependencies(array $missedDependencies): void
     {
         echo "Missed dependencies in composer.json\n";
-
-        foreach ($missedDependencies as $packageName) {
-            echo sprintf("\t- \"%s\": \"*\"\n", $packageName);
+        if ($missedDependencies[DependencyInterface::TYPE_SOFT]) {
+            echo "Suggest:\n";
+            foreach ($missedDependencies[DependencyInterface::TYPE_SOFT] as $suggest) {
+                echo sprintf("\t- \"%s\": \"*\"\n", $suggest);
+            }
         }
-
+        if ($missedDependencies[DependencyInterface::TYPE_HARD]) {
+            echo "Require:\n";
+            foreach ($missedDependencies[DependencyInterface::TYPE_HARD] as $require) {
+                echo sprintf("\t- \"%s\": \"*\"\n", $require);
+            }
+        }
         echo PHP_EOL;
     }
 
@@ -81,7 +90,7 @@ class Console implements ConsoleInterface
     public function validateParameters(): bool
     {
         $argc = $_SERVER['argc'];
-        $argv = $_SERVER['argv'];
+        $argv = array_unique($_SERVER['argv']);
 
         if ($argc < 2) {
             echo "\e[31mExpected first parameter as Magento 2 Root Directory.\e[30m" . PHP_EOL;
@@ -93,20 +102,18 @@ class Console implements ConsoleInterface
             return false;
         }
 
-        $result = true;
         for ($i = 2; $i < $argc; $i++) {
             if (!is_dir(ROOT_DIR . $argv[$i])) {
                 echo  sprintf(
-                    "\e[31mCan not find directory \"%s\". Please check your input parameters.",
+                    "Notice: Can not find directory \"%s\". Please check your input parameters.",
                     ROOT_DIR . $argv[$i]
                 ) . PHP_EOL
-                    . sprintf("Path \"%s\" should be relative to Magento 2 Directory.\e[30m", $argv[$i])
+                    . sprintf("Path \"%s\" should be relative to Magento 2 Directory.", $argv[$i])
                     . PHP_EOL;
-                $result = false;
             }
         }
 
-        return $result;
+        return true;
     }
 
     public function printHelp(): void

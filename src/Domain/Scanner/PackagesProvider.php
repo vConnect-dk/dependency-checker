@@ -18,8 +18,11 @@ class PackagesProvider
     public function getPackages(array $paths, ?callable $filter = null, string $fileMask = '/composer\\.json/'): \Generator
     {
         $collectedPaths = [];
+        $paths = array_unique($paths);
         foreach ($paths as $path) {
-            $collectedPaths[] = $this->getMatchedFilesFolders(ROOT_DIR . $path, $fileMask, $filter);
+            if (is_dir(ROOT_DIR . $path)){
+                $collectedPaths[] = $this->getMatchedFilesFolders(ROOT_DIR . $path, $fileMask, $filter);
+            }
         }
 
         $uniquePackages = array_unique(array_merge([], ...$collectedPaths));

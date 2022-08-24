@@ -62,11 +62,33 @@ class Json
      *
      * @return array
      */
-    public function getDependencies(): array
+    public function getRequire(): array
     {
         $dependencies = $this->getContent()['require'] ?? [];
-        $dependencies = array_keys($dependencies);
 
+        return $this->filterComposerPackages($dependencies);
+    }
+
+    /**
+     * Return packages specified in 'suggest' section.
+     *
+     * @return array
+     */
+    public function getSuggest(): array
+    {
+        $dependencies = $this->getContent()['suggest'] ?? [];
+
+        return $this->filterComposerPackages($dependencies);
+
+    }
+
+    /**
+     * @param array $dependencies
+     * @return array
+     */
+    private function filterComposerPackages(array $dependencies): array
+    {
+        $dependencies = array_keys($dependencies);
         return array_filter($dependencies, function (string $dependency): bool
         {
             return strpos($dependency, '/') !== false;
