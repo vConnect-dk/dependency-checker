@@ -2,18 +2,50 @@
 
 namespace Vconnect\IntegrityChecker\Application\Dependencies;
 
-use Vconnect\IntegrityChecker\Application\ConsoleInterface;
+use League\CLImate\CLImate;
+use League\CLImate\Exceptions\InvalidArgumentException;
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
-use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
+use Vconnect\IntegrityChecker\Application\ConsoleInterface;
+use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
 
 class Console implements ConsoleInterface
 {
+    private const ARG_MAGENTO_2_ROOT = 'magento2root';
+    private const ARG_FOLDERS = 'folders';
+    private const ARG_HELP = 'help';
     private DefectsState $defectsState;
+    private CLImate $cli;
 
     public function __construct()
     {
         $this->defectsState = new DefectsState();
+        $this->cli = new CLImate();
+        $this->configureCommand();
+    }
+
+    private function configureCommand(): void
+    {
+        $this->cli->description(
+            '<bold>Tool to check integrity of declared dependencies in composer.json and etc/module.xml.</bold>'
+        );
+        $this->cli->arguments->add([
+            self::ARG_MAGENTO_2_ROOT => [
+                'description' => 'Path to Magento 2 project root directory',
+                'required' => true,
+                'castTo' => 'string'
+            ],
+            self::ARG_FOLDERS => [
+                'description' => 'List of folders to scan, separated by space.' .
+                    ' If not provided, scan will be run for <dim>src</dim> and <dim>app</dim>.',
+                'required' => true
+            ],
+            self::ARG_HELP => [
+                'longPrefix' => 'help',
+                'description' => 'Prints this help message',
+                'noValue' => true,
+            ],
+        ]);
     }
 
     /**
@@ -29,8 +61,8 @@ class Console implements ConsoleInterface
             return;
         }
 
-        echo "------------------------------------------------------------\n";
-        echo sprintf("Package %s has defects(s).\n", $result->getPackageName());
+        $this->cli->out('------------------------------------------------------------');
+        $this->cli->out(sprintf('Package %s has defects(s).', $result->getPackageName()));
 
         $defects = $result->getDefects();
 
@@ -50,13 +82,13 @@ class Console implements ConsoleInterface
      */
     private function printModuleXmlMissedDependencies(array $missedDependencies): void
     {
-        echo "Missed dependencies in etc/module.xml\n";
+        $this->cli->out('Missed dependencies in etc/module.xml');
 
         foreach ($missedDependencies as $packageNamespace) {
-            echo sprintf("\t- %s\n", str_replace('\\', '_', $packageNamespace));
+            $this->cli->tab()->out(sprintf('- %s', str_replace('\\', '_', $packageNamespace)));
         }
 
-        echo PHP_EOL;
+        $this->cli->br();
     }
 
     /**
@@ -66,20 +98,20 @@ class Console implements ConsoleInterface
      */
     private function printComposerMissedDependencies(array $missedDependencies): void
     {
-        echo "Missed dependencies in composer.json\n";
+        $this->cli->out('Missed dependencies in composer.json');
         if ($missedDependencies[DependencyInterface::TYPE_SOFT]) {
-            echo "Suggest:\n";
+            $this->cli->out('Suggest:');
             foreach ($missedDependencies[DependencyInterface::TYPE_SOFT] as $suggest) {
-                echo sprintf("\t- \"%s\": \"*\"\n", $suggest);
+                $this->cli->tab()->out(sprintf('- "%s": "*"', $suggest));
             }
         }
         if ($missedDependencies[DependencyInterface::TYPE_HARD]) {
-            echo "Require:\n";
+            $this->cli->out('Require:');
             foreach ($missedDependencies[DependencyInterface::TYPE_HARD] as $require) {
-                echo sprintf("\t- \"%s\": \"*\"\n", $require);
+                $this->cli->tab()->out(sprintf('- "%s": "*"', $require));
             }
         }
-        echo PHP_EOL;
+        $this->cli->br();
     }
 
     public function getStatusCode(): int
@@ -89,27 +121,42 @@ class Console implements ConsoleInterface
 
     public function validateParameters(): bool
     {
-        $argc = $_SERVER['argc'];
-        $argv = array_unique($_SERVER['argv']);
-
-        if ($argc < 2) {
-            echo "\e[31mExpected first parameter as Magento 2 Root Directory.\e[30m" . PHP_EOL;
+        if ($this->cli->arguments->defined(self::ARG_HELP)) {
+            /* Would just print help message */
             return false;
         }
 
-        if (!is_file($argv[1] . DIRECTORY_SEPARATOR . 'composer.lock')) {
-            echo "\e[31m\"composer.lock\" file was not found in Magento 2 Directory.\e[30m" . PHP_EOL;
+        try {
+            $this->parseArguments();
+        } catch (InvalidArgumentException $e) {
+            $this->cli->backgroundLightRed($e->getMessage());
+
             return false;
         }
 
-        for ($i = 2; $i < $argc; $i++) {
-            if (!is_dir(ROOT_DIR . $argv[$i])) {
-                echo  sprintf(
-                    "Notice: Can not find directory \"%s\". Please check your input parameters.",
-                    ROOT_DIR . $argv[$i]
-                ) . PHP_EOL
-                    . sprintf("Path \"%s\" should be relative to Magento 2 Directory.", $argv[$i])
-                    . PHP_EOL;
+        $m2root = $this->cli->arguments->get(self::ARG_MAGENTO_2_ROOT);
+        if (!$m2root) {
+            $this->cli->error('Expected first parameter as Magento 2 Root Directory.');
+
+            return false;
+        }
+
+        if (!is_file($m2root . DIRECTORY_SEPARATOR . 'composer.lock')) {
+            $this->cli->error('"composer.lock" file was not found in Magento 2 Directory.');
+
+            return false;
+        }
+
+        $folders = explode(' ', $this->cli->arguments->get(self::ARG_FOLDERS));
+        foreach ($folders as $folder) {
+            if (!is_dir(ROOT_DIR . $folder)) {
+                $this->cli->yellow(
+                    sprintf(
+                        'Notice: Can not find directory "%s". Please check your input parameters.',
+                        ROOT_DIR . $folder
+                    )
+                );
+                $this->cli->dim(sprintf('Path "%s" should be relative to Magento 2 Directory.', $folder));
             }
         }
 
@@ -118,11 +165,14 @@ class Console implements ConsoleInterface
 
     public function printHelp(): void
     {
-        echo "\e[32mHelp\e[30m" . PHP_EOL;
-        echo 'Tool to check integrity of declared dependencies in composer.json and etc/module.xml. Usage:' . PHP_EOL;
-        echo 'php bin/dependencies [Magento2 root] {folder1} {folder2}' . PHP_EOL;
-        echo '[Magento2 root] - path to Magento 2 project root directory.' . PHP_EOL;
-        echo '{folder1} {folder2} - list of folders to scan, separated by space. ';
-        echo 'If not provided, scan will be run for "src" and "app".' . PHP_EOL;
+        $this->cli->yellow()->bold('Help')->br();
+        $this->cli->usage();
+    }
+
+    private function parseArguments(): void
+    {
+        $argv = $_SERVER['argv'];
+        $argv[2] = implode(' ', array_unique(array_slice($argv, 2)));
+        $this->cli->arguments->parse($argv);
     }
 }
