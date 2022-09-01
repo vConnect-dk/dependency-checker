@@ -98,17 +98,17 @@ class Console implements ConsoleInterface
      */
     private function printComposerMissedDependencies(array $missedDependencies): void
     {
-        $this->cli->out('Missed dependencies in composer.json');
+        $this->cli->backgroundRed('Missed dependencies in composer.json');
         if ($missedDependencies[DependencyInterface::TYPE_SOFT]) {
-            $this->cli->out('Suggest:');
+            $this->cli->bold()->yellow('Suggest:');
             foreach ($missedDependencies[DependencyInterface::TYPE_SOFT] as $suggest) {
-                $this->cli->tab()->out(sprintf('- "%s": "*"', $suggest));
+                $this->cli->tab()->out(sprintf('"%s": "[Some Suggested Dependency Description]",', $suggest));
             }
         }
         if ($missedDependencies[DependencyInterface::TYPE_HARD]) {
-            $this->cli->out('Require:');
+            $this->cli->bold()->yellow('Require:');
             foreach ($missedDependencies[DependencyInterface::TYPE_HARD] as $require) {
-                $this->cli->tab()->out(sprintf('- "%s": "*"', $require));
+                $this->cli->tab()->out(sprintf('"%s": "*",', $require));
             }
         }
         $this->cli->br();

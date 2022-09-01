@@ -3,10 +3,9 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
-use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
+use Vconnect\IntegrityChecker\Domain\Package;
 
 class XmlConfigFiles implements DependenciesScannerInterface
 {
@@ -54,33 +53,27 @@ class XmlConfigFiles implements DependenciesScannerInterface
      */
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
-        $collectedDependencies = [];
+        $scannerResult = new ScannerResult();
         if ($package->getXmlFilesDomDocuments()) {
-            $collectedDependencies[DependencyInterface::TYPE_SOFT] = $this->xmlFileAnalysis->analyze(
-                $package->getXmlFilesDomDocuments(),
-                $package->getPackageNamespaces(),
-                self::NODE_MAP_SOFT_DEPENDENCY
+            $scannerResult->setSoftDependencies(
+                array_unique(
+                    $this->xmlFileAnalysis->analyze(
+                        $package->getXmlFilesDomDocuments(),
+                        $package->getPackageNamespaces(),
+                        self::NODE_MAP_SOFT_DEPENDENCY
+                    )
+                )
             );
-            $collectedDependencies[DependencyInterface::TYPE_HARD] = $this->xmlFileAnalysis->analyze(
-                $package->getXmlFilesDomDocuments(),
-                $package->getPackageNamespaces(),
-                self::NODE_MAP_HARD_DEPENDENCY
+            $scannerResult->setHardDependencies(
+                array_unique(
+                    $this->xmlFileAnalysis->analyze(
+                        $package->getXmlFilesDomDocuments(),
+                        $package->getPackageNamespaces(),
+                        self::NODE_MAP_HARD_DEPENDENCY
+                    )
+                )
             );
         }
-
-        return $this->setUpScannerResult($collectedDependencies);
-    }
-
-    /**
-     * @param array $collectedDependencies
-     * @return ScannerResult
-     */
-    private function setUpScannerResult(array $collectedDependencies): ScannerResultInterface
-    {
-        $scannerResult = new ScannerResult();
-
-        $scannerResult->setSoftDependencies(array_unique($collectedDependencies[DependencyInterface::TYPE_SOFT]));
-        $scannerResult->setHardDependencies(array_unique($collectedDependencies[DependencyInterface::TYPE_HARD]));
 
         return $scannerResult;
     }
