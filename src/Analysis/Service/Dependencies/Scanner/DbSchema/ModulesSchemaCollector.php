@@ -9,14 +9,32 @@ use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
 
 class ModulesSchemaCollector
 {
-    private const FILE_MASK = ['db_schema.xml'];
+    private const FILE_PATH = 'etc/db_schema.xml';
 
     /** @var array<string, string> */
     private ?array $schemaModuleRelationsMap = null;
+    private Converter $converter;
+
+    public function __construct()
+    {
+        $this->converter = new Converter();
+    }
 
     public function getSchemaOwnerPackageName(string $schema): ?string
     {
         return $this->getMap()[$schema] ?? null;
+    }
+
+    public function getPackageSchema(Package $package): ?array
+    {
+        $dbSchemaFile = $package->getFile(self::FILE_PATH);
+        if (!$dbSchemaFile->isReadable()) {
+            return null;
+        }
+        $dbSchemaXml = new \DOMDocument();
+        $dbSchemaXml->loadXML($dbSchemaFile->openFile()->fread($dbSchemaFile->getSize()));
+
+        return $this->converter->convert($dbSchemaXml);
     }
 
     /**
@@ -35,13 +53,9 @@ class ModulesSchemaCollector
 
     private function collectRelations(): array
     {
-        $converter = new Converter();
         $relations = [];
         foreach ($this->getAllPackages() as $package) {
-            // TODO: create a method for retrieving a single file?
-            $dbSchemaXml = current($package->getXmlFilesDomDocuments(self::FILE_MASK));
-            if ($dbSchemaXml) {
-                $schema = $converter->convert($dbSchemaXml);
+            if ($schema = $this->getPackageSchema($package)) {
                 foreach ($schema['table'] as $tableName => $tableDefinition) {
                     if ($this->isPrimaryTableDefinition($tableDefinition)) {
                         $relations[$tableName] = $package->getPackageName();

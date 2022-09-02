@@ -20,7 +20,7 @@ class DbSchema implements DependenciesScannerInterface
     }
 
     /**
-     * Search for dependencies in .xml inside the module directory.
+     * Search for dependencies in db_schema.xml
      *
      * @param Package $package
      *
@@ -29,10 +29,59 @@ class DbSchema implements DependenciesScannerInterface
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
         $scannerResult = new ScannerResult();
-        // TODO
-        // parse package db_schema.xml
-        // get refferenced tables using $this->schemaCollector->getSchemaOwnerPackageName("sometable");
-        // submit dependencies to ScannerResult
+
+        if ($schema = $this->schemaCollector->getPackageSchema($package)) {
+            $soft = $hard = [];
+            foreach ($schema['table'] as $table) {
+                $soft += $this->getSoftSchemaDependencies($table);
+                $hard += $this->getHardSchemaDependencies($table);
+            }
+
+            $excludeItself = fn (string $packageName) => $packageName != $package->getPackageName();
+
+            $soft = array_filter($soft, $excludeItself);
+            $hard = array_filter($hard, $excludeItself);
+
+            $scannerResult->setSoftDependencies(array_unique($soft));
+            $scannerResult->setSoftDependencies(array_unique($hard));
+        }
+
         return $scannerResult;
+    }
+
+    /**
+     * @param array $table
+     *
+     * @return string[]
+     */
+    private function getSoftSchemaDependencies(array $table): array
+    {
+        /* Creating/Updating columns is soft dependency */
+        /* Any table manipulations are soft dependencies until they are hard :) */
+        return [$table['name'] => $this->schemaCollector->getSchemaOwnerPackageName($table['name'])];
+    }
+
+    /**
+     * @param array $table
+     *
+     * @return string[]
+     */
+    private function getHardSchemaDependencies(array $table): array
+    {
+        $hard = [];
+        if (empty($table['constraint'])) {
+            return [];
+        }
+
+        foreach ($table['constraint'] as $constraint) {
+            if ($constraint['type'] == 'foreign') {
+                /* Foreign keys are hard dependencies. */
+                $hard[$constraint['referenceTable']] = $this->schemaCollector->getSchemaOwnerPackageName(
+                    $constraint['referenceTable']
+                );
+            }
+        }
+
+        return $hard;
     }
 }

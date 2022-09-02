@@ -3,9 +3,8 @@
 namespace Vconnect\IntegrityChecker\Domain;
 
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
-use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
+use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 
 class Package
 {
@@ -109,7 +108,7 @@ class Package
     {
         try {
             $namespaces = $this->getComposerJson()->getNamespace();
-            $namespaces = array_map(fn($namespace) => trim($namespace, '\\'), $namespaces);
+            $namespaces = array_map(fn ($namespace) => trim($namespace, '\\'), $namespaces);
         } catch (FileNotFoundException $exception) {
             $namespaces = [];
         }
@@ -219,5 +218,11 @@ class Package
         }
 
         return $this->xmlFilesDomDocument;
+    }
+
+    public function getFile(string $path): \SplFileInfo
+    {
+        $filePath = $this->path . DIRECTORY_SEPARATOR . $path;
+        return new \SplFileInfo($filePath);
     }
 }
