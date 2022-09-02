@@ -38,7 +38,7 @@ class Console implements ConsoleInterface
             self::ARG_FOLDERS => [
                 'description' => 'List of folders to scan, separated by space.' .
                     ' If not provided, scan will be run for <dim>src</dim> and <dim>app</dim>.',
-                'required' => true
+                'required' => false
             ],
             self::ARG_HELP => [
                 'longPrefix' => 'help',

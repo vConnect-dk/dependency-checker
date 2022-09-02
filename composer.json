@@ -7,11 +7,12 @@
         "bin/structure"
     ],
     "require": {
-        "php": ">=7.2.0",
+        "php": ">=7.4.0",
         "ext-json": "*",
         "ext-simplexml": "*",
         "ext-dom": "*",
-        "league/climate": "^3"
+        "league/climate": "^3",
+        "composer/composer": "^2"
     },
     "autoload": {
         "psr-4": {

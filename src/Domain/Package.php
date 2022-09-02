@@ -205,12 +205,12 @@ class Package
         throw new FileNotFoundException('module.xml', $this->path);
     }
 
-    public function getXmlFilesDomDocuments(): ?array
+    public function getXmlFilesDomDocuments(array $fileMasks = self::XML_FILE_MASKS): ?array
     {
         if (!isset($this->xmlFilesDomDocument)) {
             $this->xmlFilesDomDocument = [];
             foreach ($this->getPackageFiles() as $file) {
-                if (in_array($file->getFilename(), self::XML_FILE_MASKS)) {
+                if (in_array($file->getFilename(), $fileMasks)) {
                     $dom = new \DOMDocument();
                     $dom->loadXML(\file_get_contents($file->getPathname()));
                     $this->xmlFilesDomDocument[$file->getFilename()] = $dom;

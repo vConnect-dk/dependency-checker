@@ -5,7 +5,7 @@ use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies;
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
 use Vconnect\IntegrityChecker\Application\Dependencies\Console;
-use Vconnect\IntegrityChecker\Domain\Scanner\PackagesProvider;
+use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
 
 function exception_error_handler($severity, $message, $file, $line) {
     if (!(error_reporting() & $severity)) {
@@ -36,8 +36,8 @@ if (empty($directories)) {
     $directories = [DefaultAnalysisFolders::APP, DefaultAnalysisFolders::SRC];
 }
 
-$scanner = new PackagesProvider();
-$packages = $scanner->getPackages($directories);
+$scanner = new FileSystemPackagesProvider();
+$packages = $scanner->getPackagesRecursively($directories);
 
 $analyzer = new Dependencies();
 

@@ -4,7 +4,7 @@ namespace Vconnect\IntegrityChecker\Domain\Scanner;
 
 use Vconnect\IntegrityChecker\Domain\Package;
 
-class PackagesProvider
+class FileSystemPackagesProvider
 {
     /**
      * Get files according to paths.
@@ -15,12 +15,12 @@ class PackagesProvider
      *
      * @return \Generator
      */
-    public function getPackages(array $paths, ?callable $filter = null, string $fileMask = '/composer\\.json/'): \Generator
+    public function getPackagesRecursively(array $paths, ?callable $filter = null, string $fileMask = '/composer\\.json/'): \Generator
     {
         $collectedPaths = [];
         $paths = array_unique($paths);
         foreach ($paths as $path) {
-            if (is_dir(ROOT_DIR . $path)){
+            if (is_dir(ROOT_DIR . $path)) {
                 $collectedPaths[] = $this->getMatchedFilesFolders(ROOT_DIR . $path, $fileMask, $filter);
             }
         }
@@ -28,6 +28,23 @@ class PackagesProvider
         $uniquePackages = array_unique(array_merge([], ...$collectedPaths));
 
         foreach ($uniquePackages as $packagePath) {
+            yield new Package($packagePath);
+        }
+    }
+
+    public function getPackagesByDirectPath(array $paths, string $rootPackageFileName = 'composer.json'): \Generator
+    {
+        $collectedPaths = [];
+        $paths = array_unique($paths);
+        foreach ($paths as $path) {
+            /* @phpstan-ignore-next-line */
+            $file = new \SplFileInfo(ROOT_DIR . $path . DIRECTORY_SEPARATOR . $rootPackageFileName);
+            if ($file->isFile()) {
+                $collectedPaths[] = $file->getPath();
+            }
+        }
+
+        foreach (array_unique($collectedPaths) as $packagePath) {
             yield new Package($packagePath);
         }
     }
@@ -52,6 +69,6 @@ class PackagesProvider
             $matchedFiles = array_filter($matchedFiles, $filter);
         }
 
-        return array_map(fn(\SplFileInfo $file) => $file->getPath(), $matchedFiles);
+        return array_map(fn (\SplFileInfo $file) => $file->getPath(), $matchedFiles);
     }
 }
