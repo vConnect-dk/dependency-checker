@@ -53,18 +53,23 @@ class ModulesSchemaCollector
 
     private function collectRelations(): array
     {
-        $relations = [];
+        $candidates = [];
         foreach ($this->getAllPackages() as $package) {
             if ($schema = $this->getPackageSchema($package)) {
                 foreach ($schema['table'] as $tableName => $tableDefinition) {
-                    if ($this->isPrimaryTableDefinition($tableDefinition)) {
-                        $relations[$tableName] = $package->getPackageName();
-                    }
+                    $allTables[$tableName] = $tableName;
+                    $this->collectOwnerCandidates(
+                        $candidates,
+                        $tableName,
+                        $tableDefinition,
+                        $package->getPackageName()
+                    );
                 }
             }
         }
+        array_walk($candidates, fn(array &$candidate) => ksort($candidate));
 
-        return $relations;
+        return array_map(fn(array $candidates): string => current($candidates), $candidates);
     }
 
     /**
@@ -91,16 +96,58 @@ class ModulesSchemaCollector
     }
 
     /**
+     * Collect candidates to be owner of that table.
+     *
+     * @param array $candidates
+     * @param string $tableName
+     * @param array $tableDefinition
+     * @param string $packageName
+     *
+     * @return void
+     */
+    private function collectOwnerCandidates(
+        array &$candidates,
+        string $tableName,
+        array $tableDefinition,
+        string $packageName
+    ): void {
+        $tableCandidates = $candidates[$tableName] ?? [];
+        foreach ($this->getTableOwnerCandidatesPriorityRules() as $priority => $rule) {
+            if ($rule($tableDefinition)) {
+                $tableCandidates[$priority] = $packageName;
+                break;
+            }
+        }
+        $candidates[$tableName] = $tableCandidates;
+    }
+
+    /**
+     * @return callable[]
+     */
+    private function getTableOwnerCandidatesPriorityRules(): array
+    {
+        return [
+            0 => [$this, 'hasResourceAndPrimaryKey'],
+            1 => [$this, 'hasPrimaryKey'],
+            2 => [$this, 'hasResource'],
+            3 => [$this, 'hasConstraint'],
+            4 => [$this, 'hasIndex'],
+            5 => fn(array $tableDefinition) => true
+        ];
+    }
+
+    /**
      * Try to define if table definition looks like a primary table declaration.
-     * Typically, you always define table resouce and primary key when you create it - so they are 2 main criteria.
+     * Typically, you often define table resource and primary key when you create it - so they are 2 main criteria to
+     * be first priority
      *
      * @param array $tableDefinition
      *
      * @return bool
      */
-    private function isPrimaryTableDefinition(array $tableDefinition): bool
+    private function hasResourceAndPrimaryKey(array $tableDefinition): bool
     {
-        return !empty($tableDefinition['resource']) && $this->hasPrimaryKey($tableDefinition);
+        return $this->hasResource($tableDefinition) && $this->hasPrimaryKey($tableDefinition);
     }
 
     private function hasPrimaryKey(array $tableDefinition): bool
@@ -112,5 +159,20 @@ class ModulesSchemaCollector
         }
 
         return false;
+    }
+
+    private function hasResource(array $tableDefinition): bool
+    {
+        return !empty($tableDefinition['resource']);
+    }
+
+    private function hasConstraint(array $tableDefinition): bool
+    {
+        return !empty($tableDefinition['constraint']);
+    }
+
+    private function hasIndex(array $tableDefinition): bool
+    {
+        return !empty($tableDefinition['index']);
     }
 }
