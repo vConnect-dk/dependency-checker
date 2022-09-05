@@ -14,6 +14,7 @@ class ModulesSchemaCollector
     /** @var array<string, string> */
     private ?array $schemaModuleRelationsMap = null;
     private Converter $converter;
+    private array $schemaCache = [];
 
     public function __construct()
     {
@@ -27,14 +28,12 @@ class ModulesSchemaCollector
 
     public function getPackageSchema(Package $package): ?array
     {
-        $dbSchemaFile = $package->getFile(self::FILE_PATH);
-        if (!$dbSchemaFile->isReadable()) {
-            return null;
+        $cacheKey = $package->getPackageName();
+        if (!isset($this->schemaCache[$cacheKey])) {
+            $this->schemaCache[$cacheKey] = $this->loadPackageSchema($package) ?: false;
         }
-        $dbSchemaXml = new \DOMDocument();
-        $dbSchemaXml->loadXML($dbSchemaFile->openFile()->fread($dbSchemaFile->getSize()));
 
-        return $this->converter->convert($dbSchemaXml);
+        return $this->schemaCache[$cacheKey] ?: null;
     }
 
     /**
@@ -174,5 +173,22 @@ class ModulesSchemaCollector
     private function hasIndex(array $tableDefinition): bool
     {
         return !empty($tableDefinition['index']);
+    }
+
+    /**
+     * @param Package $package
+     *
+     * @return array|null
+     */
+    private function loadPackageSchema(Package $package): ?array
+    {
+        $dbSchemaFile = $package->getFile(self::FILE_PATH);
+        if (!$dbSchemaFile->isReadable()) {
+            return null;
+        }
+        $dbSchemaXml = new \DOMDocument();
+        $dbSchemaXml->loadXML($dbSchemaFile->openFile()->fread($dbSchemaFile->getSize()));
+
+         return $this->converter->convert($dbSchemaXml);
     }
 }
