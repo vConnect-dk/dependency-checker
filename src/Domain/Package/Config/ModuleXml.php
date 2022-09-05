@@ -75,7 +75,7 @@ class ModuleXml
         $this->content['module']['sequence'] = [];
 
         foreach ($content->module->sequence->children() as $module) {
-            $this->content['module']['sequence'][] = (string)current(current($module->attributes()));
+            $this->content['module']['sequence'][] = (string)$module->attributes()->name;
         }
     }
 }
