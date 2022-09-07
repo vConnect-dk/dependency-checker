@@ -1,16 +1,18 @@
 {
     "name": "vconnect/integrity-checker",
     "type": "project",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "bin": [
         "bin/dependencies",
         "bin/structure"
     ],
     "require": {
-        "php": ">=7.2.0",
+        "php": ">=7.4.0",
         "ext-json": "*",
         "ext-simplexml": "*",
-        "ext-dom": "*"
+        "ext-dom": "*",
+        "league/climate": "^3",
+        "composer/composer": "^2"
     },
     "autoload": {
         "psr-4": {

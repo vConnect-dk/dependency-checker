@@ -9,7 +9,7 @@ class ScannerResult implements ScannerResultInterface
     private array $hardDependencies = [];
 
     /**
-     * @param array $dependencies
+     * @param string[] $dependencies
      * @return void
      */
     public function setSoftDependencies(array $dependencies): void
@@ -18,7 +18,7 @@ class ScannerResult implements ScannerResultInterface
     }
 
     /**
-     * @param array $dependencies
+     * @param string[] $dependencies
      * @return void
      */
     public function setHardDependencies(array $dependencies): void
@@ -27,7 +27,7 @@ class ScannerResult implements ScannerResultInterface
     }
 
     /**
-     * @return array
+     * @return string[]
      */
     public function getSoftDependencies(): array
     {
@@ -35,7 +35,7 @@ class ScannerResult implements ScannerResultInterface
     }
 
     /**
-     * @return array
+     * @return string[]
      */
     public function getHardDependencies(): array
     {

@@ -11,7 +11,7 @@ class XmlFileAnalysis
      * @param \DOMDocument[] $xmlFilesDomDocuments
      * @param array $currentModuleNamespaces
      * @param array $nodeMap
-     * @return array
+     * @return string[]
      */
     public function analyze(array $xmlFilesDomDocuments, array $currentModuleNamespaces, array $nodeMap): array
     {

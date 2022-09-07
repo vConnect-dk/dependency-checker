@@ -1,0 +1,87 @@
+<?php
+declare(strict_types=1);
+
+namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
+
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbSchema\ModulesSchemaCollector;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
+use Vconnect\IntegrityChecker\Domain\Package;
+
+class DbSchema implements DependenciesScannerInterface
+{
+    private XmlFileAnalysis $xmlFileAnalysis;
+    private ModulesSchemaCollector $schemaCollector;
+
+    public function __construct()
+    {
+        $this->xmlFileAnalysis = new XmlFileAnalysis();
+        $this->schemaCollector = new ModulesSchemaCollector();
+    }
+
+    /**
+     * Search for dependencies in db_schema.xml
+     *
+     * @param Package $package
+     *
+     * @return ScannerResultInterface - list of packages founded as dependencies inside package's files.
+     */
+    public function lookupDependencies(Package $package): ScannerResultInterface
+    {
+        $scannerResult = new ScannerResult();
+
+        if ($schema = $this->schemaCollector->getPackageSchema($package)) {
+            $soft = $hard = [];
+            foreach ($schema['table'] as $table) {
+                $soft += $this->getSoftSchemaDependencies($table);
+                $hard += $this->getHardSchemaDependencies($table);
+            }
+
+            $excludeItself = fn (string $packageName) => $packageName != $package->getPackageName();
+
+            $soft = array_filter($soft, $excludeItself);
+            $hard = array_filter($hard, $excludeItself);
+
+            $scannerResult->setSoftDependencies(array_unique($soft));
+            $scannerResult->setSoftDependencies(array_unique($hard));
+        }
+
+        return $scannerResult;
+    }
+
+    /**
+     * @param array $table
+     *
+     * @return string[]
+     */
+    private function getSoftSchemaDependencies(array $table): array
+    {
+        /* Creating/Updating columns is soft dependency */
+        /* Any table manipulations are soft dependencies until they are hard :) */
+        return [$table['name'] => $this->schemaCollector->getSchemaOwnerPackageName($table['name'])];
+    }
+
+    /**
+     * @param array $table
+     *
+     * @return string[]
+     */
+    private function getHardSchemaDependencies(array $table): array
+    {
+        $hard = [];
+        if (empty($table['constraint'])) {
+            return [];
+        }
+
+        foreach ($table['constraint'] as $constraint) {
+            if ($constraint['type'] == 'foreign') {
+                /* Foreign keys are hard dependencies. */
+                $hard[$constraint['referenceTable']] = $this->schemaCollector->getSchemaOwnerPackageName(
+                    $constraint['referenceTable']
+                );
+            }
+        }
+
+        return $hard;
+    }
+}
