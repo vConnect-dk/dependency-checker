@@ -3,9 +3,8 @@
 namespace Vconnect\IntegrityChecker\Domain;
 
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
-use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
+use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 
 class Package
 {
@@ -109,7 +108,7 @@ class Package
     {
         try {
             $namespaces = $this->getComposerJson()->getNamespace();
-            $namespaces = array_map(fn($namespace) => trim($namespace, '\\'), $namespaces);
+            $namespaces = array_map(fn ($namespace) => trim($namespace, '\\'), $namespaces);
         } catch (FileNotFoundException $exception) {
             $namespaces = [];
         }
@@ -205,12 +204,12 @@ class Package
         throw new FileNotFoundException('module.xml', $this->path);
     }
 
-    public function getXmlFilesDomDocuments(): ?array
+    public function getXmlFilesDomDocuments(array $fileMasks = self::XML_FILE_MASKS): ?array
     {
         if (!isset($this->xmlFilesDomDocument)) {
             $this->xmlFilesDomDocument = [];
             foreach ($this->getPackageFiles() as $file) {
-                if (in_array($file->getFilename(), self::XML_FILE_MASKS)) {
+                if (in_array($file->getFilename(), $fileMasks)) {
                     $dom = new \DOMDocument();
                     $dom->loadXML(\file_get_contents($file->getPathname()));
                     $this->xmlFilesDomDocument[$file->getFilename()] = $dom;
@@ -219,5 +218,11 @@ class Package
         }
 
         return $this->xmlFilesDomDocument;
+    }
+
+    public function getFile(string $path): \SplFileInfo
+    {
+        $filePath = $this->path . DIRECTORY_SEPARATOR . $path;
+        return new \SplFileInfo($filePath);
     }
 }

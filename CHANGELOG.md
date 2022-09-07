@@ -1,3 +1,10 @@
+2.1.0
+=============
+* Beautified console output, enhanced `--help` command, replaced console interaction logic with `league/climate` library 
+* Implemented db_schema.xml dependency checker
+* Use `composer/composer` library for parsing `composer.lock` file
+* Some minor refactoring
+
 2.0.0
 =============
 * Implemented the logic of separating dependencies on 'require' and 'suggest';

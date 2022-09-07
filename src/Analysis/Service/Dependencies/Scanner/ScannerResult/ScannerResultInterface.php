@@ -6,25 +6,24 @@ namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\Scanne
 interface ScannerResultInterface
 {
     /**
-     * @param array $dependencies
+     * @param string[] $dependencies
      * @return void
      */
     public function setSoftDependencies(array $dependencies): void;
 
     /**
-     * @param array $dependencies
+     * @param string[] $dependencies
      * @return void
      */
     public function setHardDependencies(array $dependencies): void;
 
     /**
-     * @return array
+     * @return string[]
      */
     public function getSoftDependencies(): array;
 
     /**
-     * @return array
+     * @return string[]
      */
     public function getHardDependencies(): array;
-
 }

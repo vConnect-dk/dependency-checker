@@ -62,12 +62,12 @@ class Console implements ConsoleInterface
         $argv = array_unique($_SERVER['argv']);
 
         if ($argc < 2) {
-            echo "\e[31mExpected first parameter as Magento 2 Root Directory.\e[30m" . PHP_EOL;
+            echo "\e[31mExpected first parameter as Magento 2 Root Directory.\e[39m" . PHP_EOL;
             return false;
         }
 
         if (!is_file($argv[1] . DIRECTORY_SEPARATOR . 'composer.lock')) {
-            echo "\e[31m\"composer.lock\" file was not found in Magento 2 Directory.\e[30m" . PHP_EOL;
+            echo "\e[31m\"composer.lock\" file was not found in Magento 2 Directory.\e[39m" . PHP_EOL;
             return false;
         }
 
@@ -87,7 +87,7 @@ class Console implements ConsoleInterface
 
     public function printHelp(): void
     {
-        echo "\e[32mHelp\e[30m" . PHP_EOL;
+        echo "\e[32mHelp\e[39m" . PHP_EOL;
         echo 'Tool to check if modules are follow to standard module structure. Usage:' . PHP_EOL;
         echo 'php bin/structure [Magento2 root] {folder1} {folder2}' . PHP_EOL;
         echo '[Magento2 root] - path to Magento 2 project root directory.' . PHP_EOL;

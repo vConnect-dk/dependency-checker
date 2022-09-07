@@ -6,7 +6,7 @@ use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultPackageStructure;
 use Vconnect\IntegrityChecker\Analysis\Service\Structure;
 use Vconnect\IntegrityChecker\Application\Structure\Console;
-use Vconnect\IntegrityChecker\Domain\Scanner\PackagesProvider;
+use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
 
 function exception_error_handler($severity, $message, $file, $line) {
     if (!(error_reporting() & $severity)) {
@@ -38,13 +38,13 @@ if (empty($directories)) {
 }
 
 $analyzer = new Structure(DefaultPackageStructure::STRUCTURE);
-$scanner = new PackagesProvider();
+$scanner = new FileSystemPackagesProvider();
 
 $filter = function (SplFileInfo $fileInfo) {
     return (bool)preg_match('/ComponentRegistrar::MODULE/', php_strip_whitespace($fileInfo->getPathname()));
 };
 
-$packages = $scanner->getPackages($directories, $filter, '/registration\\.php/');
+$packages = $scanner->getPackagesRecursively($directories, $filter, '/registration\\.php/');
 
 /** @var ResultInterface $result */
 foreach ($analyzer->analyse($packages) as $result) {

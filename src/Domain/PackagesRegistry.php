@@ -2,21 +2,40 @@
 
 namespace Vconnect\IntegrityChecker\Domain;
 
+use Composer\Factory;
+use Composer\IO\BufferIO;
+use Composer\Package\BasePackage;
+use Composer\Repository\LockArrayRepository;
+
 class PackagesRegistry
 {
-    private array $packages = [];
-
+    public const MAGENTO_MODULE_PACKAGE_TYPE = 'magento2-module';
+    private array $packagesNamespaceMap = [];
     private array $packagesTypes = [];
-
     private static ?PackagesRegistry $instance = null;
+    private LockArrayRepository $composerLockRepo;
 
     private function __construct()
     {
-        $this->parseComposerLock();
+        $composer = Factory::create(
+            new BufferIO(),
+            ROOT_DIR . 'composer.json'
+        );
+
+        $this->composerLockRepo = $composer->getLocker()->getLockedRepository();
+        $this->savePackagesMapToRuntimeCache();
     }
 
     private function __clone()
     {
+    }
+
+    /**
+     * @return BasePackage[]
+     */
+    public function getAllComposerLockPackages(): array
+    {
+        return $this->composerLockRepo->getPackages();
     }
 
     /**
@@ -45,9 +64,9 @@ class PackagesRegistry
         $parts = explode('\\', $namespace);
 
         for ($i = count($parts); $i >= 1; $i--) {
-                $namespace = implode('\\', array_slice($parts, 0, $i));
-            if (isset($this->packages[$namespace])) {
-                return $this->packages[$namespace];
+            $namespace = implode('\\', array_slice($parts, 0, $i));
+            if (isset($this->packagesNamespaceMap[$namespace])) {
+                return $this->packagesNamespaceMap[$namespace];
             }
         }
 
@@ -61,32 +80,25 @@ class PackagesRegistry
 
     public function getAllProjectNamespaces(): array
     {
-        return array_keys($this->packages);
+        return array_keys($this->packagesNamespaceMap);
     }
 
     /**
-     * Parse composer.lock file to discover information about packages on the project.
+     * Walk through all the composer.lock packages and save their types and namespaces
      */
-    private function parseComposerLock(): void
+    private function savePackagesMapToRuntimeCache(): void
     {
-        $lockFile = ROOT_DIR . 'composer.lock';
-        if (!is_file($lockFile)) {
-            return;
-        }
-
-        $json = file_get_contents($lockFile);
-        $json = json_decode($json, true);
-
-        foreach ($json['packages'] as $package) {
-            if (!isset($package['autoload']['psr-4'])) {
+        $packages = $this->getAllComposerLockPackages();
+        foreach ($packages as $package) {
+            if (!isset($package->getAutoload()['psr-4'])) {
                 continue;
             }
 
-            $this->packagesTypes[$package['name']] = $package['type'] ?? 'unknown';
+            $this->packagesTypes[$package->getName()] = $package->getType();
 
-            $namespaces = array_keys($package['autoload']['psr-4']);
+            $namespaces = array_keys($package->getAutoload()['psr-4']);
             foreach ($namespaces as $namespace) {
-                $this->packages[trim($namespace, '\\')] = $package['name'];
+                $this->packagesNamespaceMap[trim($namespace, '\\')] = $package->getName();
             }
         }
     }
