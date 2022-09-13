@@ -204,6 +204,13 @@ class Package
         throw new FileNotFoundException('module.xml', $this->path);
     }
 
+    /**
+     * Load .xml config files.
+     *
+     * @param array $fileMasks - specify files for loading
+     *
+     * @return array|null
+     */
     public function getXmlFilesDomDocuments(array $fileMasks = self::XML_FILE_MASKS): ?array
     {
         if (!isset($this->xmlFilesDomDocument)) {
@@ -212,7 +219,7 @@ class Package
                 if (in_array($file->getFilename(), $fileMasks)) {
                     $dom = new \DOMDocument();
                     $dom->loadXML(\file_get_contents($file->getPathname()));
-                    $this->xmlFilesDomDocument[$file->getFilename()] = $dom;
+                    $this->xmlFilesDomDocument[$file->getFilename()][] = $dom;
                 }
             }
         }
