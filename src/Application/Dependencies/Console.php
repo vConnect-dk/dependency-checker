@@ -82,7 +82,7 @@ class Console implements ConsoleInterface
      */
     private function printModuleXmlMissedDependencies(array $missedDependencies): void
     {
-        $this->cli->out('Missed dependencies in etc/module.xml');
+        $this->cli->backgroundRed('Missed dependencies in etc/module.xml');
 
         foreach ($missedDependencies as $packageNamespace) {
             $this->cli->tab()->out(sprintf('<module name="%s"/>', str_replace('\\', '_', $packageNamespace)));
