@@ -164,11 +164,8 @@ class Dependencies implements AnalyzerInterface
     private function deleteRedundantSoftDeps(array $collectedSoftDeps, array $composerHardDeps): array
     {
         return array_filter(
-            array_map(
-                fn (string $softDependency) => !in_array($softDependency, $composerHardDeps) ?
-                    $softDependency : null,
-                $collectedSoftDeps
-            )
+            $collectedSoftDeps,
+            fn(string $softDependency) => !in_array($softDependency, $composerHardDeps)
         );
     }
 }
