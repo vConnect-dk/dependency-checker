@@ -47,7 +47,7 @@ class Json
     }
 
     /**
-     * Get psr-4 package namespaces. Some packages could declare more then one namespace.
+     * Get psr-4 package namespaces. Some packages could declare more than one namespace.
      *
      * @return array
      */

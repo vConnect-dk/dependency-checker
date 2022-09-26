@@ -14,6 +14,7 @@ class Package
     private ?Json $composerJson = null;
     private ?ModuleXml $moduleXml = null;
     private ?array $xmlFilesDomDocument = null;
+    private ?array $pluginMap = null;
 
     /**
      * @param string $path
@@ -227,9 +228,62 @@ class Package
         return $this->xmlFilesDomDocument;
     }
 
+    /**
+     * @return array
+     */
+    public function getPluginMap(): array
+    {
+        if (!isset($this->pluginMap)) {
+            $this->pluginMap = [];
+            $diDomDocuments = $this->getXmlFilesDomDocuments()['di.xml'] ?? [];
+            if ($diDomDocuments) {
+                foreach ($diDomDocuments as $dom) {
+                    $typeNodes = $dom->getElementsByTagName('type');
+                    /** @var \DOMElement $type */
+                    foreach ($typeNodes as $type) {
+                        /** @var \DOMElement $plugin */
+                        foreach ($type->getElementsByTagName('plugin') as $plugin) {
+                            $subject = trim($type->getAttribute('name'), '\\');
+                            $pluginType = trim($plugin->getAttribute('type'), '\\');
+                            $this->pluginMap[$pluginType] = $subject;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $this->pluginMap;
+    }
+
+    /**
+     * @param string $path
+     *
+     * @return \SplFileInfo
+     */
     public function getFile(string $path): \SplFileInfo
     {
         $filePath = $this->path . DIRECTORY_SEPARATOR . $path;
         return new \SplFileInfo($filePath);
+    }
+
+    /**
+     * Resolve class references by path
+     *
+     * @param string $filePath
+     * @return array
+     */
+    public function getClassReferencesByPath(string $filePath): array
+    {
+        $result = [];
+
+        foreach ($this->getPackageNamespaces() as $namespace) {
+            $className = trim(
+                str_replace($this->getPackagePath(), $namespace, $filePath),
+                '.php'
+            );
+            $result[] = str_replace('/', '\\', $className);
+    }
+
+        return $result;
     }
 }

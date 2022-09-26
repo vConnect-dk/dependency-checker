@@ -27,14 +27,59 @@ class PhpFiles implements DependenciesScannerInterface
      */
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
-        $collectedDependencies = [];
         $scannerResult = new ScannerResult();
+
         foreach ($package->getPackageFiles() as $file) {
             if (\in_array($file->getFileInfo()->getExtension(), self::FILE_MASKS)) {
-                $collectedDependencies[] = $this->regExpFileAnalysis->analyzeFile($file, $package->getPackageNamespaces());
+                $collectedDependencies = array_unique(
+                    $this->regExpFileAnalysis->analyzeFile(
+                        $file,
+                        $package->getPackageNamespaces()
+                    )
+                );
+                $scannerResult = $this->determineDependencies(
+                    $package,
+                    $file,
+                    array_unique($collectedDependencies),
+                    $scannerResult
+                );
             }
         }
-        $scannerResult->setHardDependencies(array_unique(array_merge([], ...$collectedDependencies)));
+
+        return $scannerResult;
+    }
+
+    /**
+     * Determine dependencies from plugin class
+     *
+     * @param Package $package
+     * @param \SplFileInfo $file
+     * @param array $collectedDependencies
+     * @param ScannerResult $scannerResult
+     *
+     * @return ScannerResult
+     */
+    private function determineDependencies(
+        Package $package,
+        \SplFileInfo $file,
+        array $collectedDependencies,
+        ScannerResult $scannerResult
+    ): ScannerResult {
+        $classReferences = $package->getClassReferencesByPath($file->getPathname());
+        $pluginMap = $package->getPluginMap();
+
+        foreach ($classReferences as $classReference) {
+            if (array_key_exists($classReference, $pluginMap)) {
+                foreach ($collectedDependencies as $i => $dependency) {
+                    if (strpos($pluginMap[$classReference], $dependency) === 0) {
+                        $scannerResult->setSoftDependencies([$dependency]);
+                        unset($collectedDependencies[$i]);
+                    }
+                }
+                break;
+            }
+        }
+        $scannerResult->setHardDependencies($collectedDependencies);
 
         return $scannerResult;
     }
