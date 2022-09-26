@@ -112,17 +112,18 @@ class Dependencies implements AnalyzerInterface
      */
     private function compareComposerDependencies(Package $package, Dependency $dependencies): array
     {
-        $dependenciesPackages[DependencyInterface::TYPE_SOFT] =
-            $this->getPackageNameByNamespace($dependencies->getSoftDependencies());
-        $dependenciesPackages[DependencyInterface::TYPE_HARD] =
-            $this->getPackageNameByNamespace($dependencies->getHardDependencies());
-
         try {
             $composerDeps[DependencyInterface::TYPE_HARD] = $package->getComposerRequirePackages();
             $composerDeps[DependencyInterface::TYPE_SOFT] = $package->getComposerSuggestPackages();
         } catch (FileNotFoundException $exception) {
             $composerDeps = [];
         }
+        $dependenciesPackages[DependencyInterface::TYPE_SOFT] = $this->deleteRedundantSoftDeps(
+            $this->getPackageNameByNamespace($dependencies->getSoftDependencies()),
+            $composerDeps[DependencyInterface::TYPE_HARD]
+        );
+        $dependenciesPackages[DependencyInterface::TYPE_HARD] =
+            $this->getPackageNameByNamespace($dependencies->getHardDependencies());
 
         $result[DependencyInterface::TYPE_SOFT] = array_diff(
             $dependenciesPackages[DependencyInterface::TYPE_SOFT],
@@ -148,6 +149,23 @@ class Dependencies implements AnalyzerInterface
                 fn (string $namespace) => $this->packagesRegistry->getPackageNameByNamespace($namespace),
                 $dependency
             )
+        );
+    }
+
+    /**
+     * Check if found dependency is already defined in require section in composer.json
+     * and delete it from soft dependencies array if so
+     *
+     * @param array $collectedSoftDeps
+     * @param array $composerHardDeps
+     *
+     * @return array
+     */
+    private function deleteRedundantSoftDeps(array $collectedSoftDeps, array $composerHardDeps): array
+    {
+        return array_filter(
+            $collectedSoftDeps,
+            fn(string $softDependency) => !in_array($softDependency, $composerHardDeps)
         );
     }
 }

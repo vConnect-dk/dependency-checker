@@ -16,24 +16,26 @@ class XmlFileAnalysis
     public function analyze(array $xmlFilesDomDocuments, array $currentModuleNamespaces, array $nodeMap): array
     {
         $dependencies = [];
-        foreach ($xmlFilesDomDocuments as $dom) {
-            foreach ($nodeMap as $tagName => $attributeNames) {
-                if ($tagName === XmlConfigFiles::TEXT_NODES) {
-                    $dependencies = array_merge(
-                        $this->getDependenciesByTextNodes($dom, $attributeNames, $currentModuleNamespaces),
-                        $dependencies
-                    );
-                    continue;
-                }
-                $nodes = $dom->getElementsByTagName($tagName);
-                /** @var \DOMElement $node */
-                foreach ($nodes as $node) {
-                    foreach ($attributeNames as $attributeName) {
-                        $referenceModule = $this->getModuleNamespace($node->getAttribute($attributeName));
-                        if (!$referenceModule || \in_array($referenceModule, $currentModuleNamespaces)) {
-                            continue;
+        foreach ($xmlFilesDomDocuments as $XmlFileTypeArray) {
+            foreach ($XmlFileTypeArray as $dom) {
+                foreach ($nodeMap as $tagName => $attributeNames) {
+                    if ($tagName === XmlConfigFiles::TEXT_NODES) {
+                        $dependencies = array_merge(
+                            $this->getDependenciesByTextNodes($dom, $attributeNames, $currentModuleNamespaces),
+                            $dependencies
+                        );
+                        continue;
+                    }
+                    $nodes = $dom->getElementsByTagName($tagName);
+                    /** @var \DOMElement $node */
+                    foreach ($nodes as $node) {
+                        foreach ($attributeNames as $attributeName) {
+                            $referenceModule = $this->getModuleNamespace($node->getAttribute($attributeName));
+                            if (!$referenceModule || \in_array($referenceModule, $currentModuleNamespaces)) {
+                                continue;
+                            }
+                            $dependencies[] = $referenceModule;
                         }
-                        $dependencies[] = $referenceModule;
                     }
                 }
             }

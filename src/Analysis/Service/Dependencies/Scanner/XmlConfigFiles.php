@@ -33,7 +33,8 @@ class XmlConfigFiles implements DependenciesScannerInterface
         self::TEXT_NODES => [
             '//*[@xsi:type="object"]',
             './/frontend_model',
-            './/backend_model'
+            './/backend_model',
+            './/source_model'
         ]
     ];
 
