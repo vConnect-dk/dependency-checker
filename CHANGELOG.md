@@ -1,4 +1,4 @@
-2.1.0
+2.2.0
 =============
 * Fixed bug with suggested packages that are already required
 * Fixed bug with loading .xml files from different scopes
