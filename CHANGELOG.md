@@ -1,5 +1,10 @@
 2.1.0
 =============
+* Fixed bug with suggested packages that are already required
+* Fixed bug with loading .xml files from different scopes
+
+2.1.0
+=============
 * Beautified console output, enhanced `--help` command, replaced console interaction logic with `league/climate` library 
 * Implemented db_schema.xml dependency checker
 * Use `composer/composer` library for parsing `composer.lock` file
