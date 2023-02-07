@@ -5,16 +5,15 @@ namespace Vconnect\IntegrityChecker\Domain;
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
 use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
+use Vconnect\IntegrityChecker\Domain\Package\Config\XmlDomDocuments;
 
 class Package
 {
-    private const XML_FILE_MASKS = ['di.xml', 'system.xml', 'extension_attributes.xml'];
     private string $path;
     private ?array $packageFiles = null;
     private ?Json $composerJson = null;
     private ?ModuleXml $moduleXml = null;
-    private ?array $xmlFilesDomDocument = null;
-    private ?array $pluginMap = null;
+    private ?XmlDomDocuments $xmlDomDocuments = null;
 
     /**
      * @param string $path
@@ -206,26 +205,17 @@ class Package
     }
 
     /**
-     * Load .xml config files.
+     * Returns DOM documents of .xml config files.
      *
-     * @param array $fileMasks - specify files for loading
-     *
-     * @return array|null
+     * @return DOMDocument[]
      */
-    public function getXmlFilesDomDocuments(array $fileMasks = self::XML_FILE_MASKS): ?array
+    public function getXmlFilesDomDocuments(): array
     {
-        if (!isset($this->xmlFilesDomDocument)) {
-            $this->xmlFilesDomDocument = [];
-            foreach ($this->getPackageFiles() as $file) {
-                if (in_array($file->getFilename(), $fileMasks)) {
-                    $dom = new \DOMDocument();
-                    $dom->loadXML(\file_get_contents($file->getPathname()));
-                    $this->xmlFilesDomDocument[$file->getFilename()][] = $dom;
-                }
-            }
+        if (!isset($this->xmlDomDocuments)) {
+            $this->xmlDomDocuments = new XmlDomDocuments($this->getPackageFiles());
         }
 
-        return $this->xmlFilesDomDocument;
+        return $this->xmlDomDocuments->getXmlFilesDomDocuments();
     }
 
     /**
@@ -233,26 +223,11 @@ class Package
      */
     public function getPluginMap(): array
     {
-        if (!isset($this->pluginMap)) {
-            $this->pluginMap = [];
-            $diDomDocuments = $this->getXmlFilesDomDocuments()['di.xml'] ?? [];
-            if ($diDomDocuments) {
-                foreach ($diDomDocuments as $dom) {
-                    $typeNodes = $dom->getElementsByTagName('type');
-                    /** @var \DOMElement $type */
-                    foreach ($typeNodes as $type) {
-                        /** @var \DOMElement $plugin */
-                        foreach ($type->getElementsByTagName('plugin') as $plugin) {
-                            $subject = trim($type->getAttribute('name'), '\\');
-                            $pluginType = trim($plugin->getAttribute('type'), '\\');
-                            $this->pluginMap[$pluginType] = $subject;
-                        }
-                    }
-                }
-            }
+        if (!isset($this->xmlDomDocuments)) {
+            $this->xmlDomDocuments = new XmlDomDocuments($this->getPackageFiles());
         }
 
-        return $this->pluginMap;
+        return $this->xmlDomDocuments->getPluginMap();
     }
 
     /**
