@@ -6,6 +6,7 @@ use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
 use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Domain\Package\Config\XmlDomDocuments;
+use Vconnect\IntegrityChecker\Domain\Scanner\FileClassScanner;
 
 class Package
 {
@@ -14,12 +15,14 @@ class Package
     private ?Json $composerJson = null;
     private ?ModuleXml $moduleXml = null;
     private ?XmlDomDocuments $xmlDomDocuments = null;
+    private FileClassScanner $fileClassScanner;
 
     /**
      * @param string $path
      */
     public function __construct(string $path)
     {
+        $this->fileClassScanner = new FileClassScanner();
         $this->path = $path;
     }
 
@@ -242,23 +245,13 @@ class Package
     }
 
     /**
-     * Resolve class references by path
+     * Resolve class reference by path
      *
      * @param string $filePath
-     * @return array
+     * @return string
      */
-    public function getClassReferencesByPath(string $filePath): array
+    public function getClassReferenceByPath(string $filePath): string
     {
-        $result = [];
-
-        foreach ($this->getPackageNamespaces() as $namespace) {
-            $className = trim(
-                str_replace($this->getPackagePath(), $namespace, $filePath),
-                '.php'
-            );
-            $result[] = str_replace('/', '\\', $className);
-    }
-
-        return $result;
+        return $this->fileClassScanner->getClassName($filePath);
     }
 }

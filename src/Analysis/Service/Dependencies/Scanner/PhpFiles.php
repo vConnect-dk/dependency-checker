@@ -65,20 +65,18 @@ class PhpFiles implements DependenciesScannerInterface
         array $collectedDependencies,
         ScannerResult $scannerResult
     ): ScannerResult {
-        $classReferences = $package->getClassReferencesByPath($file->getPathname());
+        $classReference = $package->getClassReferenceByPath($file->getPathname());
         $pluginMap = $package->getPluginMap();
 
-        foreach ($classReferences as $classReference) {
-            if (array_key_exists($classReference, $pluginMap)) {
-                foreach ($collectedDependencies as $i => $dependency) {
-                    if (strpos($pluginMap[$classReference], $dependency) === 0) {
-                        $scannerResult->setSoftDependencies([$dependency]);
-                        unset($collectedDependencies[$i]);
-                    }
+        if (array_key_exists($classReference, $pluginMap)) {
+            foreach ($collectedDependencies as $i => $dependency) {
+                if (strpos($pluginMap[$classReference], $dependency) === 0) {
+                    $scannerResult->setSoftDependencies([$dependency]);
+                    unset($collectedDependencies[$i]);
                 }
-                break;
             }
         }
+
         $scannerResult->setHardDependencies($collectedDependencies);
 
         return $scannerResult;
