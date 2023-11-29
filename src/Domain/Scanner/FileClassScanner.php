@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Scanner;
 
+use Vconnect\IntegrityChecker\Exception\InvalidFileException;
+
 class FileClassScanner
 {
     private const NAMESPACE_TOKENS = [
