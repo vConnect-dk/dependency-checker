@@ -24,6 +24,7 @@ class XmlDomDocuments
      * @param array $fileMasks - specify files for loading
      *
      * @return DOMDocument[]
+     * @TODO consider loading of multiple di.xml files under different areas
      */
     public function getXmlFilesDomDocuments(array $fileMasks = self::XML_FILE_MASKS): array
     {
@@ -43,6 +44,7 @@ class XmlDomDocuments
 
     /**
      * @return array
+     * @TODO Move to separated component, consider load of global di.xml file to the map and fact that plugins can be disabled
      */
     public function getPluginMap(): array
     {

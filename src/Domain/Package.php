@@ -249,6 +249,7 @@ class Package
      *
      * @param string $filePath
      * @return string
+     * @TODO add cache for resolved class names
      */
     public function getClassReferenceByPath(string $filePath): string
     {

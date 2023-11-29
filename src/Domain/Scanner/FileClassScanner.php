@@ -25,7 +25,7 @@ class FileClassScanner
      * @param string $path
      * @return string
      */
-    public function getFileContents(string $path): string
+    private function getFileContents(string $path): string
     {
         $filename = realpath($path);
         // phpcs:ignore

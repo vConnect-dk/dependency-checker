@@ -58,6 +58,7 @@ class PhpFiles implements DependenciesScannerInterface
      * @param ScannerResult $scannerResult
      *
      * @return ScannerResult
+     * @TODO avoid array merge in the loop
      */
     private function determineDependencies(
         Package $package,
