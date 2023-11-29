@@ -12,6 +12,7 @@ class Package
 {
     private string $path;
     private ?array $packageFiles = null;
+    private array $loadedFileClasses = [];
     private ?Json $composerJson = null;
     private ?ModuleXml $moduleXml = null;
     private ?XmlDomDocuments $xmlDomDocuments = null;
@@ -249,10 +250,12 @@ class Package
      *
      * @param string $filePath
      * @return string
-     * @TODO add cache for resolved class names
      */
     public function getClassReferenceByPath(string $filePath): string
     {
-        return $this->fileClassScanner->getClassName($filePath);
+        if (!isset($this->loadedFileClasses[$filePath])) {
+            $this->loadedFileClasses[$filePath] = $this->fileClassScanner->getClassName($filePath);
+        }
+        return $this->loadedFileClasses[$filePath];
     }
 }
