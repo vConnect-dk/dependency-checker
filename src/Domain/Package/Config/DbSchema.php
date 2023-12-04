@@ -1,28 +1,26 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
-namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbSchema;
+namespace Vconnect\IntegrityChecker\Domain\Package\Config;
 
-/**
- * This converter is required for Declaration Filesystem reader:
- *
- * A copy of @see \Magento\Framework\Setup\Declaration\Schema\Config\Converter
- *
- * Allows to convert declarative schema to raw array and add default values
- * for column types and for constraints.
- */
-class Converter
+class DbSchema
 {
+    private array $content = [];
+
+    public function __construct(?\DOMDocument $source = null)
+    {
+        if ($source) {
+            $this->content = $this->recursiveConvert($this->getTablesNode($source));
+        }
+    }
+
     /**
-     * Convert config from XML to array.
-     *
-     * @param \DOMDocument $source
+     * Get Db Schema Package Content;
      *
      * @return array
      */
-    public function convert(\DOMDocument $source): array
+    public function getContent(): array
     {
-        return $this->recursiveConvert($this->getTablesNode($source));
+        return $this->content;
     }
 
     /**

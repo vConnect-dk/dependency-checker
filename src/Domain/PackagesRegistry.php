@@ -6,11 +6,13 @@ use Composer\Factory;
 use Composer\IO\BufferIO;
 use Composer\Package\BasePackage;
 use Composer\Repository\LockArrayRepository;
+use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
 
 class PackagesRegistry
 {
     public const MAGENTO_MODULE_PACKAGE_TYPE = 'magento2-module';
     private array $packagesNamespaceMap = [];
+    private array $allPackages = [];
     private array $packagesTypes = [];
     private static ?PackagesRegistry $instance = null;
     private LockArrayRepository $composerLockRepo;
@@ -33,9 +35,56 @@ class PackagesRegistry
     /**
      * @return BasePackage[]
      */
-    public function getAllComposerLockPackages(): array
+    private function getAllComposerLockPackages(): array
     {
         return $this->composerLockRepo->getPackages();
+    }
+
+    /**
+     * Provide already preloaded packages by directories filter.
+     *
+     * @param string[] $directories absolute directory path.
+     *
+     * @return \Generator
+     */
+    public function getPackages(array $directories = []): \Generator
+    {
+        foreach ($this->getAllPackages() as $package) {
+            foreach ($directories as $directory) {
+                if (str_contains($package->getPackagePath(), $directory)) {
+                    yield $package;
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Get all packages from app/code and packages installed via composer.
+     *
+     * @return Package[]
+     */
+    public function getAllPackages(): array
+    {
+        if (!empty($this->allPackages)) {
+            return $this->allPackages;
+        }
+
+        $vendorPaths = [];
+        foreach ($this->getAllComposerLockPackages() as $composerLockPackage) {
+            $vendorPaths[] = 'vendor' . DIRECTORY_SEPARATOR . $composerLockPackage->getName();
+        }
+        $fsScanner = new FileSystemPackagesProvider();
+
+        foreach ($fsScanner->getPackagesRecursively(['app/code']) as $appCodePackage) {
+            $this->allPackages[$appCodePackage->getPackagePath()] = $appCodePackage;
+        }
+
+        foreach ($fsScanner->getPackagesByDirectPath($vendorPaths) as $vendorPackage) {
+            $this->allPackages[$vendorPackage->getPackagePath()] = $vendorPackage;
+        }
+
+        return $this->allPackages;
     }
 
     /**

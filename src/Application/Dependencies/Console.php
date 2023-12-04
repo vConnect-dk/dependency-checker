@@ -66,7 +66,9 @@ class Console implements ConsoleInterface
 
         $defects = $result->getDefects();
 
-        if (!(empty($defects['composer']))) {
+        if (!empty($defects['composer'][DependencyInterface::TYPE_SOFT]) ||
+            !empty($defects['composer'][DependencyInterface::TYPE_HARD])
+        ) {
             $this->printComposerMissedDependencies($defects['composer']);
         }
 
@@ -102,7 +104,7 @@ class Console implements ConsoleInterface
         if ($missedDependencies[DependencyInterface::TYPE_SOFT]) {
             $this->cli->bold()->yellow('Suggest:');
             foreach ($missedDependencies[DependencyInterface::TYPE_SOFT] as $suggest) {
-                $this->cli->tab()->out(sprintf('"%s": "[Some Suggested Dependency Description]",', $suggest));
+                $this->cli->tab()->out(sprintf('"%s": "*",', $suggest));
             }
         }
         if ($missedDependencies[DependencyInterface::TYPE_HARD]) {

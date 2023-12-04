@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
+use Vconnect\IntegrityChecker\Domain\Package;
+
 class XmlFileAnalysis
 {
     /**
@@ -13,35 +15,54 @@ class XmlFileAnalysis
      * @param array $nodeMap
      * @return string[]
      */
-    public function analyze(array $xmlFilesDomDocuments, array $currentModuleNamespaces, array $nodeMap): array
+    public function analyze(Package $package, array $nodeMap): array
     {
         $dependencies = [];
-        foreach ($xmlFilesDomDocuments as $XmlFileTypeArray) {
-            foreach ($XmlFileTypeArray as $dom) {
-                foreach ($nodeMap as $tagName => $attributeNames) {
-                    if ($tagName === XmlConfigFiles::TEXT_NODES) {
-                        $dependencies = array_merge(
-                            $this->getDependenciesByTextNodes($dom, $attributeNames, $currentModuleNamespaces),
-                            $dependencies
-                        );
+        $config = $package->getConfig()->getDiConfig();
+
+        foreach ($config as $item) {
+            $dependencies[] = $this->analyzeConfig($package->getPackageNamespaces(), $nodeMap, $item);
+        }
+
+        $config = $package->getConfig()->getSystemXmlConfig();
+        if ($config->childElementCount) {
+            $dependencies[] = $this->analyzeConfig($package->getPackageNamespaces(), $nodeMap, $config);
+        }
+
+        $config = $package->getConfig()->getExtensionAttributes();
+        if ($config->childElementCount) {
+            $dependencies[] = $this->analyzeConfig($package->getPackageNamespaces(), $nodeMap, $config);
+        }
+
+        return array_merge(...$dependencies);
+    }
+
+    public function analyzeConfig(array $currentModuleNamespaces, array $nodeMap, \DOMDocument $dom): array
+    {
+        $dependencies = [];
+
+        foreach ($nodeMap as $tagName => $attributeNames) {
+            if ($tagName === XmlConfigFiles::TEXT_NODES) {
+                $dependencies = array_merge(
+                    $this->getDependenciesByTextNodes($dom, $attributeNames, $currentModuleNamespaces),
+                    $dependencies
+                );
+                continue;
+            }
+            $nodes = $dom->getElementsByTagName($tagName);
+            /** @var \DOMElement $node */
+            foreach ($nodes as $node) {
+                foreach ($attributeNames as $attributeName) {
+                    $referenceModule = $this->getModuleNamespace($node->getAttribute($attributeName));
+                    if (!$referenceModule || \in_array($referenceModule, $currentModuleNamespaces)) {
                         continue;
                     }
-                    $nodes = $dom->getElementsByTagName($tagName);
-                    /** @var \DOMElement $node */
-                    foreach ($nodes as $node) {
-                        foreach ($attributeNames as $attributeName) {
-                            $referenceModule = $this->getModuleNamespace($node->getAttribute($attributeName));
-                            if (!$referenceModule || \in_array($referenceModule, $currentModuleNamespaces)) {
-                                continue;
-                            }
-                            $dependencies[] = $referenceModule;
-                        }
-                    }
+                    $dependencies[] = $referenceModule;
                 }
             }
         }
 
-        return $dependencies;
+        return [];
     }
 
     /**

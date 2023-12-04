@@ -39,8 +39,9 @@ class FileSystemPackagesProvider
         foreach ($paths as $path) {
             /* @phpstan-ignore-next-line */
             $file = new \SplFileInfo(ROOT_DIR . $path . DIRECTORY_SEPARATOR . $rootPackageFileName);
+
             if ($file->isFile()) {
-                $collectedPaths[] = $file->getPath();
+                $collectedPaths[] = dirname($file->getRealPath());
             }
         }
 
@@ -69,6 +70,6 @@ class FileSystemPackagesProvider
             $matchedFiles = array_filter($matchedFiles, $filter);
         }
 
-        return array_map(fn (\SplFileInfo $file) => $file->getPath(), $matchedFiles);
+        return array_map(fn (\SplFileInfo $file) => dirname($file->getRealPath()), $matchedFiles);
     }
 }

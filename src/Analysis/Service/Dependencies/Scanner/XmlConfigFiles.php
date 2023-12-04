@@ -55,26 +55,22 @@ class XmlConfigFiles implements DependenciesScannerInterface
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
         $scannerResult = new ScannerResult();
-        if ($package->getXmlFilesDomDocuments()) {
-            $scannerResult->setSoftDependencies(
-                array_unique(
-                    $this->xmlFileAnalysis->analyze(
-                        $package->getXmlFilesDomDocuments(),
-                        $package->getPackageNamespaces(),
-                        self::NODE_MAP_SOFT_DEPENDENCY
-                    )
+        $scannerResult->setSoftDependencies(
+            array_unique(
+                $this->xmlFileAnalysis->analyze(
+                    $package,
+                    self::NODE_MAP_SOFT_DEPENDENCY
                 )
-            );
-            $scannerResult->setHardDependencies(
-                array_unique(
-                    $this->xmlFileAnalysis->analyze(
-                        $package->getXmlFilesDomDocuments(),
-                        $package->getPackageNamespaces(),
-                        self::NODE_MAP_HARD_DEPENDENCY
-                    )
+            )
+        );
+        $scannerResult->setHardDependencies(
+            array_unique(
+                $this->xmlFileAnalysis->analyze(
+                    $package,
+                    self::NODE_MAP_HARD_DEPENDENCY
                 )
-            );
-        }
+            )
+        );
 
         return $scannerResult;
     }

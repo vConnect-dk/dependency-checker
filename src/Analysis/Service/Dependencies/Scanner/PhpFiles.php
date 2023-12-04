@@ -2,6 +2,7 @@
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
+use Vconnect\IntegrityChecker\Domain\Config\Di\PluginMap;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
@@ -10,10 +11,12 @@ class PhpFiles implements DependenciesScannerInterface
 {
     private const FILE_MASKS = ['php', 'phtml'];
     private RegExpFileAnalysis $regExpFileAnalysis;
+    private PluginMap $pluginMap;
 
     public function __construct()
     {
         $this->regExpFileAnalysis = new RegExpFileAnalysis();
+        $this->pluginMap = new PluginMap();
     }
 
     /**
@@ -67,11 +70,11 @@ class PhpFiles implements DependenciesScannerInterface
         ScannerResult $scannerResult
     ): ScannerResult {
         $classReference = $package->getClassReferenceByPath($file->getPathname());
-        $pluginMap = $package->getPluginMap();
+        $pluginMap = $this->pluginMap->getPluginMap();
 
         if (array_key_exists($classReference, $pluginMap)) {
             foreach ($collectedDependencies as $i => $dependency) {
-                if (strpos($pluginMap[$classReference], $dependency) === 0) {
+                if (str_starts_with($pluginMap[$classReference], $dependency)) {
                     $scannerResult->setSoftDependencies([$dependency]);
                     unset($collectedDependencies[$i]);
                 }

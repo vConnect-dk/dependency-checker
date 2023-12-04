@@ -10,7 +10,9 @@ class FileClassScanner
     private const NAMESPACE_TOKENS = [
         T_WHITESPACE => true,
         T_STRING => true,
-        T_NS_SEPARATOR => true
+        T_NS_SEPARATOR => true,
+        T_NAME_QUALIFIED => true,
+        T_NAME_FULLY_QUALIFIED => true,
     ];
 
     private const ALLOWED_OPEN_BRACES_TOKENS = [

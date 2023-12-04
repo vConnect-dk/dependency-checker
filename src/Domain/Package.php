@@ -2,10 +2,10 @@
 
 namespace Vconnect\IntegrityChecker\Domain;
 
+use FilesystemIterator;
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
-use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
+use Vconnect\IntegrityChecker\Domain\Package\Config;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
-use Vconnect\IntegrityChecker\Domain\Package\Config\XmlDomDocuments;
 use Vconnect\IntegrityChecker\Domain\Scanner\FileClassScanner;
 
 class Package
@@ -14,8 +14,7 @@ class Package
     private ?array $packageFiles = null;
     private array $loadedFileClasses = [];
     private ?Json $composerJson = null;
-    private ?ModuleXml $moduleXml = null;
-    private ?XmlDomDocuments $xmlDomDocuments = null;
+    private Config $config;
     private FileClassScanner $fileClassScanner;
 
     /**
@@ -25,6 +24,7 @@ class Package
     {
         $this->fileClassScanner = new FileClassScanner();
         $this->path = $path;
+        $this->config = new Config($this);
     }
 
     /**
@@ -78,7 +78,7 @@ class Package
      */
     public function getModuleXmlDependencies(): array
     {
-        return $this->getModuleXml()->getDependencies();
+        return $this->getConfig()->getModuleXml()->getDependencies();
     }
 
     /**
@@ -123,9 +123,9 @@ class Package
     private function resolveNamespaceFromModuleXml(): ?string
     {
         try {
-            $namespace = $this->getModuleXml()->getModuleName();
+            $namespace = $this->getConfig()->getModuleXml()->getModuleName();
             $namespace = is_string($namespace) ? str_replace('_', '\\', $namespace) : null;
-        } catch (FileNotFoundException $exception) {
+        } catch (FileNotFoundException) {
             $namespace = null;
         }
 
@@ -141,7 +141,7 @@ class Package
     {
         try {
             $packageName = $this->getComposerJson()->getPackageName();
-        } catch (FileNotFoundException $exception) {
+        } catch (FileNotFoundException) {
             $packageName = null;
         }
 
@@ -157,7 +157,15 @@ class Package
     {
         if (!$this->packageFiles) {
             $this->packageFiles = iterator_to_array(
-                new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->path))
+                new \CallbackFilterIterator(
+                    new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($this->path, FilesystemIterator::SKIP_DOTS),
+                        \RecursiveIteratorIterator::SELF_FIRST
+                    ),
+                    function (\SplFileInfo $fileInfo) {
+                        return $fileInfo->isFile() && !preg_match('/\/Test\//i', $fileInfo->getPathname());
+                    }
+                )
             );
         }
 
@@ -186,63 +194,9 @@ class Package
         throw new FileNotFoundException('composer.json', $this->path);
     }
 
-    /**
-     * Load Module Xml File.
-     *
-     * @return ModuleXml
-     * @throws FileNotFoundException
-     */
-    private function getModuleXml(): ModuleXml
+    public function getConfig(): Config
     {
-        if ($this->moduleXml) {
-            return $this->moduleXml;
-        }
-
-        foreach ($this->getPackageFilesList() as $file) {
-            if ($file->getFilename() === 'module.xml') {
-                $this->moduleXml = new ModuleXml($file->getPathname());
-
-                return $this->moduleXml;
-            }
-        }
-        throw new FileNotFoundException('module.xml', $this->path);
-    }
-
-    /**
-     * Returns DOM documents of .xml config files.
-     *
-     * @return DOMDocument[]
-     */
-    public function getXmlFilesDomDocuments(): array
-    {
-        if (!isset($this->xmlDomDocuments)) {
-            $this->xmlDomDocuments = new XmlDomDocuments($this->getPackageFiles());
-        }
-
-        return $this->xmlDomDocuments->getXmlFilesDomDocuments();
-    }
-
-    /**
-     * @return array
-     */
-    public function getPluginMap(): array
-    {
-        if (!isset($this->xmlDomDocuments)) {
-            $this->xmlDomDocuments = new XmlDomDocuments($this->getPackageFiles());
-        }
-
-        return $this->xmlDomDocuments->getPluginMap();
-    }
-
-    /**
-     * @param string $path
-     *
-     * @return \SplFileInfo
-     */
-    public function getFile(string $path): \SplFileInfo
-    {
-        $filePath = $this->path . DIRECTORY_SEPARATOR . $path;
-        return new \SplFileInfo($filePath);
+        return $this->config;
     }
 
     /**
