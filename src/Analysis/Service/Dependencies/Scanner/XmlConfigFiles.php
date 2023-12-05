@@ -5,12 +5,11 @@ namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles\XmlFileAnalysis;
 use Vconnect\IntegrityChecker\Domain\Package;
 
 class XmlConfigFiles implements DependenciesScannerInterface
 {
-    public const TEXT_NODES = 'textNodes';
-
     /**
      * Array of nodes for DOMDocument to specify dependencies as 'soft'
      */
@@ -30,7 +29,7 @@ class XmlConfigFiles implements DependenciesScannerInterface
     private const NODE_MAP_HARD_DEPENDENCY = [
         'extension_attributes' => ['for'],
         'attribute' => ['type'],
-        self::TEXT_NODES => [
+        XmlFileAnalysis::TEXT_NODES => [
             '//*[@xsi:type="object"]',
             './/frontend_model',
             './/backend_model',

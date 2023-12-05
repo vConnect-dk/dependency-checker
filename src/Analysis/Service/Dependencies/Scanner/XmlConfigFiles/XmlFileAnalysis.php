@@ -1,12 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
+namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
 
 use Vconnect\IntegrityChecker\Domain\Package;
 
 class XmlFileAnalysis
 {
+    public const TEXT_NODES = 'textNodes';
+
     /**
      * Analyze file to find dependencies
      *
@@ -42,7 +44,7 @@ class XmlFileAnalysis
         $dependencies = [];
 
         foreach ($nodeMap as $tagName => $attributeNames) {
-            if ($tagName === XmlConfigFiles::TEXT_NODES) {
+            if ($tagName === self::TEXT_NODES) {
                 $dependencies = array_merge(
                     $this->getDependenciesByTextNodes($dom, $attributeNames, $currentModuleNamespaces),
                     $dependencies

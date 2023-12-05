@@ -110,12 +110,17 @@ class PackagesRegistry
      */
     public function getPackageNameByNamespace(string $namespace): ?string
     {
+        return $this->packagesNamespaceMap[$this->getRealPackageNamespace($namespace)] ?? null;
+    }
+
+    public function getRealPackageNamespace(string $namespace): ?string
+    {
         $parts = explode('\\', $namespace);
 
         for ($i = count($parts); $i >= 1; $i--) {
             $namespace = implode('\\', array_slice($parts, 0, $i));
             if (isset($this->packagesNamespaceMap[$namespace])) {
-                return $this->packagesNamespaceMap[$namespace];
+                return $namespace;
             }
         }
 

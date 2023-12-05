@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
+namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
 
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
@@ -32,11 +32,16 @@ class RegExpFileAnalysis
 
         foreach ($matches['module'] as $referenceModule) {
             $referenceModule = str_replace('_', '\\', $referenceModule);
-            if (\in_array($referenceModule, $currentModuleNamespaces)) {
+
+            if (array_reduce(
+                $currentModuleNamespaces,
+                fn($carry, $namespace) => $carry || str_starts_with($referenceModule, $namespace)
+            )) {
                 continue;
             }
 
-            $dependenciesInfo[] = $referenceModule;
+            $dependenciesInfo[] = PackagesRegistry::getInstance()
+                                                  ->getRealPackageNamespace($referenceModule) ?? $referenceModule;
         }
 
         return $dependenciesInfo;

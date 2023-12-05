@@ -115,7 +115,7 @@ class Dependencies implements AnalyzerInterface
         try {
             $composerDeps[DependencyInterface::TYPE_HARD] = $package->getComposerRequirePackages();
             $composerDeps[DependencyInterface::TYPE_SOFT] = $package->getComposerSuggestPackages();
-        } catch (FileNotFoundException $exception) {
+        } catch (FileNotFoundException) {
             $composerDeps = [];
         }
         $dependenciesPackages[DependencyInterface::TYPE_SOFT] = $this->deleteRedundantSoftDeps(

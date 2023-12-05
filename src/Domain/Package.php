@@ -163,7 +163,8 @@ class Package
                         \RecursiveIteratorIterator::SELF_FIRST
                     ),
                     function (\SplFileInfo $fileInfo) {
-                        return $fileInfo->isFile() && !preg_match('/\/Test\//i', $fileInfo->getPathname());
+                        return $fileInfo->isFile() &&
+                            !preg_match('/(\/Test\/|\/tests\/|\/Test.php)/i', $fileInfo->getPathname());
                     }
                 )
             );

@@ -2,6 +2,7 @@
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles\RegExpFileAnalysis;
 use Vconnect\IntegrityChecker\Domain\Config\Di\PluginMap;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
