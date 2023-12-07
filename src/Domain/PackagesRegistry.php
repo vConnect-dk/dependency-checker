@@ -11,6 +11,7 @@ use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
 class PackagesRegistry
 {
     public const MAGENTO_MODULE_PACKAGE_TYPE = 'magento2-module';
+    public const UNKNOWN_COMPOSER_PACKAGE_TYPE = 'unknown';
     private array $packagesNamespaceMap = [];
     private array $allPackages = [];
     private array $packagesTypes = [];
@@ -76,7 +77,7 @@ class PackagesRegistry
         }
         $fsScanner = new FileSystemPackagesProvider();
 
-        foreach ($fsScanner->getPackagesRecursively(['app/code']) as $appCodePackage) {
+        foreach ($fsScanner->getPackagesRecursively(['app/code'], fileMask: '/registration.php/') as $appCodePackage) {
             $this->allPackages[$appCodePackage->getPackagePath()] = $appCodePackage;
         }
 
@@ -129,7 +130,7 @@ class PackagesRegistry
 
     public function getPackageType(string $packageName): string
     {
-        return $this->packagesTypes[$packageName] ?? 'unknown';
+        return $this->packagesTypes[$packageName] ?? self::UNKNOWN_COMPOSER_PACKAGE_TYPE;
     }
 
     public function getAllProjectNamespaces(): array

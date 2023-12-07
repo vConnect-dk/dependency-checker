@@ -77,26 +77,24 @@ class Dependencies implements AnalyzerInterface
      */
     private function compareModuleXmlDependencies(Package $package, Dependency $dependencies): array
     {
-        if ($package->getPackageType() !== PackagesRegistry::MAGENTO_MODULE_PACKAGE_TYPE) {
+        try {
+            $declaredModuleXml = $package->getModuleXmlDependencies();
+        } catch (FileNotFoundException $exception) {
             return [];
         }
 
-        try {
-            // Convert Magento\ZZZ -> Magento_ZZZ
-            $declaredModuleXml = array_map(
-                fn (string $moduleName) => str_replace('_', '\\', $moduleName),
-                $package->getModuleXmlDependencies()
-            );
-        } catch (FileNotFoundException $exception) {
-            $declaredModuleXml = [];
-        }
+        // Convert Magento\ZZZ -> Magento_ZZZ
+        $declaredModuleXml = array_map(
+            fn (string $moduleName) => str_replace('_', '\\', $moduleName),
+            $declaredModuleXml
+        );
 
         // leave only Magento 2 modules
         $dependenciesModules = array_filter(
             $dependencies->getHardDependencies(),
-            fn (string $namespace) => $this->packagesRegistry->getPackageType(
+            fn (string $namespace) => in_array($this->packagesRegistry->getPackageType(
                 (string)$this->packagesRegistry->getPackageNameByNamespace($namespace)
-            ) === PackagesRegistry::MAGENTO_MODULE_PACKAGE_TYPE
+            ), [PackagesRegistry::MAGENTO_MODULE_PACKAGE_TYPE, PackagesRegistry::UNKNOWN_COMPOSER_PACKAGE_TYPE])
         );
 
         return array_diff($dependenciesModules, $declaredModuleXml);
@@ -116,7 +114,7 @@ class Dependencies implements AnalyzerInterface
             $composerDeps[DependencyInterface::TYPE_HARD] = $package->getComposerRequirePackages();
             $composerDeps[DependencyInterface::TYPE_SOFT] = $package->getComposerSuggestPackages();
         } catch (FileNotFoundException) {
-            $composerDeps = [];
+            $composerDeps = [DependencyInterface::TYPE_HARD => [], DependencyInterface::TYPE_SOFT => []];
         }
         $dependenciesPackages[DependencyInterface::TYPE_SOFT] = $this->deleteRedundantSoftDeps(
             $this->getPackageNameByNamespace($dependencies->getSoftDependencies()),
