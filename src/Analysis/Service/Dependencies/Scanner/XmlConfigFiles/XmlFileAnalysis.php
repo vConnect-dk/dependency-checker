@@ -64,7 +64,7 @@ class XmlFileAnalysis
             }
         }
 
-        return [];
+        return $dependencies;
     }
 
     /**

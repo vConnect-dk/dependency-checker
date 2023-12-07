@@ -62,7 +62,6 @@ class PhpFiles implements DependenciesScannerInterface
      * @param ScannerResult $scannerResult
      *
      * @return ScannerResult
-     * @TODO avoid array merge in the loop
      */
     private function determineDependencies(
         Package $package,
@@ -72,17 +71,19 @@ class PhpFiles implements DependenciesScannerInterface
     ): ScannerResult {
         $classReference = $package->getClassReferenceByPath($file->getPathname());
         $pluginMap = $this->pluginMap->getPluginMap();
+        $softDependencies = [];
 
         if (array_key_exists($classReference, $pluginMap)) {
             foreach ($collectedDependencies as $i => $dependency) {
                 if (str_starts_with($pluginMap[$classReference], $dependency)) {
-                    $scannerResult->setSoftDependencies([$dependency]);
+                    $softDependencies[] = $dependency;
                     unset($collectedDependencies[$i]);
                 }
             }
         }
 
-        $scannerResult->setHardDependencies($collectedDependencies);
+        $scannerResult->addSoftDependencies($softDependencies);
+        $scannerResult->addHardDependencies($collectedDependencies);
 
         return $scannerResult;
     }

@@ -9,13 +9,13 @@ interface ScannerResultInterface
      * @param string[] $dependencies
      * @return void
      */
-    public function setSoftDependencies(array $dependencies): void;
+    public function addSoftDependencies(array $dependencies): void;
 
     /**
      * @param string[] $dependencies
      * @return void
      */
-    public function setHardDependencies(array $dependencies): void;
+    public function addHardDependencies(array $dependencies): void;
 
     /**
      * @return string[]

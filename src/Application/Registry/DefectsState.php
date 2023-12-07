@@ -12,7 +12,7 @@ class DefectsState
      * @param ResultInterface $result
      * @return void
      */
-    public function registerResult(ResultInterface $result)
+    public function registerResult(ResultInterface $result): void
     {
         $this->hasDefects = $this->hasDefects || $result->hasDefects();
     }
