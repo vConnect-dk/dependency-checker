@@ -7,6 +7,8 @@ use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class RegExpFileAnalysis
 {
+    private ?string $regExp = null;
+
     /**
      * Get list of required packages dependencies from php file.
      *
@@ -27,10 +29,10 @@ class RegExpFileAnalysis
             return [];
         }
 
-        $matches['module'] = array_unique($matches['module']);
+        $candidates = array_unique($matches['class']);
         $dependenciesInfo = [];
 
-        foreach ($matches['module'] as $referenceModule) {
+        foreach ($candidates as $referenceModule) {
             $referenceModule = str_replace('_', '\\', $referenceModule);
 
             if (array_reduce(
@@ -40,11 +42,18 @@ class RegExpFileAnalysis
                 continue;
             }
 
-            $dependenciesInfo[] = PackagesRegistry::getInstance()
-                                                  ->getRealPackageNamespace($referenceModule) ?? $referenceModule;
+            $dependenciesInfo[] = PackagesRegistry::getInstance()->getRealPackageNamespace($referenceModule) ??
+                $this->getMagentoNamespace($referenceModule);
         }
 
         return $dependenciesInfo;
+    }
+
+    private function getMagentoNamespace(string $referenceModule): string
+    {
+        $pieces = explode('\\', $referenceModule);
+
+        return $pieces[0] . '\\' . $pieces[1];
     }
 
     /**
@@ -73,6 +82,10 @@ class RegExpFileAnalysis
      */
     private function getRegExp():string
     {
+        if ($this->regExp) {
+            return $this->regExp;
+        }
+
         $namespaces = PackagesRegistry::getInstance()->getAllProjectNamespaces();
         $availableVendors = [];
 
@@ -92,8 +105,11 @@ class RegExpFileAnalysis
          * use \Magento\Zzz\Rewrite\Magento\Catalog\Something;
          * $b = Magento\Zzz\Rewrite\Magento\Catalog\Something::class; (in case if file does not have namespace);
          */
-        return '~(\B[\\\\]|[^\\\\]\b)(?<module>(' .
+        $this->regExp = '~(\B[\\\\]|[^\\\\]\b)(?<class>(?<module>(' .
             implode('[_\\\\]|', array_unique($availableVendors)) .
-            '[_\\\\])[a-zA-Z0-9]{2,})~';
+            '[_\\\\])[a-zA-Z0-9]{2,})' .
+            '([a-zA-Z0-9_\\\\]{2,})?)\b~';
+
+        return $this->regExp;
     }
 }

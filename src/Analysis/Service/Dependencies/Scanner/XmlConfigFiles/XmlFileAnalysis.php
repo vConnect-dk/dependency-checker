@@ -101,7 +101,7 @@ class XmlFileAnalysis
      */
     private function getModuleNamespace(string $path): ?string
     {
-        $parts = explode('\\', trim($path, '\\'));
+        $parts = explode('\\', trim($path, "\\\t\n\r\0\x0B "));
         if (count($parts) < 2) {
             return null;
         }

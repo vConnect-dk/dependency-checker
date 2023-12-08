@@ -92,9 +92,9 @@ class Dependencies implements AnalyzerInterface
         // leave only Magento 2 modules
         $dependenciesModules = array_filter(
             $dependencies->getHardDependencies(),
-            fn (string $namespace) => in_array($this->packagesRegistry->getPackageType(
+            fn (string $namespace) => $this->packagesRegistry->getPackageType(
                 (string)$this->packagesRegistry->getPackageNameByNamespace($namespace)
-            ), [PackagesRegistry::MAGENTO_MODULE_PACKAGE_TYPE, PackagesRegistry::UNKNOWN_COMPOSER_PACKAGE_TYPE])
+            ) === Package::MAGENTO_PACKAGE_TYPE
         );
 
         return array_diff($dependenciesModules, $declaredModuleXml);

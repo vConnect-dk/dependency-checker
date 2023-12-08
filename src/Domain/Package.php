@@ -10,6 +10,9 @@ use Vconnect\IntegrityChecker\Domain\Scanner\FileClassScanner;
 
 class Package
 {
+    public const MAGENTO_PACKAGE_TYPE = 'magento2-module';
+    public const UNKNOWN_PACKAGE_TYPE = 'unknown';
+
     private string $path;
     private ?array $packageFiles = null;
     private array $loadedFileClasses = [];
@@ -40,12 +43,15 @@ class Package
     public function getPackageType(): string
     {
         try {
-            $resolvedType = $this->getComposerJson()->getPackageType();
-        } catch (FileNotFoundException $exception) {
-            $resolvedType = null;
-        }
+            return $this->getComposerJson()->getPackageType() ?? self::UNKNOWN_PACKAGE_TYPE;
+        } catch (FileNotFoundException) {}
 
-        return $resolvedType ?? 'unknown';
+        try {
+            $this->getConfig()->getModuleXml();
+            return self::MAGENTO_PACKAGE_TYPE;
+        } catch (FileNotFoundException) {}
+
+        return self::UNKNOWN_PACKAGE_TYPE;
     }
 
     /**
@@ -54,9 +60,15 @@ class Package
      * @return array
      * @throws FileNotFoundException
      */
-    public function getComposerRequirePackages(): array
+    public function getComposerRequirePackages(bool $withDev = true): array
     {
-        return $this->getComposerJson()->getRequire();
+        $require = $this->getComposerJson()->getRequire();
+
+        if ($withDev) {
+            $require = array_merge($require, $this->getComposerJson()->getRequireDev());
+        }
+
+        return $require;
     }
 
     /**
@@ -164,7 +176,7 @@ class Package
                     ),
                     function (\SplFileInfo $fileInfo) {
                         return $fileInfo->isFile() &&
-                            !preg_match('/(\/Test\/|\/tests\/|\/Test.php)/i', $fileInfo->getPathname());
+                            !preg_match('/(\/Test\/|\/tests\/|\/Tests\/|\/Test.php)/i', $fileInfo->getPathname());
                     }
                 )
             );

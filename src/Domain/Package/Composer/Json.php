@@ -69,6 +69,13 @@ class Json
         return $this->filterComposerPackages($dependencies);
     }
 
+    public function getRequireDev(): array
+    {
+        $dependencies = $this->getContent()['require-dev'] ?? [];
+
+        return $this->filterComposerPackages($dependencies);
+    }
+
     /**
      * Return packages specified in 'suggest' section.
      *
@@ -89,9 +96,8 @@ class Json
     private function filterComposerPackages(array $dependencies): array
     {
         $dependencies = array_keys($dependencies);
-        return array_filter($dependencies, function (string $dependency): bool
-        {
-            return strpos($dependency, '/') !== false;
+        return array_filter($dependencies, function (string $dependency): bool {
+            return str_contains($dependency, '/');
         });
     }
 
