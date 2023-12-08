@@ -9,6 +9,13 @@ class RegExpFileAnalysis
 {
     private ?string $regExp = null;
 
+    private PackagesRegistry $packagesRegistry;
+
+    public function __construct()
+    {
+        $this->packagesRegistry = PackagesRegistry::getInstance();
+    }
+
     /**
      * Get list of required packages dependencies from php file.
      *
@@ -42,7 +49,7 @@ class RegExpFileAnalysis
                 continue;
             }
 
-            $dependenciesInfo[] = PackagesRegistry::getInstance()->getRealPackageNamespace($referenceModule) ??
+            $dependenciesInfo[] = $this->packagesRegistry->getRealPackageNamespace($referenceModule) ??
                 $this->getMagentoNamespace($referenceModule);
         }
 
@@ -86,7 +93,7 @@ class RegExpFileAnalysis
             return $this->regExp;
         }
 
-        $namespaces = PackagesRegistry::getInstance()->getAllProjectNamespaces();
+        $namespaces = $this->packagesRegistry->getAllProjectNamespaces();
         $availableVendors = [];
 
         foreach ($namespaces as $namespace) {

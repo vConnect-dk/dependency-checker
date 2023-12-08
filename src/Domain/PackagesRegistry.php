@@ -18,7 +18,6 @@ class PackagesRegistry
      * @var Package[]
      */
     private array $allPackages = [];
-    private ?array $packagesTypes = null;
     private static ?PackagesRegistry $instance = null;
     private LockArrayRepository $composerLockRepo;
 
@@ -124,11 +123,19 @@ class PackagesRegistry
      */
     public function getPackageNameByNamespace(string $namespace): ?string
     {
+        if (empty($this->packagesNamespaceMap)) {
+            $this->getAllPackages();
+        }
+
         return $this->packagesNamespaceMap[$this->getRealPackageNamespace($namespace)] ?? null;
     }
 
     public function getRealPackageNamespace(string $namespace): ?string
     {
+        if (empty($this->packagesNamespaceMap)) {
+            $this->getAllPackages();
+        }
+
         $parts = explode('\\', $namespace);
 
         for ($i = count($parts); $i >= 1; $i--) {
@@ -143,7 +150,7 @@ class PackagesRegistry
 
     public function getPackage(string $packageName): ?Package
     {
-        return $this->allPackages[$packageName] ?? null;
+        return $this->getAllPackages()[$packageName] ?? null;
     }
 
     public function getPackageType(string $packageName): string
@@ -154,6 +161,10 @@ class PackagesRegistry
 
     public function getAllProjectNamespaces(): array
     {
+        if (empty($this->packagesNamespaceMap)) {
+            $this->getAllPackages();
+        }
+
         return array_keys($this->packagesNamespaceMap);
     }
 }
