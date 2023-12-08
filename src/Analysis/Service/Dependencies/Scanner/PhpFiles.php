@@ -7,6 +7,7 @@ use Vconnect\IntegrityChecker\Domain\Config\Di\PluginMap;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
+use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class PhpFiles implements DependenciesScannerInterface
 {
@@ -73,12 +74,18 @@ class PhpFiles implements DependenciesScannerInterface
         $pluginMap = $this->pluginMap->getPluginMap();
         $softDependencies = [];
 
-        if (array_key_exists($classReference, $pluginMap)) {
-            foreach ($collectedDependencies as $i => $dependency) {
-                if (str_starts_with($pluginMap[$classReference], $dependency)) {
-                    $softDependencies[] = $dependency;
-                    unset($collectedDependencies[$i]);
-                }
+        foreach ($collectedDependencies as $i => $dependency) {
+            $packageName = PackagesRegistry::getInstance()->getPackageNameByNamespace($dependency);
+            if (!$packageName) {
+                unset($collectedDependencies[$i]);
+                continue;
+            }
+
+            if (array_key_exists($classReference, $pluginMap) && str_starts_with($pluginMap[$classReference], $dependency)) {
+                $softDependencies[] = $packageName;
+                unset($collectedDependencies[$i]);
+            } else {
+                $collectedDependencies[$i] = $packageName;
             }
         }
 

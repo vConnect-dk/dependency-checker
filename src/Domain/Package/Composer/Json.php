@@ -51,7 +51,7 @@ class Json
      *
      * @return array
      */
-    public function getNamespace(): array
+    public function getNamespaces(): array
     {
         return isset($this->getContent()['autoload']['psr-4']) ?
             array_keys($this->getContent()['autoload']['psr-4']) : [];

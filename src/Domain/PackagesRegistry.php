@@ -10,9 +10,6 @@ use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
 
 class PackagesRegistry
 {
-    public const MAGENTO_MODULE_PACKAGE_TYPE = 'magento2-module';
-    public const UNKNOWN_COMPOSER_PACKAGE_TYPE = 'unknown';
-
     public const MAGENTO_LOCAL = 'app/code';
 
     private array $packagesNamespaceMap = [];
@@ -144,10 +141,15 @@ class PackagesRegistry
         return null;
     }
 
+    public function getPackage(string $packageName): ?Package
+    {
+        return $this->allPackages[$packageName] ?? null;
+    }
+
     public function getPackageType(string $packageName): string
     {
-        $package = $this->allPackages[$packageName] ?? null;
-        return $package ? $package->getPackageType() : self::UNKNOWN_COMPOSER_PACKAGE_TYPE;
+        $package = $this->getPackage($packageName);
+        return $package ? $package->getPackageType() : Package::UNKNOWN_PACKAGE_TYPE;
     }
 
     public function getAllProjectNamespaces(): array

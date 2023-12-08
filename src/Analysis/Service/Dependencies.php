@@ -79,23 +79,21 @@ class Dependencies implements AnalyzerInterface
     {
         try {
             $declaredModuleXml = $package->getModuleXmlDependencies();
-        } catch (FileNotFoundException $exception) {
+        } catch (FileNotFoundException) {
             return [];
         }
 
-        // Convert Magento\ZZZ -> Magento_ZZZ
-        $declaredModuleXml = array_map(
-            fn (string $moduleName) => str_replace('_', '\\', $moduleName),
-            $declaredModuleXml
-        );
-
         // leave only Magento 2 modules
-        $dependenciesModules = array_filter(
+        $dependenciesModules = array_map(
+            fn(string $packageName) => $this->packagesRegistry->getPackage($packageName)
+                                                              ->getConfig()
+                                                              ->getModuleXml()
+                                                              ->getModuleName()
+        , array_filter(
             $dependencies->getHardDependencies(),
-            fn (string $namespace) => $this->packagesRegistry->getPackageType(
-                (string)$this->packagesRegistry->getPackageNameByNamespace($namespace)
-            ) === Package::MAGENTO_PACKAGE_TYPE
-        );
+            fn (string $packageName) => $this->packagesRegistry->getPackageType($packageName)
+                === Package::MAGENTO_PACKAGE_TYPE
+        ));
 
         return array_diff($dependenciesModules, $declaredModuleXml);
     }
@@ -117,11 +115,11 @@ class Dependencies implements AnalyzerInterface
             $composerDeps = [DependencyInterface::TYPE_HARD => [], DependencyInterface::TYPE_SOFT => []];
         }
         $dependenciesPackages[DependencyInterface::TYPE_SOFT] = $this->deleteRedundantSoftDeps(
-            $this->getPackageNameByNamespace($dependencies->getSoftDependencies()),
+            $dependencies->getSoftDependencies(),
             $composerDeps[DependencyInterface::TYPE_HARD]
         );
         $dependenciesPackages[DependencyInterface::TYPE_HARD] =
-            $this->getPackageNameByNamespace($dependencies->getHardDependencies());
+           $dependencies->getHardDependencies();
 
         $result[DependencyInterface::TYPE_SOFT] = array_diff(
             $dependenciesPackages[DependencyInterface::TYPE_SOFT],

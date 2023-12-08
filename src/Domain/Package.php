@@ -123,9 +123,9 @@ class Package
     private function resolveNamespacesFromComposerJson(): array
     {
         try {
-            $namespaces = $this->getComposerJson()->getNamespace();
+            $namespaces = $this->getComposerJson()->getNamespaces();
             $namespaces = array_map(fn ($namespace) => trim($namespace, '\\'), $namespaces);
-        } catch (FileNotFoundException $exception) {
+        } catch (FileNotFoundException) {
             $namespaces = [];
         }
 

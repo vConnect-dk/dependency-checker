@@ -4,9 +4,17 @@ declare(strict_types=1);
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
 
 use Vconnect\IntegrityChecker\Domain\Package;
+use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class XmlFileAnalysis
 {
+    private PackagesRegistry $packagesRegistry;
+
+    public function __construct()
+    {
+        $this->packagesRegistry = PackagesRegistry::getInstance();
+    }
+
     public const TEXT_NODES = 'textNodes';
 
     /**
@@ -56,10 +64,14 @@ class XmlFileAnalysis
             foreach ($nodes as $node) {
                 foreach ($attributeNames as $attributeName) {
                     $referenceModule = $this->getModuleNamespace($node->getAttribute($attributeName));
-                    if (!$referenceModule || \in_array($referenceModule, $currentModuleNamespaces)) {
+                    if (
+                        !$referenceModule ||
+                        \in_array($referenceModule, $currentModuleNamespaces) ||
+                        !($dependency = $this->packagesRegistry->getPackageNameByNamespace($referenceModule))
+                    ) {
                         continue;
                     }
-                    $dependencies[] = $referenceModule;
+                    $dependencies[] = $dependency;
                 }
             }
         }
@@ -85,10 +97,15 @@ class XmlFileAnalysis
             /** @var \DOMElement $node */
             foreach ($textNodes as $node) {
                 $referenceModule = $this->getModuleNamespace($node->nodeValue);
-                if (!$referenceModule || \in_array($referenceModule, $currentModuleNamespaces)) {
+                if (
+                    !$referenceModule ||
+                    \in_array($referenceModule, $currentModuleNamespaces) ||
+                    !($dependency = $this->packagesRegistry->getPackageNameByNamespace($referenceModule))
+                ) {
                     continue;
                 }
-                $dependencies[] = $referenceModule;
+
+                $dependencies[] = $dependency;
             }
         }
 
