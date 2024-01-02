@@ -11,6 +11,8 @@ use Vconnect\IntegrityChecker\Domain\Scanner\FileClassScanner;
 class Package
 {
     public const MAGENTO_PACKAGE_TYPE = 'magento2-module';
+    public const MAGENTO_LIBRARY_TYPE = 'magento2-library';
+    public const MAGENTO_COMPONENT_TYPE = 'magento2-component';
     public const UNKNOWN_PACKAGE_TYPE = 'unknown';
 
     private string $path;
@@ -42,9 +44,14 @@ class Package
 
     public function getPackageType(): string
     {
+        $type = null;
         try {
-            return $this->getComposerJson()->getPackageType() ?? self::UNKNOWN_PACKAGE_TYPE;
+            $type = $this->getComposerJson()->getPackageType();
         } catch (FileNotFoundException) {}
+
+        if ($type !== null) {
+            return $type;
+        }
 
         try {
             $this->getConfig()->getModuleXml();

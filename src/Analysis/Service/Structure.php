@@ -37,6 +37,10 @@ class Structure implements AnalyzerInterface
     {
         /** @var Package $package */
         foreach ($packages as $package) {
+            if ($package->getPackageType() !== Package::MAGENTO_PACKAGE_TYPE) {
+                continue;
+            }
+
             $tree = $this->buildPackageTree($package);
 
             yield new Result($package->getPackageName(), $this->compareTrees($this->standardStructure, $tree));
