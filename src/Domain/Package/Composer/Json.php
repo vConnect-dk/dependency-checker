@@ -47,11 +47,11 @@ class Json
     }
 
     /**
-     * Get psr-4 package namespaces. Some packages could declare more then one namespace.
+     * Get psr-4 package namespaces. Some packages could declare more than one namespace.
      *
      * @return array
      */
-    public function getNamespace(): array
+    public function getNamespaces(): array
     {
         return isset($this->getContent()['autoload']['psr-4']) ?
             array_keys($this->getContent()['autoload']['psr-4']) : [];
@@ -65,6 +65,13 @@ class Json
     public function getRequire(): array
     {
         $dependencies = $this->getContent()['require'] ?? [];
+
+        return $this->filterComposerPackages($dependencies);
+    }
+
+    public function getRequireDev(): array
+    {
+        $dependencies = $this->getContent()['require-dev'] ?? [];
 
         return $this->filterComposerPackages($dependencies);
     }
@@ -89,9 +96,8 @@ class Json
     private function filterComposerPackages(array $dependencies): array
     {
         $dependencies = array_keys($dependencies);
-        return array_filter($dependencies, function (string $dependency): bool
-        {
-            return strpos($dependency, '/') !== false;
+        return array_filter($dependencies, function (string $dependency): bool {
+            return str_contains($dependency, '/');
         });
     }
 

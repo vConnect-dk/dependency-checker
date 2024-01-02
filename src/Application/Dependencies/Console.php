@@ -66,7 +66,9 @@ class Console implements ConsoleInterface
 
         $defects = $result->getDefects();
 
-        if (!(empty($defects['composer']))) {
+        if (!empty($defects['composer'][DependencyInterface::TYPE_SOFT]) ||
+            !empty($defects['composer'][DependencyInterface::TYPE_HARD])
+        ) {
             $this->printComposerMissedDependencies($defects['composer']);
         }
 
@@ -84,8 +86,8 @@ class Console implements ConsoleInterface
     {
         $this->cli->backgroundRed('Missed dependencies in etc/module.xml');
 
-        foreach ($missedDependencies as $packageNamespace) {
-            $this->cli->tab()->out(sprintf('<module name="%s"/>', str_replace('\\', '_', $packageNamespace)));
+        foreach ($missedDependencies as $moduleName) {
+            $this->cli->tab()->out(sprintf('<module name="%s"/>', $moduleName));
         }
 
         $this->cli->br();
@@ -102,7 +104,7 @@ class Console implements ConsoleInterface
         if ($missedDependencies[DependencyInterface::TYPE_SOFT]) {
             $this->cli->bold()->yellow('Suggest:');
             foreach ($missedDependencies[DependencyInterface::TYPE_SOFT] as $suggest) {
-                $this->cli->tab()->out(sprintf('"%s": "[Some Suggested Dependency Description]",', $suggest));
+                $this->cli->tab()->out(sprintf('"%s": "*",', $suggest));
             }
         }
         if ($missedDependencies[DependencyInterface::TYPE_HARD]) {

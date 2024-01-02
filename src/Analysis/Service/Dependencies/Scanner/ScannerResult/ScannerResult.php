@@ -12,18 +12,18 @@ class ScannerResult implements ScannerResultInterface
      * @param string[] $dependencies
      * @return void
      */
-    public function setSoftDependencies(array $dependencies): void
+    public function addSoftDependencies(array $dependencies): void
     {
-        $this->softDependencies = $dependencies;
+        $this->softDependencies = array_unique(array_merge($this->softDependencies, $dependencies));
     }
 
     /**
      * @param string[] $dependencies
      * @return void
      */
-    public function setHardDependencies(array $dependencies): void
+    public function addHardDependencies(array $dependencies): void
     {
-        $this->hardDependencies = $dependencies;
+        $this->hardDependencies = array_unique(array_merge($this->hardDependencies, $dependencies));
     }
 
     /**

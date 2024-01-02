@@ -3,19 +3,17 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbSchema\ModulesSchemaCollector;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
+use Vconnect\IntegrityChecker\Domain\Config\DbSchema\ModulesSchemaCollector;
 use Vconnect\IntegrityChecker\Domain\Package;
 
 class DbSchema implements DependenciesScannerInterface
 {
-    private XmlFileAnalysis $xmlFileAnalysis;
     private ModulesSchemaCollector $schemaCollector;
 
     public function __construct()
     {
-        $this->xmlFileAnalysis = new XmlFileAnalysis();
         $this->schemaCollector = new ModulesSchemaCollector();
     }
 
@@ -29,10 +27,10 @@ class DbSchema implements DependenciesScannerInterface
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
         $scannerResult = new ScannerResult();
-
-        if ($schema = $this->schemaCollector->getPackageSchema($package)) {
+        $schema = $package->getConfig()->getDbSchema();
+        if ($schema->getContent()) {
             $soft = $hard = [];
-            foreach ($schema['table'] as $table) {
+            foreach ($schema->getContent()['table'] as $table) {
                 $soft += $this->getSoftSchemaDependencies($table);
                 $hard += $this->getHardSchemaDependencies($table);
             }
@@ -42,8 +40,8 @@ class DbSchema implements DependenciesScannerInterface
             $soft = array_filter($soft, $excludeItself);
             $hard = array_filter($hard, $excludeItself);
 
-            $scannerResult->setSoftDependencies(array_unique($soft));
-            $scannerResult->setSoftDependencies(array_unique($hard));
+            $scannerResult->addSoftDependencies($soft);
+            $scannerResult->addSoftDependencies($hard);
         }
 
         return $scannerResult;

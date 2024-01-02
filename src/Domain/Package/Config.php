@@ -1,0 +1,153 @@
+<?php declare(strict_types=1);
+
+namespace Vconnect\IntegrityChecker\Domain\Package;
+
+use Vconnect\IntegrityChecker\Domain\Package;
+use Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema;
+use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
+use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
+
+class Config
+{
+    private const DI = 'di.xml';
+    private const EXT_ATR = 'extension_attributes.xml';
+    private const ADMIN_UI = 'system.xml';
+
+    private const DB_SCHEMA = 'db_schema.xml';
+
+    private const MODULE_XML = 'module.xml';
+
+    private ?ModuleXml $moduleXml = null;
+    private ?DbSchema $dbSchema = null;
+    private ?array $diConfig = null;
+    private ?\DOMDocument $systemXml = null;
+    private ?\DOMDocument $extensionAttributes = null;
+
+    private Package $package;
+
+    public function __construct(Package $package)
+    {
+        $this->package = $package;
+    }
+
+    public function getDbSchema(): DbSchema
+    {
+        if ($this->dbSchema) {
+            return $this->dbSchema;
+        }
+
+        $content = null;
+        $file = $this->getFileByName(self::DB_SCHEMA);
+
+        if ($file && $file->isReadable()) {
+            $content = new \DOMDocument();
+            $content->loadXML($file->openFile()->fread($file->getSize()));
+        }
+
+        $this->dbSchema = new DbSchema($content);
+
+        return $this->dbSchema;
+    }
+
+    public function getModuleXml(): ModuleXml
+    {
+        if ($this->moduleXml) {
+            return $this->moduleXml;
+        }
+
+        $file = $this->getFileByName(self::MODULE_XML);
+
+        if (!$file || !$file->isReadable()) {
+            throw new FileNotFoundException(self::MODULE_XML, $this->package->getPackagePath());
+        }
+
+        $this->moduleXml = new ModuleXml($file->getPathname());
+        return $this->moduleXml;
+    }
+
+    /**
+     * @return \DOMDocument[]
+     */
+    public function getDiConfig(): array
+    {
+        if ($this->diConfig !== null) {
+            return $this->diConfig;
+        }
+
+        $this->diConfig = [];
+
+        foreach ($this->getMultipleFilesByName(self::DI) as $file) {
+            if ($file->isReadable()) {
+                $dom = new \DOMDocument();
+                $dom->loadXML($file->openFile()->fread($file->getSize()));
+                $this->diConfig[] = $dom;
+            }
+        }
+
+        return $this->diConfig;
+    }
+
+    public function getSystemXmlConfig(): \DOMDocument
+    {
+        if ($this->systemXml) {
+            return $this->systemXml;
+        }
+
+        $file = $this->getFileByName(self::ADMIN_UI);
+        $dom = new \DOMDocument();
+
+        if ($file && $file->isReadable()) {
+            $dom->loadXML($file->openFile()->fread($file->getSize()));
+        }
+
+        $this->systemXml = $dom;
+
+        return $this->systemXml;
+    }
+
+    public function getExtensionAttributes(): \DOMDocument
+    {
+        if ($this->extensionAttributes) {
+            return $this->extensionAttributes;
+        }
+
+        $file = $this->getFileByName(self::EXT_ATR);
+        $dom = new \DOMDocument();
+
+        if ($file && $file->isReadable()) {
+            $dom->loadXML($file->openFile()->fread($file->getSize()));
+        }
+        $this->extensionAttributes = $dom;
+
+        return $this->extensionAttributes;
+    }
+
+    /**
+     * @param string $filename
+     *
+     * @return \SplFileInfo[]
+     */
+    private function getMultipleFilesByName(string $filename): array
+    {
+        $result = [];
+
+        foreach ($this->package->getPackageFiles() as $file) {
+            if ($file->getFilename() === $filename) {
+                $result[] = $file;
+            }
+        }
+
+        return $result;
+    }
+
+    private function getFileByName(string $filename): ?\SplFileInfo
+    {
+        foreach ($this->package->getPackageFiles() as $file) {
+            if ($file->getFilename() === $filename) {
+                return $file;
+            }
+        }
+
+        return null;
+    }
+}

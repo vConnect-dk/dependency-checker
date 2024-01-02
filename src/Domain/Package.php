@@ -2,25 +2,34 @@
 
 namespace Vconnect\IntegrityChecker\Domain;
 
+use FilesystemIterator;
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
-use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
+use Vconnect\IntegrityChecker\Domain\Package\Config;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
+use Vconnect\IntegrityChecker\Domain\Scanner\FileClassScanner;
 
 class Package
 {
-    private const XML_FILE_MASKS = ['di.xml', 'system.xml', 'extension_attributes.xml'];
+    public const MAGENTO_PACKAGE_TYPE = 'magento2-module';
+    public const MAGENTO_LIBRARY_TYPE = 'magento2-library';
+    public const MAGENTO_COMPONENT_TYPE = 'magento2-component';
+    public const UNKNOWN_PACKAGE_TYPE = 'unknown';
+
     private string $path;
     private ?array $packageFiles = null;
+    private array $loadedFileClasses = [];
     private ?Json $composerJson = null;
-    private ?ModuleXml $moduleXml = null;
-    private ?array $xmlFilesDomDocument = null;
+    private Config $config;
+    private FileClassScanner $fileClassScanner;
 
     /**
      * @param string $path
      */
     public function __construct(string $path)
     {
+        $this->fileClassScanner = new FileClassScanner();
         $this->path = $path;
+        $this->config = new Config($this);
     }
 
     /**
@@ -35,13 +44,21 @@ class Package
 
     public function getPackageType(): string
     {
+        $type = null;
         try {
-            $resolvedType = $this->getComposerJson()->getPackageType();
-        } catch (FileNotFoundException $exception) {
-            $resolvedType = null;
+            $type = $this->getComposerJson()->getPackageType();
+        } catch (FileNotFoundException) {}
+
+        if ($type !== null) {
+            return $type;
         }
 
-        return $resolvedType ?? 'unknown';
+        try {
+            $this->getConfig()->getModuleXml();
+            return self::MAGENTO_PACKAGE_TYPE;
+        } catch (FileNotFoundException) {}
+
+        return self::UNKNOWN_PACKAGE_TYPE;
     }
 
     /**
@@ -50,9 +67,15 @@ class Package
      * @return array
      * @throws FileNotFoundException
      */
-    public function getComposerRequirePackages(): array
+    public function getComposerRequirePackages(bool $withDev = true): array
     {
-        return $this->getComposerJson()->getRequire();
+        $require = $this->getComposerJson()->getRequire();
+
+        if ($withDev) {
+            $require = array_merge($require, $this->getComposerJson()->getRequireDev());
+        }
+
+        return $require;
     }
 
     /**
@@ -74,7 +97,7 @@ class Package
      */
     public function getModuleXmlDependencies(): array
     {
-        return $this->getModuleXml()->getDependencies();
+        return $this->getConfig()->getModuleXml()->getDependencies();
     }
 
     /**
@@ -107,9 +130,9 @@ class Package
     private function resolveNamespacesFromComposerJson(): array
     {
         try {
-            $namespaces = $this->getComposerJson()->getNamespace();
+            $namespaces = $this->getComposerJson()->getNamespaces();
             $namespaces = array_map(fn ($namespace) => trim($namespace, '\\'), $namespaces);
-        } catch (FileNotFoundException $exception) {
+        } catch (FileNotFoundException) {
             $namespaces = [];
         }
 
@@ -119,9 +142,9 @@ class Package
     private function resolveNamespaceFromModuleXml(): ?string
     {
         try {
-            $namespace = $this->getModuleXml()->getModuleName();
+            $namespace = $this->getConfig()->getModuleXml()->getModuleName();
             $namespace = is_string($namespace) ? str_replace('_', '\\', $namespace) : null;
-        } catch (FileNotFoundException $exception) {
+        } catch (FileNotFoundException) {
             $namespace = null;
         }
 
@@ -137,7 +160,7 @@ class Package
     {
         try {
             $packageName = $this->getComposerJson()->getPackageName();
-        } catch (FileNotFoundException $exception) {
+        } catch (FileNotFoundException) {
             $packageName = null;
         }
 
@@ -153,7 +176,16 @@ class Package
     {
         if (!$this->packageFiles) {
             $this->packageFiles = iterator_to_array(
-                new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->path))
+                new \CallbackFilterIterator(
+                    new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($this->path, FilesystemIterator::SKIP_DOTS),
+                        \RecursiveIteratorIterator::SELF_FIRST
+                    ),
+                    function (\SplFileInfo $fileInfo) {
+                        return $fileInfo->isFile() &&
+                            !preg_match('/(\/Test\/|\/tests\/|\/Tests\/|\/Test.php)/i', $fileInfo->getPathname());
+                    }
+                )
             );
         }
 
@@ -182,54 +214,22 @@ class Package
         throw new FileNotFoundException('composer.json', $this->path);
     }
 
-    /**
-     * Load Module Xml File.
-     *
-     * @return ModuleXml
-     * @throws FileNotFoundException
-     */
-    private function getModuleXml(): ModuleXml
+    public function getConfig(): Config
     {
-        if ($this->moduleXml) {
-            return $this->moduleXml;
-        }
-
-        foreach ($this->getPackageFilesList() as $file) {
-            if ($file->getFilename() === 'module.xml') {
-                $this->moduleXml = new ModuleXml($file->getPathname());
-
-                return $this->moduleXml;
-            }
-        }
-        throw new FileNotFoundException('module.xml', $this->path);
+        return $this->config;
     }
 
     /**
-     * Load .xml config files.
+     * Resolve class reference by path
      *
-     * @param array $fileMasks - specify files for loading
-     *
-     * @return array|null
+     * @param string $filePath
+     * @return string
      */
-    public function getXmlFilesDomDocuments(array $fileMasks = self::XML_FILE_MASKS): ?array
+    public function getClassReferenceByPath(string $filePath): string
     {
-        if (!isset($this->xmlFilesDomDocument)) {
-            $this->xmlFilesDomDocument = [];
-            foreach ($this->getPackageFiles() as $file) {
-                if (in_array($file->getFilename(), $fileMasks)) {
-                    $dom = new \DOMDocument();
-                    $dom->loadXML(\file_get_contents($file->getPathname()));
-                    $this->xmlFilesDomDocument[$file->getFilename()][] = $dom;
-                }
-            }
+        if (!isset($this->loadedFileClasses[$filePath])) {
+            $this->loadedFileClasses[$filePath] = $this->fileClassScanner->getClassName($filePath);
         }
-
-        return $this->xmlFilesDomDocument;
-    }
-
-    public function getFile(string $path): \SplFileInfo
-    {
-        $filePath = $this->path . DIRECTORY_SEPARATOR . $path;
-        return new \SplFileInfo($filePath);
+        return $this->loadedFileClasses[$filePath];
     }
 }

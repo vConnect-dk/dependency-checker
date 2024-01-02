@@ -1,39 +1,20 @@
 <?php
 declare(strict_types=1);
 
-namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbSchema;
+namespace Vconnect\IntegrityChecker\Domain\Config\DbSchema;
 
 use Vconnect\IntegrityChecker\Domain\Package;
+use Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
-use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
 
 class ModulesSchemaCollector
 {
-    private const FILE_PATH = 'etc/db_schema.xml';
-
     /** @var array<string, string> */
     private ?array $schemaModuleRelationsMap = null;
-    private Converter $converter;
-    private array $schemaCache = [];
-
-    public function __construct()
-    {
-        $this->converter = new Converter();
-    }
 
     public function getSchemaOwnerPackageName(string $schema): ?string
     {
         return $this->getMap()[$schema] ?? null;
-    }
-
-    public function getPackageSchema(Package $package): ?array
-    {
-        $cacheKey = $package->getPackageName();
-        if (!isset($this->schemaCache[$cacheKey])) {
-            $this->schemaCache[$cacheKey] = $this->loadPackageSchema($package) ?: false;
-        }
-
-        return $this->schemaCache[$cacheKey] ?: null;
     }
 
     /**
@@ -50,13 +31,19 @@ class ModulesSchemaCollector
         return $this->schemaModuleRelationsMap;
     }
 
+    /**
+     * Collect relations from packages.
+     *
+     * @return array
+     */
     private function collectRelations(): array
     {
-        $candidates = [];
-        foreach ($this->getAllPackages() as $package) {
-            if ($schema = $this->getPackageSchema($package)) {
-                foreach ($schema['table'] as $tableName => $tableDefinition) {
-                    $allTables[$tableName] = $tableName;
+        $candidates = $this->collectRootConfig();
+
+        foreach (PackagesRegistry::getInstance()->getAllPackages() as $package) {
+            $schema = $package->getConfig()->getDbSchema();
+            if ($schema->getContent()) {
+                foreach ($schema->getContent()['table'] as $tableName => $tableDefinition) {
                     $this->collectOwnerCandidates(
                         $candidates,
                         $tableName,
@@ -72,26 +59,36 @@ class ModulesSchemaCollector
     }
 
     /**
-     * @return \Generator|Package[]
+     * Collect DB Schema Config from root app/etc/db_schema.xml.
+     *
+     * @return array
      */
-    private function getAllPackages(): \Generator
+    private function collectRootConfig(): array
     {
-        $registry = PackagesRegistry::getInstance();
-        $vendorPaths = [];
-        foreach ($registry->getAllComposerLockPackages() as $composerLockPackage) {
-            if ($composerLockPackage->getType() == PackagesRegistry::MAGENTO_MODULE_PACKAGE_TYPE) {
-                $vendorPaths[] = 'vendor' . DIRECTORY_SEPARATOR . $composerLockPackage->getName();
-            }
-        }
-        $fsScanner = new FileSystemPackagesProvider();
+        $candidates = [];
+        $fileInfo = new \SplFileInfo(ROOT_DIR . 'app/etc/db_schema.xml');
 
-        foreach ($fsScanner->getPackagesRecursively(['app/code']) as $appCodePackage) {
-            yield $appCodePackage;
+        $content = null;
+        if ($fileInfo->isReadable()) {
+            $content = new \DOMDocument();
+            $content->loadXML($fileInfo->openFile()->fread($fileInfo->getSize()));
         }
 
-        foreach ($fsScanner->getPackagesByDirectPath($vendorPaths) as $vendorPackage) {
-            yield $vendorPackage;
+        $config = new DbSchema($content);
+
+        if (!$config->getContent()) {
+            return $candidates;
         }
+        foreach ($config->getContent()['table'] as $tableName => $tableDefinition) {
+            $this->collectOwnerCandidates(
+                $candidates,
+                $tableName,
+                $tableDefinition,
+                'magento/framework'
+            );
+        }
+
+        return $candidates;
     }
 
     /**
@@ -173,22 +170,5 @@ class ModulesSchemaCollector
     private function hasIndex(array $tableDefinition): bool
     {
         return !empty($tableDefinition['index']);
-    }
-
-    /**
-     * @param Package $package
-     *
-     * @return array|null
-     */
-    private function loadPackageSchema(Package $package): ?array
-    {
-        $dbSchemaFile = $package->getFile(self::FILE_PATH);
-        if (!$dbSchemaFile->isReadable()) {
-            return null;
-        }
-        $dbSchemaXml = new \DOMDocument();
-        $dbSchemaXml->loadXML($dbSchemaFile->openFile()->fread($dbSchemaFile->getSize()));
-
-         return $this->converter->convert($dbSchemaXml);
     }
 }

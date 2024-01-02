@@ -1,12 +1,21 @@
 <?php
 declare(strict_types=1);
 
-namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
+namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
 
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class RegExpFileAnalysis
 {
+    private ?string $regExp = null;
+
+    private PackagesRegistry $packagesRegistry;
+
+    public function __construct()
+    {
+        $this->packagesRegistry = PackagesRegistry::getInstance();
+    }
+
     /**
      * Get list of required packages dependencies from php file.
      *
@@ -27,19 +36,31 @@ class RegExpFileAnalysis
             return [];
         }
 
-        $matches['module'] = array_unique($matches['module']);
+        $candidates = array_unique($matches['class']);
         $dependenciesInfo = [];
 
-        foreach ($matches['module'] as $referenceModule) {
+        foreach ($candidates as $referenceModule) {
             $referenceModule = str_replace('_', '\\', $referenceModule);
-            if (\in_array($referenceModule, $currentModuleNamespaces)) {
+
+            if (array_reduce(
+                $currentModuleNamespaces,
+                fn($carry, $namespace) => $carry || str_starts_with($referenceModule, $namespace)
+            )) {
                 continue;
             }
 
-            $dependenciesInfo[] = $referenceModule;
+            $dependenciesInfo[] = $this->packagesRegistry->getRealPackageNamespace($referenceModule) ??
+                $this->getMagentoNamespace($referenceModule);
         }
 
         return $dependenciesInfo;
+    }
+
+    private function getMagentoNamespace(string $referenceModule): string
+    {
+        $pieces = explode('\\', $referenceModule);
+
+        return $pieces[0] . '\\' . $pieces[1];
     }
 
     /**
@@ -68,7 +89,11 @@ class RegExpFileAnalysis
      */
     private function getRegExp():string
     {
-        $namespaces = PackagesRegistry::getInstance()->getAllProjectNamespaces();
+        if ($this->regExp) {
+            return $this->regExp;
+        }
+
+        $namespaces = $this->packagesRegistry->getAllProjectNamespaces();
         $availableVendors = [];
 
         foreach ($namespaces as $namespace) {
@@ -87,8 +112,11 @@ class RegExpFileAnalysis
          * use \Magento\Zzz\Rewrite\Magento\Catalog\Something;
          * $b = Magento\Zzz\Rewrite\Magento\Catalog\Something::class; (in case if file does not have namespace);
          */
-        return '~(\B[\\\\]|[^\\\\]\b)(?<module>(' .
+        $this->regExp = '~(\B[\\\\]|[^\\\\]\b)(?<class>(?<module>(' .
             implode('[_\\\\]|', array_unique($availableVendors)) .
-            '[_\\\\])[a-zA-Z0-9]{2,})~';
+            '[_\\\\])[a-zA-Z0-9]{2,})' .
+            '([a-zA-Z0-9_\\\\]{2,})?)\b~';
+
+        return $this->regExp;
     }
 }

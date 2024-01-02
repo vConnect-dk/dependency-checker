@@ -6,12 +6,18 @@ use Composer\Factory;
 use Composer\IO\BufferIO;
 use Composer\Package\BasePackage;
 use Composer\Repository\LockArrayRepository;
+use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
 
 class PackagesRegistry
 {
-    public const MAGENTO_MODULE_PACKAGE_TYPE = 'magento2-module';
+    public const MAGENTO_LOCAL = 'app/code';
+
     private array $packagesNamespaceMap = [];
-    private array $packagesTypes = [];
+
+    /**
+     * @var Package[]
+     */
+    private array $allPackages = [];
     private static ?PackagesRegistry $instance = null;
     private LockArrayRepository $composerLockRepo;
 
@@ -21,9 +27,12 @@ class PackagesRegistry
             new BufferIO(),
             ROOT_DIR . 'composer.json'
         );
+        try {
+            $this->composerLockRepo = $composer->getLocker()->getLockedRepository(true);
+        } catch (\RuntimeException) {
+            $this->composerLockRepo = $composer->getLocker()->getLockedRepository();
+        }
 
-        $this->composerLockRepo = $composer->getLocker()->getLockedRepository();
-        $this->savePackagesMapToRuntimeCache();
     }
 
     private function __clone()
@@ -33,9 +42,62 @@ class PackagesRegistry
     /**
      * @return BasePackage[]
      */
-    public function getAllComposerLockPackages(): array
+    private function getAllComposerLockPackages(): array
     {
         return $this->composerLockRepo->getPackages();
+    }
+
+    /**
+     * Provide already preloaded packages by directories filter.
+     *
+     * @param string[] $directories absolute directory path.
+     *
+     * @return \Generator
+     */
+    public function getPackages(array $directories = []): \Generator
+    {
+        foreach ($this->getAllPackages() as $package) {
+            foreach ($directories as $directory) {
+                if (str_contains($package->getPackagePath(), $directory)) {
+                    yield $package;
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Get all packages from app/code and packages installed via composer.
+     *
+     * @return Package[]
+     */
+    public function getAllPackages(): array
+    {
+        if (!empty($this->allPackages)) {
+            return $this->allPackages;
+        }
+
+        $vendorPaths = [];
+        foreach ($this->getAllComposerLockPackages() as $composerLockPackage) {
+            $vendorPaths[] = 'vendor' . DIRECTORY_SEPARATOR . $composerLockPackage->getName();
+        }
+        $fsScanner = new FileSystemPackagesProvider();
+
+        foreach (
+            $fsScanner->getPackagesRecursively([self::MAGENTO_LOCAL], fileMask: '/registration.php/') as $appCodePackage
+        ) {
+            $this->allPackages[$appCodePackage->getPackageName()] = $appCodePackage;
+            $this->packagesNamespaceMap[$appCodePackage->getPackageNamespaces()[0]] = $appCodePackage->getPackageName();
+        }
+
+        foreach ($fsScanner->getPackagesByDirectPath($vendorPaths) as $vendorPackage) {
+            $this->allPackages[$vendorPackage->getPackageName()] = $vendorPackage;
+            foreach ($vendorPackage->getPackageNamespaces() as $namespace) {
+                $this->packagesNamespaceMap[$namespace] = $vendorPackage->getPackageName();
+            }
+        }
+
+        return $this->allPackages;
     }
 
     /**
@@ -61,45 +123,48 @@ class PackagesRegistry
      */
     public function getPackageNameByNamespace(string $namespace): ?string
     {
+        if (empty($this->packagesNamespaceMap)) {
+            $this->getAllPackages();
+        }
+
+        return $this->packagesNamespaceMap[$this->getRealPackageNamespace($namespace)] ?? null;
+    }
+
+    public function getRealPackageNamespace(string $namespace): ?string
+    {
+        if (empty($this->packagesNamespaceMap)) {
+            $this->getAllPackages();
+        }
+
         $parts = explode('\\', $namespace);
 
         for ($i = count($parts); $i >= 1; $i--) {
             $namespace = implode('\\', array_slice($parts, 0, $i));
             if (isset($this->packagesNamespaceMap[$namespace])) {
-                return $this->packagesNamespaceMap[$namespace];
+                return $namespace;
             }
         }
 
         return null;
     }
 
+    public function getPackage(string $packageName): ?Package
+    {
+        return $this->getAllPackages()[$packageName] ?? null;
+    }
+
     public function getPackageType(string $packageName): string
     {
-        return $this->packagesTypes[$packageName] ?? 'unknown';
+        $package = $this->getPackage($packageName);
+        return $package ? $package->getPackageType() : Package::UNKNOWN_PACKAGE_TYPE;
     }
 
     public function getAllProjectNamespaces(): array
     {
-        return array_keys($this->packagesNamespaceMap);
-    }
-
-    /**
-     * Walk through all the composer.lock packages and save their types and namespaces
-     */
-    private function savePackagesMapToRuntimeCache(): void
-    {
-        $packages = $this->getAllComposerLockPackages();
-        foreach ($packages as $package) {
-            if (!isset($package->getAutoload()['psr-4'])) {
-                continue;
-            }
-
-            $this->packagesTypes[$package->getName()] = $package->getType();
-
-            $namespaces = array_keys($package->getAutoload()['psr-4']);
-            foreach ($namespaces as $namespace) {
-                $this->packagesNamespaceMap[trim($namespace, '\\')] = $package->getName();
-            }
+        if (empty($this->packagesNamespaceMap)) {
+            $this->getAllPackages();
         }
+
+        return array_keys($this->packagesNamespaceMap);
     }
 }
