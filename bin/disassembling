@@ -1,0 +1,48 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies;
+use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
+use Vconnect\IntegrityChecker\Application\Dependencies\Console;
+use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
+use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
+
+function exception_error_handler($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) {
+        // This error code is not included in error_reporting
+        return;
+    }
+    throw new ErrorException($message, 0, $severity, $file, $line);
+}
+set_error_handler("exception_error_handler");
+ini_set("memory_limit", "-1");
+
+try {
+    require_once __DIR__ . '/../bootstrap.php';
+} catch (\Throwable $exception) {
+    echo 'Can not load autoload file. Please try to re-install project';
+    die(2);
+}
+
+$console = new Console();
+
+if (!$console->validateParameters()) {
+    $console->printHelp();
+    die(2);
+}
+
+$directories = array_slice($argv, 2);
+
+if (empty($directories)) {
+    $directories = [ROOT_DIR . DefaultAnalysisFolders::APP, ROOT_DIR . DefaultAnalysisFolders::SRC, ROOT_DIR . 'vendor'];
+}
+
+$packages = PackagesRegistry::getInstance()->getPackages($directories);
+
+$analyzer = new Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder();
+
+foreach ($analyzer->analyse($packages) as $result) {
+    echo '"' . $result . '": "*",'. PHP_EOL;
+}
+
