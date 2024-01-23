@@ -8,7 +8,9 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbSchema;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DependenciesScannerInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\QueueConfig;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\ScannerPool;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
@@ -24,18 +26,14 @@ class Dependencies implements AnalyzerInterface
     /**
      * @var DependenciesScannerInterface[]
      */
-    private array $scanners = [];
+    private ScannerPool $scanners;
 
     private PackagesRegistry $packagesRegistry;
 
     public function __construct()
     {
         $this->packagesRegistry = PackagesRegistry::getInstance();
-        $this->scanners = [
-            new PhpFiles(),
-            new XmlConfigFiles(),
-            new DbSchema()
-        ];
+        $this->scanners = new ScannerPool();
     }
 
     /**

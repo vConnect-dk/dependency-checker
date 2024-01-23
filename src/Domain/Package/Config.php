@@ -5,6 +5,7 @@ namespace Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema;
 use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
+use Vconnect\IntegrityChecker\Domain\Package\Config\Queue;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 
 class Config
@@ -17,12 +18,17 @@ class Config
 
     private const MODULE_XML = 'module.xml';
 
+    private const QUEUE_COMMUNICATION = 'communication.xml';
+    private const QUEUE_CONSUMER = 'queue_consumer.xml';
+    private const QUEUE_PUBLISHER = 'queue_publisher.xml';
+    private const QUEUE_TOPOLOGY = 'queue_topology.xml';
+
     private ?ModuleXml $moduleXml = null;
     private ?DbSchema $dbSchema = null;
     private ?array $diConfig = null;
     private ?\DOMDocument $systemXml = null;
     private ?\DOMDocument $extensionAttributes = null;
-
+    private ?Queue $queue = null;
     private Package $package;
 
     public function __construct(Package $package)
@@ -47,6 +53,20 @@ class Config
         $this->dbSchema = new DbSchema($content);
 
         return $this->dbSchema;
+    }
+
+    public function getQueueConfig(): Queue
+    {
+        if (!$this->queue) {
+            $this->queue = new Queue(
+                $this->getFileByName(self::QUEUE_COMMUNICATION),
+                $this->getFileByName(self::QUEUE_CONSUMER),
+                $this->getFileByName(self::QUEUE_PUBLISHER),
+                $this->getFileByName(self::QUEUE_TOPOLOGY)
+            );
+        }
+
+        return $this->queue;
     }
 
     public function getModuleXml(): ModuleXml
