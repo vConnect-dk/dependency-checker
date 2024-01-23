@@ -1,18 +1,16 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies;
 
+use Traversable;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbSchema;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DependenciesScannerInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\QueueConfig;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
 
-class ScannerPool implements \Iterator
+class ScannerPool implements \IteratorAggregate
 {
-    private int $position = 0;
-
     /**
      * @var DependenciesScannerInterface[]
      */
@@ -28,28 +26,8 @@ class ScannerPool implements \Iterator
         ];
     }
 
-    public function current(): DependenciesScannerInterface
+    public function getIterator(): Traversable
     {
-        return $this->scanners[$this->position];
-    }
-
-    public function next(): void
-    {
-        $this->position++;
-    }
-
-    public function key(): int
-    {
-        return $this->position;
-    }
-
-    public function valid(): bool
-    {
-        return isset($this->scanners[$this->position]);
-    }
-
-    public function rewind(): void
-    {
-        $this->position = 0;
+        yield from $this->scanners;
     }
 }
