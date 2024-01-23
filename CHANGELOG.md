@@ -1,3 +1,13 @@
+2.4.0
+============
+* Add support of queue configs dependency check
+* Refactoring
+
+2.3.0
+============
+* Implement Plugins check
+* Refactoring and Bugfixes
+
 2.2.0
 =============
 * Fixed bug with suggested packages that are already required
