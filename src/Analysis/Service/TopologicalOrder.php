@@ -7,22 +7,18 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Dependency;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbSchema;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\ScannerPool;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Graph;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Kahn;
 use Vconnect\IntegrityChecker\Domain\Package;
 
 class TopologicalOrder implements AnalyzerInterface
 {
-    /** @var array DependenciesScannerInterface */
-    private array $scanners;
+    private ScannerPool $scanners;
 
     public function __construct()
     {
-        $this->scanners = [
-            new PhpFiles(),
-            new XmlConfigFiles(),
-            new DbSchema()
-        ];
+        $this->scanners = new ScannerPool();
     }
 
     public function analyse(iterable $packages): iterable
