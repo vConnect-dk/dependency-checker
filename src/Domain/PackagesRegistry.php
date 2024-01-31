@@ -20,6 +20,7 @@ class PackagesRegistry
     private array $allPackages = [];
     private static ?PackagesRegistry $instance = null;
     private LockArrayRepository $composerLockRepo;
+    private array $devPackages;
 
     private function __construct()
     {
@@ -33,6 +34,7 @@ class PackagesRegistry
             $this->composerLockRepo = $composer->getLocker()->getLockedRepository();
         }
 
+        $this->devPackages = $composer->getLocker()->getDevPackageNames();
     }
 
     private function __clone()
@@ -51,12 +53,19 @@ class PackagesRegistry
      * Provide already preloaded packages by directories filter.
      *
      * @param string[] $directories absolute directory path.
+     * @param bool $withDev
      *
      * @return \Generator
      */
-    public function getPackages(array $directories = []): \Generator
+    public function getPackages(array $directories = [], bool $withDev = true): \Generator
     {
-        foreach ($this->getAllPackages() as $package) {
+        if ($withDev) {
+            $packages = $this->getAllPackages();
+        } else {
+            $packages = $this->getAllPackagesExcludingDev();
+        }
+
+        foreach ($packages as $package) {
             foreach ($directories as $directory) {
                 if (str_contains($package->getPackagePath(), $directory)) {
                     yield $package;
@@ -64,6 +73,11 @@ class PackagesRegistry
                 }
             }
         }
+    }
+
+    public function getAllPackagesExcludingDev(): array
+    {
+        return array_diff_key($this->getAllPackages(), array_flip($this->devPackages));
     }
 
     /**

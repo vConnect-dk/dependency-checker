@@ -2,11 +2,8 @@
 <?php declare(strict_types=1);
 
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies;
-use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
 use Vconnect\IntegrityChecker\Application\Dependencies\Console;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
-use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
 
 function exception_error_handler($severity, $message, $file, $line) {
     if (!(error_reporting() & $severity)) {
@@ -18,31 +15,43 @@ function exception_error_handler($severity, $message, $file, $line) {
 set_error_handler("exception_error_handler");
 ini_set("memory_limit", "-1");
 
+$dir = __DIR__;
 try {
-    require_once __DIR__ . '/../bootstrap.php';
+    require_once $dir . '/../bootstrap.php';
 } catch (\Throwable $exception) {
     echo 'Can not load autoload file. Please try to re-install project';
     die(2);
 }
 
-$console = new Console();
+$console = new \Vconnect\IntegrityChecker\Application\Disassembling\Console();
 
 if (!$console->validateParameters()) {
     $console->printHelp();
     die(2);
 }
 
-$directories = array_slice($argv, 2);
+$directories = [ROOT_DIR . DefaultAnalysisFolders::APP, ROOT_DIR . DefaultAnalysisFolders::SRC, ROOT_DIR . 'vendor'];
 
-if (empty($directories)) {
-    $directories = [ROOT_DIR . DefaultAnalysisFolders::APP, ROOT_DIR . DefaultAnalysisFolders::SRC, ROOT_DIR . 'vendor'];
+$packages = PackagesRegistry::getInstance()->getPackages($directories, false);
+
+$whitelist = [];
+$whitelistArgument = $console->getWhitelist();
+
+if (isset($whitelistArgument)) {
+    $file = null;
+    if (is_file($whitelistArgument)) {
+        $file = $whitelistArgument;
+    } elseif (is_file(ROOT_DIR . '/' . $whitelistArgument)) {
+        $file = ROOT_DIR . '/' . $whitelistArgument;
+    }
+
+    if ($file) {
+        $whitelist = explode(PHP_EOL, file_get_contents($file));
+    } else {
+        $whitelist = explode(',', $argv[2]);
+    }
 }
 
-$packages = PackagesRegistry::getInstance()->getPackages($directories);
+$analyzer = new Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder($whitelist);
 
-$analyzer = new Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder();
-
-foreach ($analyzer->analyse($packages) as $result) {
-    echo '"' . $result . '": "*",'. PHP_EOL;
-}
-
+$console->printOutput($analyzer->analyse($packages));

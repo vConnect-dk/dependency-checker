@@ -20,7 +20,7 @@ interface ConsoleInterface
      * @param ResultInterface $result
      * @return void
      */
-    public function printOutput(ResultInterface $result): void;
+    public function printOutput(mixed $result): void;
 
     /**
      * @return int

@@ -2,62 +2,50 @@
 
 namespace Vconnect\IntegrityChecker\Analysis\Service;
 
-use RectorPrefix202304\Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Dependency;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbSchema;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\ScannerPool;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Graph;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Kahn;
 use Vconnect\IntegrityChecker\Domain\Package;
+use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 
 class TopologicalOrder implements AnalyzerInterface
 {
     private ScannerPool $scanners;
 
-    public function __construct()
+    public function __construct(private readonly array $whiteList = [])
     {
         $this->scanners = new ScannerPool();
     }
 
     public function analyse(iterable $packages): iterable
     {
+        $graph = new Graph();
 
-        if (is_file('serialized.srz')) {
-            $graph = unserialize(file_get_contents('serialized.srz'));
-        } else {
+        /** @var Package $package */
+        foreach ($packages as $package) {
+            $dependencyModel = new Dependency();
 
-            $graph = new Graph();
-
-            /** @var Package $package */
-            foreach ($packages as $package) {
-                $dependencyModel = new Dependency();
-
-                foreach ($this->scanners as $scanner) {
-                    $dependencyModel->mergeDependencies($scanner->lookupDependencies($package));
-                }
-
-                if ($package->getPackageName() !== 'magento/magento2-base') {
-
-                $dependencies = $dependencyModel->getHardDependencies();
-                    try {
-                        $dependencies = array_unique(
-                            array_merge($dependencies, $package->getComposerRequirePackages(false))
-                        );
-                    } catch (FileNotFoundException) {
-                    }
-                }
-
-                $graph->addDependencies($package->getPackageName(), $dependencies);
-                //              $graph->addDependencies($package->getPackageName(), $package->getComposerRequirePackages());
-
+            foreach ($this->scanners as $scanner) {
+                $dependencyModel->mergeDependencies($scanner->lookupDependencies($package));
             }
+
+            $dependencies = $dependencyModel->getHardDependencies();
+            try {
+                $dependencies = array_unique(
+                    array_merge(
+                        $dependencies,
+                        $package->getComposerRequirePackages(false),
+                        $package->getComposerReplacePackages()
+                    )
+                );
+            } catch (FileNotFoundException) {
+            }
+
+            $graph->addDependencies($package->getPackageName(), $dependencies);
         }
 
-        file_put_contents('serialized.srz', serialize($graph));
-
-        $kahn = new Kahn($graph);
+        $kahn = new Kahn($graph, $this->whiteList);
         $kahn->processGraph();
 
         return $kahn->getOrderedPackagesToRemove();

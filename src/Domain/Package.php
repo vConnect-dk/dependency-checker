@@ -90,6 +90,17 @@ class Package
     }
 
     /**
+     * Get extension replace section
+     *
+     * @return array
+     * @throws FileNotFoundException
+     */
+    public function getComposerReplacePackages(): array
+    {
+        return $this->getComposerJson()->getReplace();
+    }
+
+    /**
      * Get declared dependencies in module.xml file.
      *
      * @return array

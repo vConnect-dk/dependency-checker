@@ -89,6 +89,13 @@ class Json
 
     }
 
+    public function getReplace(): array
+    {
+        $dependencies = $this->getContent()['replace'] ?? [];
+
+        return $this->filterComposerPackages($dependencies);
+    }
+
     /**
      * @param array $dependencies
      * @return array

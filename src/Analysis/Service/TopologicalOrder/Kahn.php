@@ -4,19 +4,28 @@ namespace Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder;
 
 class Kahn
 {
-    private $orderedNodes = [];
+    private array $orderedNodes = [];
 
-    public function __construct(private Graph $graph) {}
+    public function __construct(
+        private readonly Graph $graph,
+        private readonly array $whitelist
+    ) {}
 
     public function processGraph(): void
     {
         $nodes = $this->graph->getAllNodes();
 
         $representation = [];
+        $generation = 1;
         $queue = [];
+        $nextGeneration = [];
 
         foreach ($nodes as $node) {
-            $representation[$node->getName()] = count($node->getInEdges());
+            if (in_array($node->getName(), $this->whitelist)) {
+                $representation[$node->getName()] = INF;
+            } else {
+                $representation[$node->getName()] = count($node->getInEdges());
+            }
 
             if ($representation[$node->getName()] === 0) {
                 $queue[] = $node->getName();
@@ -24,44 +33,28 @@ class Kahn
         }
 
         while (!empty($queue)) {
-            $module = array_shift($queue);
-            $node = $nodes[$module];
-            if ($module == 'vconnect/module-content-migration') {
-                $a = 'b';
-            }
+            while (!empty($queue)) {
+                $module = array_shift($queue);
+                $node = $nodes[$module];
 
-            $this->orderedNodes[$module] = $module;
+                $this->orderedNodes[$generation][$module] = $module;
 
-            foreach ($node->getOutEdges() as $edge) {
-                if ($edge == 'vconnect/module-content-migration') {
-                    $a = 'b';
-                }
-                $representation[$edge] -= 1;
+                foreach ($node->getOutEdges() as $edge) {
+                    $representation[$edge] -= 1;
 
-                if ($representation[$edge] === 0) {
-                    $queue[] = $edge;
+                    if ($representation[$edge] === 0) {
+                        $nextGeneration[] = $edge;
+                    }
                 }
             }
+            $queue = $nextGeneration;
+            $generation++;
+            $nextGeneration = [];
         }
-        $r = $this->getLeftDependencies('vaimo/composer-patches');
     }
 
-    public function getOrderedPackagesToRemove()
+    public function getOrderedPackagesToRemove(): array
     {
         return $this->orderedNodes;
-    }
-
-    public function getLeftDependencies(string $moduleName)
-    {
-        $module = $this->graph->getNode($moduleName);
-
-        $result = [];
-        foreach ($module->getInEdges() as $edge) {
-            if (!isset($this->orderedNodes[$edge])) {
-                $result[] = $edge;
-            }
-        }
-
-        return $result;
     }
 }
