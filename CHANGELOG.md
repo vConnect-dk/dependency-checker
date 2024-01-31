@@ -1,3 +1,8 @@
+2.5.0
+===========
+* Add Magento 2 disassemble roadmap command
+* Command provide list and order of packages that can be replaced in root composer (based on results of dependency analysis)
+
 2.4.0
 ============
 * Add support of queue configs dependency check
