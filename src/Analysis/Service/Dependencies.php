@@ -5,11 +5,7 @@ namespace Vconnect\IntegrityChecker\Analysis\Service;
 use Vconnect\IntegrityChecker\Analysis\Data\Dependencies\Result;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Dependency;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbSchema;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DependenciesScannerInterface;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\QueueConfig;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\ScannerPool;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
@@ -141,21 +137,6 @@ class Dependencies implements AnalyzerInterface
         );
 
         return $result;
-    }
-
-    /**
-     * @param array $dependency
-     *
-     * @return array
-     */
-    private function getPackageNameByNamespace(array $dependency): array
-    {
-        return array_filter(
-            array_map(
-                fn(string $namespace) => $this->packagesRegistry->getPackageNameByNamespace($namespace),
-                $dependency
-            )
-        );
     }
 
     /**

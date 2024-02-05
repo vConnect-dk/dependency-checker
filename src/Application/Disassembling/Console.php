@@ -7,7 +7,7 @@ use League\CLImate\Exceptions\InvalidArgumentException;
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
 
-class Console
+class Console implements ConsoleInterface
 {
     private const ARG_MAGENTO_2_ROOT = 'magento2root';
     private const ARG_WHITELIST = 'whitelist';
@@ -57,11 +57,11 @@ class Console
     /**
      * Print result message for package.
      *
-     * @param iterable $result
+     * @param ResultInterface $result
      */
-    public function printOutput(iterable $result): void
+    public function printOutput(ResultInterface $result): void
     {
-        foreach ($result as $generation => $modules) {
+        foreach ($result->getResult() as $generation => $modules) {
             $this->cli->out(sprintf('Layer %s ', $generation));
             foreach ($modules as $result) {
                 $this->cli->tab()->out(sprintf('"%s": "*",', $result));

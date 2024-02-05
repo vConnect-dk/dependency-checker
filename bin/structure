@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultPackageStructure;
 use Vconnect\IntegrityChecker\Analysis\Service\Structure;
@@ -46,7 +46,7 @@ $filter = function (SplFileInfo $fileInfo) {
 
 $packages = $scanner->getPackagesRecursively($directories, $filter, '/registration\\.php/');
 
-/** @var ResultInterface $result */
+/** @var DefectiveResultInterface $result */
 foreach ($analyzer->analyse($packages) as $result) {
     $console->printOutput($result);
 }

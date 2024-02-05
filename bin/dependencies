@@ -3,7 +3,7 @@
 
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies;
-use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 use Vconnect\IntegrityChecker\Application\Dependencies\Console;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
@@ -41,7 +41,7 @@ $packages = PackagesRegistry::getInstance()->getPackages($directories);
 
 $analyzer = new Dependencies();
 
-/** @var ResultInterface $result */
+/** @var DefectiveResultInterface $result */
 foreach ($analyzer->analyse($packages) as $result) {
     $console->printOutput($result);
 }

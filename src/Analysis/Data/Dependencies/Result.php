@@ -2,10 +2,10 @@
 
 namespace Vconnect\IntegrityChecker\Analysis\Data\Dependencies;
 
-use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
-class Result implements ResultInterface
+class Result implements DefectiveResultInterface
 {
     private string $packageName;
 
