@@ -215,6 +215,11 @@ class Package
             return $this->composerJson;
         }
 
+        if (is_file($this->getPackagePath() . DIRECTORY_SEPARATOR . 'composer.json')) {
+            $this->composerJson = new Json($this->getPackagePath() . DIRECTORY_SEPARATOR . 'composer.json');
+            return $this->composerJson;
+        }
+
         foreach ($this->getPackageFilesList() as $file) {
             if ($file->getFilename() === 'composer.json') {
                 $this->composerJson = new Json($file->getPathname());

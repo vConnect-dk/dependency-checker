@@ -2,17 +2,18 @@
 
 namespace Vconnect\IntegrityChecker\Application\Registry;
 
-use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 
 class DefectsState
 {
     private bool $hasDefects = false;
 
     /**
-     * @param ResultInterface $result
+     * @param DefectiveResultInterface $result
+     *
      * @return void
      */
-    public function registerResult(ResultInterface $result): void
+    public function registerResult(DefectiveResultInterface $result): void
     {
         $this->hasDefects = $this->hasDefects || $result->hasDefects();
     }

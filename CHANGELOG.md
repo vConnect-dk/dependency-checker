@@ -1,3 +1,9 @@
+2.5.1
+===========
+* Fix broken dependency checker
+* Update README.md with info regarding disassembling roadmap
+* Fix wrong composer.json reading for packages that have more than one composer.json file
+
 2.5.0
 ===========
 * Add Magento 2 disassemble roadmap command

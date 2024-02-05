@@ -4,7 +4,8 @@
     "version": "2.5.0",
     "bin": [
         "bin/dependencies",
-        "bin/structure"
+        "bin/structure",
+        "bin/disassembling"
     ],
     "require": {
         "php": ">=8.0.0",

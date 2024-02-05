@@ -2,8 +2,8 @@
 
 namespace Vconnect\IntegrityChecker\Application\Structure;
 
-use Vconnect\IntegrityChecker\Application\ConsoleInterface;
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
+use Vconnect\IntegrityChecker\Application\ConsoleInterface;
 use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
 
 class Console implements ConsoleInterface

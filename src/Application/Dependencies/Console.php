@@ -4,6 +4,7 @@ namespace Vconnect\IntegrityChecker\Application\Dependencies;
 
 use League\CLImate\CLImate;
 use League\CLImate\Exceptions\InvalidArgumentException;
+use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
@@ -51,7 +52,7 @@ class Console implements ConsoleInterface
     /**
      * Print result message for package.
      *
-     * @param ResultInterface $result
+     * @param DefectiveResultInterface $result
      */
     public function printOutput(ResultInterface $result): void
     {

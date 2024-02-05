@@ -58,3 +58,28 @@ registration.php
 etc
   module.xml
 ```
+
+#### Disassembling Roadmap ####
+
+```bash
+bin/disassembling {magento root} {whitelist.txt}
+```
+
+{magento root} - path to Magento 2 project root directory.
+{whitelist.txt} - path to file with whitelisted modules or list of modules separated by comma.
+
+Recommended minimum whitelist to have running Magento 2 store (with functional checkout and order placement):
+colinmollenhour/cache-backend-file
+colinmollenhour/cache-backend-redis
+phpseclib/mcrypt_compat
+magento/module-elasticsearch-7
+magento/theme-frontend-luma
+magento/theme-adminhtml-backend
+magento/module-mysql-mq
+magento/module-offline-payments
+magento/module-offline-shipping
+
+Example of command:
+```bash
+php src/vendor/bin/disassembling . colinmollenhour/cache-backend-file,colinmollenhour/cache-backend-redis,phpseclib/mcrypt_compat,magento/module-elasticsearch-7,magento/theme-frontend-luma,magento/theme-adminhtml-backend,magento/module-mysql-mq,magento/module-offline-payments,magento/module-offline-shipping
+```

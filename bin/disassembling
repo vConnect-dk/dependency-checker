@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
+use Vconnect\IntegrityChecker\Analysis\Data\TopologicalOrder\Result;
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Application\Dependencies\Console;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
@@ -47,11 +48,11 @@ if (isset($whitelistArgument)) {
 
     if ($file) {
         $whitelist = explode(PHP_EOL, file_get_contents($file));
-    } else {
-        $whitelist = explode(',', $argv[2]);
+    } elseif (!empty($whitelistArgument)) {
+        $whitelist = explode(',', $whitelistArgument);
     }
 }
 
 $analyzer = new Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder($whitelist);
 
-$console->printOutput($analyzer->analyse($packages));
+$console->printOutput(new Result($analyzer->analyse($packages)));
