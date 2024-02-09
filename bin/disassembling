@@ -38,7 +38,7 @@ $packages = PackagesRegistry::getInstance()->getPackages($directories, false);
 $whitelist = [];
 $whitelistArgument = $console->getWhitelist();
 
-if (isset($whitelistArgument)) {
+if (!empty($whitelistArgument)) {
     $file = null;
     if (is_file($whitelistArgument)) {
         $file = $whitelistArgument;
@@ -47,12 +47,16 @@ if (isset($whitelistArgument)) {
     }
 
     if ($file) {
-        $whitelist = explode(PHP_EOL, file_get_contents($file));
+        $whitelist = array_flip(explode(PHP_EOL, file_get_contents($file)));
     } elseif (!empty($whitelistArgument)) {
-        $whitelist = explode(',', $whitelistArgument);
+        $whitelist = array_flip(explode(',', $whitelistArgument));
     }
 }
 
-$analyzer = new Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder($whitelist);
+$analyzer = new Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder(
+    $whitelist,
+    $console->getExplainArgument(),
+    !$console->getNoCacheArgument()
+);
 
 $console->printOutput(new Result($analyzer->analyse($packages)));

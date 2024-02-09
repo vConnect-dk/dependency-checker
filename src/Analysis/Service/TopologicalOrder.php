@@ -13,12 +13,50 @@ class TopologicalOrder implements AnalyzerInterface
 {
     private ScannerPool $scanners;
 
-    public function __construct(private readonly array $whiteList = [])
-    {
+    public function __construct(
+        private readonly array $whiteList = [],
+        private readonly ?string $explain = null,
+        private readonly bool $useCache = true
+    ) {
         $this->scanners = new ScannerPool();
     }
 
     public function analyse(iterable $packages): iterable
+    {
+        $kahn = new Kahn($this->getGraph($packages), $this->whiteList);
+        $kahn->processGraph();
+
+        if ($this->explain) {
+            return $kahn->explain($this->explain);
+        } else {
+            return $kahn->getOrderedPackagesToRemove();
+        }
+    }
+
+    private function getGraph(iterable $packages): Graph
+    {
+        if (!$this->useCache) {
+            return $this->createGraph($packages);
+        }
+
+        $cache = ROOT_DIR . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'dependency-checker-cache.srz';
+
+        if (is_file($cache)) {
+            if (time() - filectime($cache) > 300) {
+                unlink($cache);
+            } else {
+                return unserialize(file_get_contents($cache));
+            }
+        }
+
+        $graph = $this->createGraph($packages);
+        file_put_contents($cache, serialize($graph));
+
+        return $graph;
+    }
+
+
+    private function createGraph(iterable $packages): Graph
     {
         $graph = new Graph();
 
@@ -45,9 +83,6 @@ class TopologicalOrder implements AnalyzerInterface
             $graph->addDependencies($package->getPackageName(), $dependencies);
         }
 
-        $kahn = new Kahn($graph, $this->whiteList);
-        $kahn->processGraph();
-
-        return $kahn->getOrderedPackagesToRemove();
+        return $graph;
     }
 }

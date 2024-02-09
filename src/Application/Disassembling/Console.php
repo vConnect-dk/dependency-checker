@@ -11,6 +11,8 @@ class Console implements ConsoleInterface
 {
     private const ARG_MAGENTO_2_ROOT = 'magento2root';
     private const ARG_WHITELIST = 'whitelist';
+    private const ARG_PACKAGE_EXPLAIN = 'explain';
+    private const ARG_NO_CACHE = 'no-cache';
     private const ARG_HELP = 'help';
     private CLImate $cli;
 
@@ -32,8 +34,23 @@ class Console implements ConsoleInterface
                 'castTo' => 'string'
             ],
             self::ARG_WHITELIST => [
+                'prefix' => 'w',
+                'longPrefix' => self::ARG_WHITELIST,
                 'description' => 'Whitelist file or list of modules that should not be removed.' .
                     ' Please specify either path to the file or comma separated list of modules.',
+                'required' => false
+            ],
+            self::ARG_PACKAGE_EXPLAIN => [
+                'prefix' => 'e',
+                'longPrefix' => self::ARG_PACKAGE_EXPLAIN,
+                'description' => 'Package name to explain if it can be removed or not.',
+                'required' => false
+            ],
+            self::ARG_NO_CACHE => [
+                'prefix' => 'nc',
+                'longPrefix' => self::ARG_NO_CACHE,
+                'description' => 'Generate new dependency graph instead of using cache.',
+                'noValue' => true,
                 'required' => false
             ],
             self::ARG_HELP => [
@@ -42,6 +59,15 @@ class Console implements ConsoleInterface
                 'noValue' => true,
             ],
         ]);
+    }
+
+    public function getNoCacheArgument(): bool
+    {
+        if ($this->cli->arguments->defined(self::ARG_NO_CACHE)) {
+            return $this->cli->arguments->get(self::ARG_NO_CACHE);
+        } else {
+            return false;
+        }
     }
 
     public function getMagentoRoot(): string
@@ -54,12 +80,37 @@ class Console implements ConsoleInterface
         return $this->cli->arguments->get(self::ARG_WHITELIST);
     }
 
+    public function getExplainArgument(): ?string
+    {
+        return $this->cli->arguments->get(self::ARG_PACKAGE_EXPLAIN);
+    }
+
     /**
      * Print result message for package.
      *
      * @param ResultInterface $result
      */
     public function printOutput(ResultInterface $result): void
+    {
+        if ($this->getExplainArgument()) {
+            $this->printExplainOutput($result);
+        } else {
+            $this->printReplaceOutput($result);
+        }
+    }
+
+    private function printExplainOutput(ResultInterface $result): void
+    {
+        foreach ($result->getResult() as $message) {
+            if ($message['problem']) {
+                $this->cli->red()->bold($message['message']);
+            } else {
+                $this->cli->bold($message['message']);
+            }
+        }
+    }
+
+    private function printReplaceOutput(ResultInterface $result): void
     {
         foreach ($result->getResult() as $generation => $modules) {
             $this->cli->out(sprintf('Layer %s ', $generation));
@@ -113,8 +164,6 @@ class Console implements ConsoleInterface
 
     private function parseArguments(): void
     {
-        $argv = $_SERVER['argv'];
-        $argv[2] = implode(' ', array_unique(array_slice($argv, 2)));
-        $this->cli->arguments->parse($argv);
+        $this->cli->arguments->parse($_SERVER['argv']);
     }
 }

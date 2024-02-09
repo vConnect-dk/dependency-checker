@@ -1,3 +1,10 @@
+2.5.2.
+===========
+* Added 'explain' argument for disassembling command
+* Extension explain will either provide extension replace instruction or provide a reason why extension can not be removed
+* Added prefix arguments for disassembling command
+* Added 5m cache between command run and option to disable cache during the run
+
 2.5.1
 ===========
 * Fix broken dependency checker

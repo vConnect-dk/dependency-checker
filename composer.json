@@ -1,7 +1,7 @@
 {
     "name": "vconnect/integrity-checker",
     "type": "project",
-    "version": "2.5.1",
+    "version": "2.5.2",
     "bin": [
         "bin/dependencies",
         "bin/structure",
