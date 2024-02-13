@@ -84,8 +84,13 @@ magento/module-offline-shipping
 Examples of command usage
 Project Analysis:
 ```bash
-php src/vendor/bin/disassembling . colinmollenhour/cache-backend-file,colinmollenhour/cache-backend-redis,phpseclib/mcrypt_compat,magento/module-elasticsearch-7,magento/theme-frontend-luma,magento/theme-adminhtml-backend,magento/module-mysql-mq,magento/module-offline-payments,magento/module-offline-shipping
+php src/vendor/bin/disassembling . --whitelist=colinmollenhour/cache-backend-file,colinmollenhour/cache-backend-redis,phpseclib/mcrypt_compat,magento/module-elasticsearch-7,magento/theme-frontend-luma,magento/theme-adminhtml-backend,magento/module-mysql-mq,magento/module-offline-payments,magento/module-offline-shipping
 ```
+Project Analysis using a whitelist file:
+```bash
+php src/vendor/bin/disassembling . --whitelist=whitelist.txt
+```
+
 Extension Explain:
 ```bash
 php src/vendor/bin/disassembling . --explain=magento/module-offline-payments --no-cache
@@ -95,3 +100,6 @@ Prefix usage:
 php src/vendor/bin/disassembling . -e=magento/module-offline-payments -nc
 ```
 
+#### Cache
+By default, cache is enabled and stored in a `[Magento root]/var/dependency-checker-cache.srz` file with a 300 seconds lifetime.
+Make sure to use `--no-cache` flag to disable cache usage when run with a new parameters.
