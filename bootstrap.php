@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+use Vconnect\IntegrityChecker\Application;
+
 if (isset($argv[1])) {
     define('ROOT_DIR', realpath($argv[1]) . '/');
 }
@@ -22,3 +24,7 @@ if (!empty($GLOBALS['_composer_autoload_path'])) {
 }
 
 define('PACKAGE_DIR', realpath(__DIR__));
+
+function App(): Application {
+    return Application::get();
+}

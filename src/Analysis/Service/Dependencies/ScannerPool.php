@@ -3,29 +3,27 @@
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies;
 
 use Traversable;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbSchema;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DependenciesScannerInterface;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\QueueConfig;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
 
 class ScannerPool implements \IteratorAggregate
 {
     /**
-     * @var DependenciesScannerInterface[]
+     * @param DependenciesScannerInterface[] $scanners
      */
-    private array $scanners;
-
-    public function __construct()
-    {
-        $this->scanners = [
-            new PhpFiles(),
-            new XmlConfigFiles(),
-            new DbSchema(),
-            new QueueConfig()
-        ];
+    public function __construct(
+        private readonly array $scanners = []
+    ) {
+        foreach ($this->scanners as $scanner) {
+            if (!$scanner instanceof DependenciesScannerInterface) {
+                throw new \InvalidArgumentException('All scanners must implement DependenciesScannerInterface');
+            }
+        }
     }
 
+    /**
+     * @return Traversable|DependenciesScannerInterface[]
+     * @noinspection PhpDocSignatureInspection
+     */
     public function getIterator(): Traversable
     {
         yield from $this->scanners;

@@ -39,7 +39,7 @@ if (empty($directories)) {
 
 $packages = PackagesRegistry::getInstance()->getPackages($directories);
 
-$analyzer = new Dependencies();
+$analyzer = App()->getContainer()->get(Dependencies::class);
 
 /** @var DefectiveResultInterface $result */
 foreach ($analyzer->analyse($packages) as $result) {
