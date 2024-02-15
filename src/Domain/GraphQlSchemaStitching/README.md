@@ -1,1 +1,0 @@
-A copy of Magento\Framework\GraphQlSchemaStitching with some changes (it is actually does not work in Magento right now for its own tests)

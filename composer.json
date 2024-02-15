@@ -15,7 +15,8 @@
         "league/climate": "^3",
         "composer/composer": "^2",
         "webonyx/graphql-php": "^15.0",
-        "php-di/php-di": "^7.0"
+        "php-di/php-di": "^7.0",
+        "adbario/php-dot-notation": "^3.3"
     },
     "autoload": {
         "psr-4": {

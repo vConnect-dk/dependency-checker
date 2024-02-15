@@ -19,7 +19,7 @@ class GraphQlSchema implements DependenciesScannerInterface
     {
         $scannerResult = new ScannerResult();
         $dependencies = $this->graphQlSchemaDependencyProvider->getPackageDependencies($package);
-        dd($dependencies);
+        $scannerResult->addSoftDependencies($dependencies);
 
         return $scannerResult;
     }

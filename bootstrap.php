@@ -2,6 +2,17 @@
 
 use Vconnect\IntegrityChecker\Application;
 
+function exception_error_handler($severity, $message, $file, $line): void {
+    if (!(error_reporting() & $severity)) {
+        // This error code is not included in error_reporting
+        return;
+    }
+    throw new ErrorException($message, 0, $severity, $file, $line);
+}
+set_error_handler('exception_error_handler');
+ini_set('memory_limit', '-1');
+
+
 if (isset($argv[1])) {
     define('ROOT_DIR', realpath($argv[1]) . '/');
 }

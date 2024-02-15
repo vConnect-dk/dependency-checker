@@ -1,0 +1,179 @@
+<?php
+declare(strict_types=1);
+
+namespace Vconnect\IntegrityChecker\Domain\GraphQlSchema;
+
+use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
+
+class GraphQlReader
+{
+    private ?array $definitionsRuntimeCache = null;
+
+    public function getAllGraphQlTypesDefinitions(): array
+    {
+        if ($this->definitionsRuntimeCache === null) {
+            $definitions = [];
+            foreach ($this->collectGraphQlSchemaFiles() as $package => $partialSchemaContent) {
+                $partialSchemaTypes = $this->parseTypesWithUnionHandling($partialSchemaContent);
+
+                foreach ($partialSchemaTypes as $type => $partialSchemaType) {
+                    if ($type === 'Query' || $type === 'Mutation') {
+                        continue;
+                    }
+                    $definitions[$type][$package] = $partialSchemaType;
+                }
+            }
+            $this->definitionsRuntimeCache = $definitions;
+        }
+
+        return $this->definitionsRuntimeCache;
+    }
+
+    /**
+     * Extract types as string from a larger string that represents the graphql schema using regular expressions
+     *
+     * The regex in parseTypes does not have the ability to split out the union data from the type below it for example
+     *
+     *  > union X = Y | Z
+     *  >
+     *  > type foo {}
+     *
+     * This would produce only type key from parseTypes, X, which would contain also the type foo entry.
+     *
+     * This wrapper does some post processing as a workaround to split out the union data from the type data below it
+     * which would give us two entries, X and foo
+     *
+     * @param string $graphQlSchemaContent
+     * @return string[] [$typeName => $typeDeclaration, ...]
+     */
+    private function parseTypesWithUnionHandling(string $graphQlSchemaContent): array
+    {
+        $types = $this->parseTypes($graphQlSchemaContent);
+
+        /*
+         * A union schema contains also the data from the schema below it
+         *
+         * If there are two newlines in this union schema then it has data below its definition, meaning it contains
+         * type information not relevant to its actual type
+         */
+        $unionTypes = array_filter(
+            $types,
+            function ($t) {
+                return (str_contains((string)$t, 'union ')) && (str_contains((string)$t, PHP_EOL . PHP_EOL));
+            }
+        );
+
+        foreach ($unionTypes as $type => $schema) {
+            $splitSchema = explode(PHP_EOL . PHP_EOL, (string)$schema);
+            // Get the type data at the bottom, this will be the additional type data not related to the union
+            $additionalTypeSchema = end($splitSchema);
+            // Parse the additional type from the bottom so we can have its type key => schema pair
+            $additionalTypeData = $this->parseTypes($additionalTypeSchema);
+            // Fix the union type schema so it does not contain the definition below it
+            $types[$type] = str_replace($additionalTypeSchema, '', $schema);
+            // Append the additional data to types array
+            $additionalTypeKey = array_key_first($additionalTypeData);
+            $types[$additionalTypeKey] = $additionalTypeData[$additionalTypeKey];
+        }
+
+        return $types;
+    }
+
+    /**
+     * Extract types as string from a larger string that represents the graphql schema using regular expressions
+     *
+     * @param string $graphQlSchemaContent
+     * @return string[] [$typeName => $typeDeclaration, ...]
+     */
+    private function parseTypes(string $graphQlSchemaContent): array
+    {
+        $typeKindsPattern = '(type|interface|union|enum|input)';
+        $typeNamePattern = '([_A-Za-z][_0-9A-Za-z]+)';
+        $typeDefinitionPattern = '([^\{\}]*)(\{[^\}]*\})';
+        $spacePattern = '[\s\t\n\r]+';
+
+        preg_match_all(
+            "/{$typeKindsPattern}{$spacePattern}{$typeNamePattern}{$spacePattern}{$typeDefinitionPattern}/i",
+            $graphQlSchemaContent,
+            $matches
+        );
+
+        $parsedTypes = [];
+
+        if (!empty($matches)) {
+            foreach ($matches[0] as $matchKey => $matchValue) {
+                $matches[0][$matchKey] = $this->convertInterfacesToAnnotations($matchValue);
+            }
+
+            /**
+             * $matches[0] is an indexed array with the whole type definitions
+             * $matches[2] is an indexed array with type names
+             */
+            $parsedTypes = array_combine($matches[2], $matches[0]);
+        }
+        return $parsedTypes;
+    }
+
+
+    /**
+     * Find the implements statement and convert them to annotation to enable copy fields feature
+     *
+     * @param string $graphQlSchemaContent
+     * @return string
+     */
+    private function convertInterfacesToAnnotations(string $graphQlSchemaContent): string
+    {
+        $implementsKindsPattern = 'implements';
+        $typeNamePattern = '([_A-Za-z][_0-9A-Za-z]+)';
+        $spacePattern = '([\s\t\n\r]+)';
+        $spacePatternNotMandatory = '[\s\t\n\r]*';
+        preg_match_all(
+            "/{$spacePattern}{$implementsKindsPattern}{$spacePattern}{$typeNamePattern}"
+            . "(,{$spacePatternNotMandatory}|({$spacePatternNotMandatory}&{$spacePatternNotMandatory})?"
+            . "$typeNamePattern)*/im",
+            $graphQlSchemaContent,
+            $allMatchesForImplements
+        );
+
+        if (!empty($allMatchesForImplements)) {
+            foreach (array_unique($allMatchesForImplements[0]) as $implementsString) {
+                $implementsString = $implementsString ?? '';
+                $implementsStatementString = preg_replace(
+                    "/{$spacePattern}{$implementsKindsPattern}{$spacePattern}/m",
+                    '',
+                    $implementsString
+                );
+                preg_match_all(
+                    "/{$typeNamePattern}+/im",
+                    $implementsStatementString,
+                    $implementationsMatches
+                );
+
+                if (!empty($implementationsMatches)) {
+                    $annotationString = ' @implements(interfaces: [';
+                    foreach ($implementationsMatches[0] as $interfaceName) {
+                        $annotationString .= "\"{$interfaceName}\", ";
+                    }
+                    $annotationString = rtrim($annotationString, ', ');
+                    $annotationString .= ']) ';
+                    $graphQlSchemaContent = str_replace($implementsString, $annotationString, $graphQlSchemaContent);
+                }
+            }
+        }
+
+        return $graphQlSchemaContent;
+    }
+
+    private function collectGraphQlSchemaFiles(): array
+    {
+        $files = [];
+        foreach (PackagesRegistry::getInstance()->getAllPackages() as $package) {
+            $graphQlSchema = $package->getConfig()->getGraphQlSchema();
+            if ($graphQlSchema !== null) {
+                $files[$package->getPackageName()] = $graphQlSchema;
+            }
+        }
+
+        return $files;
+    }
+}
