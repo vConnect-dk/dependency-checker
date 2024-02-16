@@ -6,16 +6,6 @@ use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Application\Dependencies\Console;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
-function exception_error_handler($severity, $message, $file, $line) {
-    if (!(error_reporting() & $severity)) {
-        // This error code is not included in error_reporting
-        return;
-    }
-    throw new ErrorException($message, 0, $severity, $file, $line);
-}
-set_error_handler("exception_error_handler");
-ini_set("memory_limit", "-1");
-
 $dir = __DIR__;
 try {
     require_once $dir . '/../bootstrap.php';

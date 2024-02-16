@@ -21,7 +21,7 @@ class Kahn
         $nextGeneration = [];
 
         foreach ($nodes as $node) {
-            if (in_array($node->getName(), $this->whitelist)) {
+            if (isset($this->whitelist[$node->getName()])) {
                 $representation[$node->getName()] = INF;
             } else {
                 $representation[$node->getName()] = count($node->getInEdges());

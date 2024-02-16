@@ -5,7 +5,6 @@ namespace Vconnect\IntegrityChecker\Analysis\Service;
 use Vconnect\IntegrityChecker\Analysis\Data\Dependencies\Result;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Dependency;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DependenciesScannerInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\ScannerPool;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
@@ -19,17 +18,12 @@ class Dependencies implements AnalyzerInterface
         Package::MAGENTO_COMPONENT_TYPE
     ];
 
-    /**
-     * @var DependenciesScannerInterface[]
-     */
-    private ScannerPool $scanners;
-
     private PackagesRegistry $packagesRegistry;
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly ScannerPool $scanners
+    ) {
         $this->packagesRegistry = PackagesRegistry::getInstance();
-        $this->scanners = new ScannerPool();
     }
 
     /**
