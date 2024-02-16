@@ -3,8 +3,9 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\GraphQl;
 
-use GraphQL\Error\SyntaxError;
+use Exception;
 use GraphQL\Language\Parser;
+use GraphQL\Type\Definition\Type;
 use Vconnect\IntegrityChecker\Domain\GraphQlSchema\GraphQlReader;
 
 class SchemaDefinitionOwnerMapper
@@ -16,7 +17,30 @@ class SchemaDefinitionOwnerMapper
     ) {
     }
 
-    public function getOwner(string $definitionType): ?string
+    /**
+     *  We treat extending types as soft dependencies.
+     * @param string $definitionType
+     * @return string|null
+     */
+    public function getSoftDependency(string $definitionType): ?string
+    {
+        return $this->getOwner($definitionType);
+    }
+
+    /**
+     * Implementing interfaces, using types for fields we treat as hard dependencies.
+     *
+     * @param string $definition
+     * @return array
+     */
+    public function getHardDependencies(string $definition): array
+    {
+        $typesUsed = $this->getTypesUsedInDefinition($definition);
+
+        return array_map(fn(string $type) => $this->getOwner($type), $typesUsed);
+    }
+
+    private function getOwner(string $definitionType): ?string
     {
         if ($this->ownersMap === null) {
             $this->ownersMap = $this->collectOwners();
@@ -44,11 +68,7 @@ class SchemaDefinitionOwnerMapper
         string $definition,
         string $package
     ): ?int {
-        try {
-            $parsedAST = Parser::parse($definition)->toArray();
-        } catch (SyntaxError) {
-            $parsedAST = [];
-        }
+        $parsedAST = $this->parseDefinition($definition);
 
         foreach ($this->getTypeOwnerPriorityRules() as $priority => $rule) {
             if ($rule($package, $parsedAST)) {
@@ -94,8 +114,8 @@ class SchemaDefinitionOwnerMapper
     {
         $parsedAST = dot($parsedAST);
         if ($parsedAST['definitions.0.kind'] === 'ObjectTypeDefinition') {
-            foreach ($parsedAST['definitions.0.directives'] as $directive) {
-                if (dot($directive)['name.value'] === 'implements') {
+            foreach ($parsedAST['definitions.0.interfaces'] as $interface) {
+                if (dot($interface)['name.value']) {
                     return true;
                 }
             }
@@ -120,5 +140,32 @@ class SchemaDefinitionOwnerMapper
     private function isMagentoCoreType(string $package, array $parsedAST = null): bool
     {
         return str_starts_with($package, 'magento/module');
+    }
+
+    private function getTypesUsedInDefinition(string $definition): array
+    {
+        $types = [];
+        $ast = dot($this->parseDefinition($definition)['definitions'][0] ?? []);
+        foreach ($ast->get('interfaces', []) as $interface) {
+            $types[] = $interface['name']['value'];
+        }
+
+        foreach (dot($ast->get('fields', []))->flatten() as $flattenKey => $fieldProperty) {
+            if (str_ends_with($flattenKey, '.type.name.value') && !in_array($fieldProperty, Type::STANDARD_TYPE_NAMES)) {
+                $types[] = $fieldProperty;
+            }
+        }
+
+        return array_unique($types);
+    }
+
+    private function parseDefinition(string $definition): array
+    {
+        try {
+            $parsedAST = Parser::parse($definition)->toArray();
+        } catch (Exception) {
+            $parsedAST = [];
+        }
+        return $parsedAST;
     }
 }

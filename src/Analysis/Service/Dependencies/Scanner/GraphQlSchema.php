@@ -14,14 +14,15 @@ class GraphQlSchema implements DependenciesScannerInterface
     ) {
     }
 
-
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
         $scannerResult = new ScannerResult();
-        $dependencies = $this->graphQlSchemaDependencyProvider->getPackageDependencies($package);
-        $scannerResult->addSoftDependencies($dependencies);
+
+        list($hard, $soft) = $this->graphQlSchemaDependencyProvider->getPackageDependencies($package);
+
+        $scannerResult->addSoftDependencies($soft);
+        $scannerResult->addHardDependencies($hard);
 
         return $scannerResult;
     }
-
 }

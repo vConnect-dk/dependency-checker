@@ -14,8 +14,6 @@ use Vconnect\IntegrityChecker\Domain\Package;
  */
 class GraphQlSchemaDependencyProvider
 {
-    private array $schemaTypeOwners = [];
-
     public function __construct(
         private readonly GraphQlReader               $schemaReader,
         private readonly SchemaDefinitionOwnerMapper $schemaDefinitionOwnerMapper
@@ -28,16 +26,23 @@ class GraphQlSchemaDependencyProvider
      */
     public function getPackageDependencies(Package $package): array
     {
-        $dependencies = [];
+        $hardDependencies = [];
+        $softDependencies = [];
         $packageName = $package->getPackageName();
         $packageSchemaDefinitionTypes = $this->extractSchemaDefinitionTypesForPackage($packageName);
-        foreach ($packageSchemaDefinitionTypes as $definitionType) {
-            $dependencies[] = $this->schemaDefinitionOwnerMapper->getOwner($definitionType);
+        foreach ($packageSchemaDefinitionTypes as $definitionType => $definition) {
+            $softDependencies[] = $this->schemaDefinitionOwnerMapper->getSoftDependency($definitionType);
+            $hardDependencies = array_merge(
+                $hardDependencies,
+                $this->schemaDefinitionOwnerMapper->getHardDependencies($definition)
+            );
         }
 
-        $dependencies = array_filter($dependencies, fn(string $dependencyName) => $dependencyName != $packageName);
+        $excludeSelf = fn(string $dependencyName) => $dependencyName != $packageName;
+        $hardDependencies = array_filter(array_unique($hardDependencies), $excludeSelf);
+        $softDependencies = array_filter(array_unique($softDependencies), $excludeSelf);
 
-        return array_unique($dependencies);
+        return [$hardDependencies, $softDependencies];
     }
 
     private function extractSchemaDefinitionTypesForPackage(string $packageName): array
@@ -46,7 +51,7 @@ class GraphQlSchemaDependencyProvider
         $allDefinitions = $this->schemaReader->getAllGraphQlTypesDefinitions();
         foreach ($allDefinitions as $typeName => $definitions) {
             if (isset($definitions[$packageName])) {
-                $packageDefinitions[] = $typeName;
+                $packageDefinitions[$typeName] = $definitions[$packageName];
             }
         }
 

@@ -48,6 +48,7 @@ class GraphQlReader
      */
     private function parseTypesWithUnionHandling(string $graphQlSchemaContent): array
     {
+        $graphQlSchemaContent = $this->cutOffComments($graphQlSchemaContent);
         $types = $this->parseTypes($graphQlSchemaContent);
 
         /*
@@ -101,10 +102,6 @@ class GraphQlReader
         $parsedTypes = [];
 
         if (!empty($matches)) {
-            foreach ($matches[0] as $matchKey => $matchValue) {
-                $matches[0][$matchKey] = $this->convertInterfacesToAnnotations($matchValue);
-            }
-
             /**
              * $matches[0] is an indexed array with the whole type definitions
              * $matches[2] is an indexed array with type names
@@ -112,56 +109,6 @@ class GraphQlReader
             $parsedTypes = array_combine($matches[2], $matches[0]);
         }
         return $parsedTypes;
-    }
-
-
-    /**
-     * Find the implements statement and convert them to annotation to enable copy fields feature
-     *
-     * @param string $graphQlSchemaContent
-     * @return string
-     */
-    private function convertInterfacesToAnnotations(string $graphQlSchemaContent): string
-    {
-        $implementsKindsPattern = 'implements';
-        $typeNamePattern = '([_A-Za-z][_0-9A-Za-z]+)';
-        $spacePattern = '([\s\t\n\r]+)';
-        $spacePatternNotMandatory = '[\s\t\n\r]*';
-        preg_match_all(
-            "/{$spacePattern}{$implementsKindsPattern}{$spacePattern}{$typeNamePattern}"
-            . "(,{$spacePatternNotMandatory}|({$spacePatternNotMandatory}&{$spacePatternNotMandatory})?"
-            . "$typeNamePattern)*/im",
-            $graphQlSchemaContent,
-            $allMatchesForImplements
-        );
-
-        if (!empty($allMatchesForImplements)) {
-            foreach (array_unique($allMatchesForImplements[0]) as $implementsString) {
-                $implementsString = $implementsString ?? '';
-                $implementsStatementString = preg_replace(
-                    "/{$spacePattern}{$implementsKindsPattern}{$spacePattern}/m",
-                    '',
-                    $implementsString
-                );
-                preg_match_all(
-                    "/{$typeNamePattern}+/im",
-                    $implementsStatementString,
-                    $implementationsMatches
-                );
-
-                if (!empty($implementationsMatches)) {
-                    $annotationString = ' @implements(interfaces: [';
-                    foreach ($implementationsMatches[0] as $interfaceName) {
-                        $annotationString .= "\"{$interfaceName}\", ";
-                    }
-                    $annotationString = rtrim($annotationString, ', ');
-                    $annotationString .= ']) ';
-                    $graphQlSchemaContent = str_replace($implementsString, $annotationString, $graphQlSchemaContent);
-                }
-            }
-        }
-
-        return $graphQlSchemaContent;
     }
 
     private function collectGraphQlSchemaFiles(): array
@@ -175,5 +122,10 @@ class GraphQlReader
         }
 
         return $files;
+    }
+
+    private function cutOffComments(string $graphQlSchemaContent): string
+    {
+        return preg_replace('/#.*\n/', '', $graphQlSchemaContent);
     }
 }
