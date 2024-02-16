@@ -9,6 +9,11 @@ class GraphQlReader
 {
     private ?array $definitionsRuntimeCache = null;
 
+    public function __construct(
+        private readonly PackagesRegistry $packagesRegistry
+    ) {
+    }
+
     public function getAllGraphQlTypesDefinitions(): array
     {
         if ($this->definitionsRuntimeCache === null) {
@@ -114,7 +119,7 @@ class GraphQlReader
     private function collectGraphQlSchemaFiles(): array
     {
         $files = [];
-        foreach (PackagesRegistry::getInstance()->getAllPackages() as $package) {
+        foreach ($this->packagesRegistry->getAllPackages() as $package) {
             $graphQlSchema = $package->getConfig()->getGraphQlSchema();
             if ($graphQlSchema !== null) {
                 $files[$package->getPackageName()] = $graphQlSchema;

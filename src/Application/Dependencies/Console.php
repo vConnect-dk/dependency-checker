@@ -5,7 +5,6 @@ namespace Vconnect\IntegrityChecker\Application\Dependencies;
 use League\CLImate\CLImate;
 use League\CLImate\Exceptions\InvalidArgumentException;
 use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
-use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
 use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
@@ -15,13 +14,11 @@ class Console implements ConsoleInterface
     private const ARG_MAGENTO_2_ROOT = 'magento2root';
     private const ARG_FOLDERS = 'folders';
     private const ARG_HELP = 'help';
-    private DefectsState $defectsState;
-    private CLImate $cli;
 
-    public function __construct()
-    {
-        $this->defectsState = new DefectsState();
-        $this->cli = new CLImate();
+    public function __construct(
+        private readonly DefectsState $defectsState,
+        private readonly CLImate      $cli
+    ) {
         $this->configureCommand();
     }
 
@@ -54,7 +51,7 @@ class Console implements ConsoleInterface
      *
      * @param DefectiveResultInterface $result
      */
-    public function printOutput(ResultInterface $result): void
+    public function printOutput(DefectiveResultInterface $result): void
     {
         $this->defectsState->registerResult($result);
 
@@ -65,7 +62,7 @@ class Console implements ConsoleInterface
         $this->cli->out('------------------------------------------------------------');
         $this->cli->out(sprintf('Package %s has defects(s).', $result->getPackageName()));
 
-        $defects = $result->getDefects();
+        $defects = $result->getResult();
 
         if (!empty($defects['composer'][DependencyInterface::TYPE_SOFT]) ||
             !empty($defects['composer'][DependencyInterface::TYPE_HARD])

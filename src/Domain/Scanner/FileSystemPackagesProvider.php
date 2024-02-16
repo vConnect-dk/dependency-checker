@@ -28,7 +28,7 @@ class FileSystemPackagesProvider
         $uniquePackages = array_unique(array_merge([], ...$collectedPaths));
 
         foreach ($uniquePackages as $packagePath) {
-            yield new Package($packagePath);
+            yield App()->make(Package::class, ['path' => $packagePath]);
         }
     }
 
@@ -46,7 +46,7 @@ class FileSystemPackagesProvider
         }
 
         foreach (array_unique($collectedPaths) as $packagePath) {
-            yield new Package($packagePath);
+            yield App()->make(Package::class, ['path' => $packagePath]);
         }
     }
 

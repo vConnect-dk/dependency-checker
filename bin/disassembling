@@ -3,18 +3,19 @@
 
 use Vconnect\IntegrityChecker\Analysis\Data\TopologicalOrder\Result;
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
-use Vconnect\IntegrityChecker\Application\Dependencies\Console;
+use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder;
+use Vconnect\IntegrityChecker\Application\Disassembling\Console;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 $dir = __DIR__;
 try {
     require_once $dir . '/../bootstrap.php';
-} catch (\Throwable $exception) {
+} catch (Throwable $exception) {
     echo 'Can not load autoload file. Please try to re-install project';
     die(2);
 }
 
-$console = new \Vconnect\IntegrityChecker\Application\Disassembling\Console();
+$console = App()->get(Console::class);
 
 if (!$console->validateParameters()) {
     $console->printHelp();
@@ -23,7 +24,7 @@ if (!$console->validateParameters()) {
 
 $directories = [ROOT_DIR . DefaultAnalysisFolders::APP, ROOT_DIR . DefaultAnalysisFolders::SRC, ROOT_DIR . 'vendor'];
 
-$packages = PackagesRegistry::getInstance()->getPackages($directories, false);
+$packages = App()->get(PackagesRegistry::class)->getPackages($directories, false);
 
 $whitelist = [];
 $whitelistArgument = $console->getWhitelist();
@@ -43,10 +44,11 @@ if (!empty($whitelistArgument)) {
     }
 }
 
-$analyzer = new Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder(
-    $whitelist,
-    $console->getExplainArgument(),
-    !$console->getNoCacheArgument()
+$analyzer = App()->make(
+    TopologicalOrder::class, [
+        'whiteList' => $whitelist,
+        'explain' => $console->getExplainArgument(),
+        'useCache' => !$console->getNoCacheArgument()]
 );
 
 $console->printOutput(new Result($analyzer->analyse($packages)));

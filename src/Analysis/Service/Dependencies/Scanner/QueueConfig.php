@@ -9,11 +9,9 @@ use Vconnect\IntegrityChecker\Domain\Package;
 
 class QueueConfig implements DependenciesScannerInterface
 {
-    private ConfigAnalysis $configAnalysis;
-
-    public function __construct()
-    {
-        $this->configAnalysis = new ConfigAnalysis();
+    public function __construct(
+        private readonly ConfigAnalysis $configAnalysis
+    ) {
     }
 
 
@@ -21,10 +19,12 @@ class QueueConfig implements DependenciesScannerInterface
     {
         $scannerResult = new ScannerResult();
 
-        $scannerResult->addHardDependencies($this->configAnalysis->analyzeConfigFiles(
-            $package->getConfig()->getQueueConfig(),
-            $package->getPackageName()
-        ));
+        $scannerResult->addHardDependencies(
+            $this->configAnalysis->analyzeConfigFiles(
+                $package->getConfig()->getQueueConfig(),
+                $package->getPackageName()
+            )
+        );
 
         return $scannerResult;
     }

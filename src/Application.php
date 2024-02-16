@@ -4,13 +4,20 @@ declare(strict_types=1);
 namespace Vconnect\IntegrityChecker;
 
 use DI\ContainerBuilder;
+use DI\FactoryInterface;
+use Exception;
 use Psr\Container\ContainerInterface;
 
 class Application
 {
     private ContainerInterface $container;
     private static self $instance;
-    private function __construct() {
+
+    /**
+     * @throws Exception
+     */
+    private function __construct()
+    {
         $containerBuilder = new ContainerBuilder;
         $containerBuilder->addDefinitions(__DIR__ . '/etc/di.php'); // There might be some DI configurations
         $this->container = $containerBuilder->build();
@@ -24,7 +31,7 @@ class Application
         return self::$instance;
     }
 
-    public function getContainer(): ContainerInterface
+    public function getContainer(): ContainerInterface&FactoryInterface
     {
         return $this->container;
     }

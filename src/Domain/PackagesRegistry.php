@@ -18,11 +18,10 @@ class PackagesRegistry
      * @var Package[]
      */
     private array $allPackages = [];
-    private static ?PackagesRegistry $instance = null;
     private LockArrayRepository $composerLockRepo;
     private array $devPackages;
 
-    private function __construct()
+    public function __construct()
     {
         $composer = Factory::create(
             new BufferIO(),
@@ -35,10 +34,6 @@ class PackagesRegistry
         }
 
         $this->devPackages = $composer->getLocker()->getDevPackageNames();
-    }
-
-    private function __clone()
-    {
     }
 
     /**
@@ -112,20 +107,6 @@ class PackagesRegistry
         }
 
         return $this->allPackages;
-    }
-
-    /**
-     * Provide singleton instance of PackagesProvider Registry.
-     *
-     * @return PackagesRegistry
-     */
-    public static function getInstance(): PackagesRegistry
-    {
-        if (!self::$instance) {
-            self::$instance = new PackagesRegistry();
-        }
-
-        return self::$instance;
     }
 
     /**

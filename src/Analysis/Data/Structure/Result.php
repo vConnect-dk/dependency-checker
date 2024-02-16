@@ -39,7 +39,7 @@ class Result implements DefectiveResultInterface
     /**
      * @return array
      */
-    public function getDefects(): array
+    public function getResult(): array
     {
         return $this->missedComponents;
     }

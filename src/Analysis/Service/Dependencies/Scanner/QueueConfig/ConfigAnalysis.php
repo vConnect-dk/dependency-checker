@@ -14,11 +14,9 @@ class ConfigAnalysis
     private const AMPQ_EXTENSION = 'magento/module-amqp';
     private const MYSQLMQ_EXTENSION = 'magento/module-mysql-mq';
 
-    private PackagesRegistry $packagesRegistry;
-
-    public function __construct()
-    {
-        $this->packagesRegistry = PackagesRegistry::getInstance();
+    public function __construct(
+        private readonly PackagesRegistry $packagesRegistry
+    ) {
     }
 
     public function analyzeConfigFiles(Queue $config, string $packageName): array
@@ -28,7 +26,7 @@ class ConfigAnalysis
                 $this->analyzeCommunication($config->getCommunication(), $packageName),
                 $this->analyzeConsumers($config->getConsumer(), $packageName),
                 $this->analyzePublisher($config->getPublisher()),
-                //$this->analyzeTopology($config->getTopology())
+            //  $this->analyzeTopology($config->getTopology())
             )
         );
     }
@@ -43,7 +41,7 @@ class ConfigAnalysis
             $typeName = explode('::', $typeName)[0];
         }
 
-        $namespace = PackagesRegistry::getInstance()->getRealPackageNamespace($typeName);
+        $namespace = $this->packagesRegistry->getRealPackageNamespace($typeName);
 
         return $namespace ? $this->packagesRegistry->getPackageNameByNamespace($namespace) : null;
     }
@@ -144,6 +142,10 @@ class ConfigAnalysis
     }
 
     // Placeholder for bright future
+
+    /** @noinspection PhpUnusedPrivateMethodInspection
+     * @noinspection PhpUnusedParameterInspection
+     */
     private function analyzeTopology(Topology $topology): array
     {
         return [];

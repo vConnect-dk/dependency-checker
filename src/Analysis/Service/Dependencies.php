@@ -18,12 +18,10 @@ class Dependencies implements AnalyzerInterface
         Package::MAGENTO_COMPONENT_TYPE
     ];
 
-    private PackagesRegistry $packagesRegistry;
-
     public function __construct(
-        private readonly ScannerPool $scanners
+        private readonly ScannerPool      $scanners,
+        private readonly PackagesRegistry $packagesRegistry
     ) {
-        $this->packagesRegistry = PackagesRegistry::getInstance();
     }
 
     /**
@@ -89,10 +87,10 @@ class Dependencies implements AnalyzerInterface
                                                               ->getModuleXml()
                                                               ->getModuleName()
             , array_filter(
-            $dependencies->getHardDependencies(),
-            fn(string $packageName) => $this->packagesRegistry->getPackageType($packageName)
-                === Package::MAGENTO_PACKAGE_TYPE
-        )
+                $dependencies->getHardDependencies(),
+                fn(string $packageName) => $this->packagesRegistry->getPackageType($packageName)
+                    === Package::MAGENTO_PACKAGE_TYPE
+            )
         );
 
         return array_diff($dependenciesModules, $declaredModuleXml);

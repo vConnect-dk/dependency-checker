@@ -4,4 +4,8 @@ namespace Vconnect\IntegrityChecker\Analysis\Data;
 
 interface ResultInterface
 {
+    /**
+     * @return string[]
+     */
+    public function getResult(): iterable;
 }

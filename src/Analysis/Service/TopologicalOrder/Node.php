@@ -8,9 +8,9 @@ class Node
     private array $out = [];
 
     public function __construct(
-        private string $name,
-        array $in = [],
-        array $out = []
+        private readonly string $name,
+        array                   $in = [],
+        array                   $out = []
     ) {
         foreach ($in as $moduleName) {
             $this->in[$moduleName] = $moduleName;

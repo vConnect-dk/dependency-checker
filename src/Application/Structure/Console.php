@@ -2,20 +2,18 @@
 
 namespace Vconnect\IntegrityChecker\Application\Structure;
 
-use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
 use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
 
 class Console implements ConsoleInterface
 {
-    private DefectsState $defectsState;
-
-    public function __construct()
-    {
-        $this->defectsState = new DefectsState();
+    public function __construct(
+        private readonly DefectsState $defectsState
+    ) {
     }
 
-    public function printOutput(ResultInterface $result): void
+    public function printOutput(DefectiveResultInterface $result): void
     {
         $this->defectsState->registerResult($result);
 
@@ -26,7 +24,7 @@ class Console implements ConsoleInterface
         echo PHP_EOL;
         echo sprintf("Package \"%s\" has incorrect structure.\nMissed folders/files:", $result->getPackageName());
 
-        $this->printTree($result->getDefects());
+        $this->printTree($result->getResult());
         echo PHP_EOL;
     }
 
@@ -43,10 +41,10 @@ class Console implements ConsoleInterface
             echo str_repeat("\t", $tabs);
 
             if (is_array($stem)) {
-                echo "- {$name}";
+                echo "- $name";
                 $this->printTree($stem, $tabs + 1);
             } else {
-                echo "- {$stem}";
+                echo "- $stem";
             }
         }
     }
@@ -73,9 +71,9 @@ class Console implements ConsoleInterface
 
         for ($i = 2; $i < $argc; $i++) {
             if (!is_dir(ROOT_DIR . $argv[$i])) {
-                echo  sprintf(
-                    "Notice: Can not find directory \"%s\". Please check your input parameters.",
-                    ROOT_DIR . $argv[$i]
+                echo sprintf(
+                        "Notice: Can not find directory \"%s\". Please check your input parameters.",
+                        ROOT_DIR . $argv[$i]
                     ) . PHP_EOL
                     . sprintf("Path \"%s\" should be relative to Magento 2 Directory.", $argv[$i])
                     . PHP_EOL;
