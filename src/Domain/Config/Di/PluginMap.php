@@ -9,6 +9,11 @@ class PluginMap
 {
     private ?array $pluginMap = null;
 
+    public function __construct(
+        private readonly PackagesRegistry $packagesRegistry
+    ) {
+    }
+
     public function getPluginMap(): array
     {
         if ($this->pluginMap === null) {
@@ -26,7 +31,7 @@ class PluginMap
             $this->collectPluginsFromDom($dom);
         }
 
-        foreach (PackagesRegistry::getInstance()->getAllPackages() as $package) {
+        foreach ($this->packagesRegistry->getAllPackages() as $package) {
             $configs = $package->getConfig()->getDiConfig();
             foreach ($configs as $dom) {
                 $this->collectPluginsFromDom($dom);

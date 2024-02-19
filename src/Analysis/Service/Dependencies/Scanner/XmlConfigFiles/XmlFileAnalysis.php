@@ -8,11 +8,9 @@ use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class XmlFileAnalysis
 {
-    private PackagesRegistry $packagesRegistry;
-
-    public function __construct()
-    {
-        $this->packagesRegistry = PackagesRegistry::getInstance();
+    public function __construct(
+        private readonly PackagesRegistry $packagesRegistry
+    ) {
     }
 
     public const TEXT_NODES = 'textNodes';
@@ -20,8 +18,7 @@ class XmlFileAnalysis
     /**
      * Analyze file to find dependencies
      *
-     * @param \DOMDocument[] $xmlFilesDomDocuments
-     * @param array $currentModuleNamespaces
+     * @param Package $package
      * @param array $nodeMap
      * @return string[]
      */
@@ -87,8 +84,8 @@ class XmlFileAnalysis
      */
     private function getDependenciesByTextNodes(
         \DOMDocument $dom,
-        array $expressions,
-        array $currentModuleNamespaces
+        array        $expressions,
+        array        $currentModuleNamespaces
     ): array {
         $dependencies = [];
         foreach ($expressions as $expression) {

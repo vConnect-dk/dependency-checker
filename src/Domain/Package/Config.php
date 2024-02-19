@@ -70,6 +70,10 @@ class Config
         return $this->queue;
     }
 
+    /**
+     * @return ModuleXml
+     * @throws FileNotFoundException
+     */
     public function getModuleXml(): ModuleXml
     {
         if ($this->moduleXml) {

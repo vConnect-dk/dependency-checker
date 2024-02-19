@@ -1,14 +1,21 @@
 <?php declare(strict_types=1);
 
+use DI\FactoryInterface;
+use Psr\Container\ContainerInterface;
 use Vconnect\IntegrityChecker\Application;
 
-function exception_error_handler($severity, $message, $file, $line): void {
+/**
+ * @throws ErrorException
+ */
+function exception_error_handler($severity, $message, $file, $line): void
+{
     if (!(error_reporting() & $severity)) {
         // This error code is not included in error_reporting
         return;
     }
     throw new ErrorException($message, 0, $severity, $file, $line);
 }
+
 set_error_handler('exception_error_handler');
 ini_set('memory_limit', '-1');
 
@@ -24,7 +31,7 @@ if (!empty($GLOBALS['_composer_autoload_path'])) {
 } elseif (is_file(__DIR__ . '/../../../vendor/autoload.php')) {
     //Installed as symlink.
     include_once __DIR__ . '/../../../vendor/autoload.php';
-} elseif(is_file(__DIR__ . '/vendor/autoload.php')) {
+} elseif (is_file(__DIR__ . '/vendor/autoload.php')) {
     //Installed as project.
     require_once __DIR__ . '/vendor/autoload.php';
 } else {
@@ -36,6 +43,7 @@ if (!empty($GLOBALS['_composer_autoload_path'])) {
 
 define('PACKAGE_DIR', realpath(__DIR__));
 
-function App(): Application {
-    return Application::get();
+function App(): ContainerInterface&FactoryInterface
+{
+    return Application::get()->getContainer();
 }

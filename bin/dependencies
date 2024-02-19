@@ -9,12 +9,12 @@ use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 try {
     require_once __DIR__ . '/../bootstrap.php';
-} catch (\Throwable $exception) {
+} catch (Throwable $exception) {
     echo 'Can not load autoload file. Please try to re-install project';
     die(2);
 }
 
-$console = new Console();
+$console = App()->get(Console::class);
 
 if (!$console->validateParameters()) {
     $console->printHelp();
@@ -27,9 +27,9 @@ if (empty($directories)) {
     $directories = [ROOT_DIR . DefaultAnalysisFolders::APP, ROOT_DIR . DefaultAnalysisFolders::SRC];
 }
 
-$packages = PackagesRegistry::getInstance()->getPackages($directories);
+$packages = App()->get(PackagesRegistry::class)->getPackages($directories);
 
-$analyzer = App()->getContainer()->get(Dependencies::class);
+$analyzer = App()->get(Dependencies::class);
 
 /** @var DefectiveResultInterface $result */
 foreach ($analyzer->analyse($packages) as $result) {

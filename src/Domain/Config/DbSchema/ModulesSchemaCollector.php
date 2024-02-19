@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Config\DbSchema;
 
-use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
@@ -11,6 +10,12 @@ class ModulesSchemaCollector
 {
     /** @var array<string, string> */
     private ?array $schemaModuleRelationsMap = null;
+
+    public function __construct(
+        private readonly PackagesRegistry $packagesRegistry
+    ) {
+    }
+
 
     public function getSchemaOwnerPackageName(string $schema): ?string
     {
@@ -40,7 +45,7 @@ class ModulesSchemaCollector
     {
         $candidates = $this->collectRootConfig();
 
-        foreach (PackagesRegistry::getInstance()->getAllPackages() as $package) {
+        foreach ($this->packagesRegistry->getAllPackages() as $package) {
             $schema = $package->getConfig()->getDbSchema();
             if ($schema->getContent()) {
                 foreach ($schema->getContent()['table'] as $tableName => $tableDefinition) {
@@ -102,9 +107,9 @@ class ModulesSchemaCollector
      * @return void
      */
     private function collectOwnerCandidates(
-        array &$candidates,
+        array  &$candidates,
         string $tableName,
-        array $tableDefinition,
+        array  $tableDefinition,
         string $packageName
     ): void {
         $tableCandidates = $candidates[$tableName] ?? [];

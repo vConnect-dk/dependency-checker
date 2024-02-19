@@ -9,11 +9,9 @@ class RegExpFileAnalysis
 {
     private ?string $regExp = null;
 
-    private PackagesRegistry $packagesRegistry;
-
-    public function __construct()
-    {
-        $this->packagesRegistry = PackagesRegistry::getInstance();
+    public function __construct(
+        private readonly PackagesRegistry $packagesRegistry
+    ) {
     }
 
     /**
@@ -74,8 +72,7 @@ class RegExpFileAnalysis
     {
         return (string)preg_replace_callback(
             '~(<\?(php|=)\s+.*\?>)~sU',
-            function (array $matches) use ($contents, &$contentsWithoutHtml)
-            {
+            function (array $matches) use ($contents, &$contentsWithoutHtml) {
                 $contentsWithoutHtml .= $matches[1];
 
                 return $contents;
@@ -87,7 +84,7 @@ class RegExpFileAnalysis
     /**
      * @return string
      */
-    private function getRegExp():string
+    private function getRegExp(): string
     {
         if ($this->regExp) {
             return $this->regExp;

@@ -14,11 +14,10 @@ class Console implements ConsoleInterface
     private const ARG_PACKAGE_EXPLAIN = 'explain';
     private const ARG_NO_CACHE = 'no-cache';
     private const ARG_HELP = 'help';
-    private CLImate $cli;
 
-    public function __construct()
-    {
-        $this->cli = new CLImate();
+    public function __construct(
+        private readonly CLImate $cli
+    ) {
         $this->configureCommand();
     }
 

@@ -99,7 +99,7 @@ class DbSchema
      *
      * @return bool
      */
-    private function hasAttributesExceptIdAttribute(\DOMElement $element)
+    private function hasAttributesExceptIdAttribute(\DOMElement $element): bool
     {
         return $element->hasAttribute('xsi:type') || $element->attributes->length >= 2;
     }

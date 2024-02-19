@@ -37,11 +37,9 @@ class XmlConfigFiles implements DependenciesScannerInterface
         ]
     ];
 
-    private XmlFileAnalysis $xmlFileAnalysis;
-
-    public function __construct()
-    {
-        $this->xmlFileAnalysis = new XmlFileAnalysis();
+    public function __construct(
+        private readonly XmlFileAnalysis $xmlFileAnalysis
+    ) {
     }
 
     /**

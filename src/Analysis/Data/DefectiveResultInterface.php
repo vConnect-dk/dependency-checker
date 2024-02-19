@@ -16,9 +16,4 @@ interface DefectiveResultInterface extends ResultInterface
      * @return string
      */
     public function getPackageName(): string;
-
-    /**
-     * @return array
-     */
-    public function getDefects(): array;
 }

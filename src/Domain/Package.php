@@ -15,20 +15,15 @@ class Package
     public const MAGENTO_COMPONENT_TYPE = 'magento2-component';
     public const UNKNOWN_PACKAGE_TYPE = 'unknown';
 
-    private string $path;
     private ?array $packageFiles = null;
     private array $loadedFileClasses = [];
     private ?Json $composerJson = null;
     private Config $config;
-    private FileClassScanner $fileClassScanner;
 
-    /**
-     * @param string $path
-     */
-    public function __construct(string $path)
-    {
-        $this->fileClassScanner = new FileClassScanner();
-        $this->path = $path;
+    public function __construct(
+        private readonly string           $path,
+        private readonly FileClassScanner $fileClassScanner,
+    ) {
         $this->config = new Config($this);
     }
 

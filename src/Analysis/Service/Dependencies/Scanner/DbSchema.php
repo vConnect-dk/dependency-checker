@@ -10,11 +10,9 @@ use Vconnect\IntegrityChecker\Domain\Package;
 
 class DbSchema implements DependenciesScannerInterface
 {
-    private ModulesSchemaCollector $schemaCollector;
-
-    public function __construct()
-    {
-        $this->schemaCollector = new ModulesSchemaCollector();
+    public function __construct(
+        private readonly ModulesSchemaCollector $schemaCollector
+    ) {
     }
 
     /**
@@ -35,7 +33,7 @@ class DbSchema implements DependenciesScannerInterface
                 $hard += $this->getHardSchemaDependencies($table);
             }
 
-            $excludeItself = fn (string $packageName) => $packageName != $package->getPackageName();
+            $excludeItself = fn(string $packageName) => $packageName != $package->getPackageName();
 
             $soft = array_filter($soft, $excludeItself);
             $hard = array_filter($hard, $excludeItself);
