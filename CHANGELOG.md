@@ -1,3 +1,9 @@
+2.6.0
+===========
+* Added GraphQl schema dependency checker;
+* Implemented DI;
+* Fixed disassembling whitelist.
+
 2.5.2.
 ===========
 * Added 'explain' argument for disassembling command
