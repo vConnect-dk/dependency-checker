@@ -2,29 +2,15 @@
 
 namespace Vconnect\IntegrityChecker\Application;
 
-use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 
 interface ConsoleInterface
 {
-    /**
-     * @return bool
-     */
     public function validateParameters(): bool;
 
-    /**
-     * @return void
-     */
     public function printHelp(): void;
 
-    /**
-     * @param ResultInterface $result
-     *
-     * @return void
-     */
-    public function printOutput(ResultInterface $result): void;
+    public function printOutput(DefectiveResultInterface $result): void;
 
-    /**
-     * @return int
-     */
     public function getStatusCode(): int;
 }

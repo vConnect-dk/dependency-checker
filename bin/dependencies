@@ -1,30 +1,20 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
+use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies;
-use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 use Vconnect\IntegrityChecker\Application\Dependencies\Console;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
-use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
-
-function exception_error_handler($severity, $message, $file, $line) {
-    if (!(error_reporting() & $severity)) {
-        // This error code is not included in error_reporting
-        return;
-    }
-    throw new ErrorException($message, 0, $severity, $file, $line);
-}
-set_error_handler("exception_error_handler");
 
 try {
     require_once __DIR__ . '/../bootstrap.php';
-} catch (\Throwable $exception) {
+} catch (Throwable $exception) {
     echo 'Can not load autoload file. Please try to re-install project';
     die(2);
 }
 
-$console = new Console();
+$console = App()->get(Console::class);
 
 if (!$console->validateParameters()) {
     $console->printHelp();
@@ -37,9 +27,9 @@ if (empty($directories)) {
     $directories = [ROOT_DIR . DefaultAnalysisFolders::APP, ROOT_DIR . DefaultAnalysisFolders::SRC];
 }
 
-$packages = PackagesRegistry::getInstance()->getPackages($directories);
+$packages = App()->get(PackagesRegistry::class)->getPackages($directories);
 
-$analyzer = new Dependencies();
+$analyzer = App()->get(Dependencies::class);
 
 /** @var DefectiveResultInterface $result */
 foreach ($analyzer->analyse($packages) as $result) {

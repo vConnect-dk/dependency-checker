@@ -3,22 +3,21 @@
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles\RegExpFileAnalysis;
-use Vconnect\IntegrityChecker\Domain\Config\Di\PluginMap;
-use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
+use Vconnect\IntegrityChecker\Domain\Config\Di\PluginMap;
+use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class PhpFiles implements DependenciesScannerInterface
 {
     private const FILE_MASKS = ['php', 'phtml'];
-    private RegExpFileAnalysis $regExpFileAnalysis;
-    private PluginMap $pluginMap;
 
-    public function __construct()
-    {
-        $this->regExpFileAnalysis = new RegExpFileAnalysis();
-        $this->pluginMap = new PluginMap();
+    public function __construct(
+        private readonly RegExpFileAnalysis $regExpFileAnalysis,
+        private readonly PluginMap          $pluginMap,
+        private readonly PackagesRegistry   $packagesRegistry
+    ) {
     }
 
     /**
@@ -65,9 +64,9 @@ class PhpFiles implements DependenciesScannerInterface
      * @return ScannerResult
      */
     private function determineDependencies(
-        Package $package,
-        \SplFileInfo $file,
-        array $collectedDependencies,
+        Package       $package,
+        \SplFileInfo  $file,
+        array         $collectedDependencies,
         ScannerResult $scannerResult
     ): ScannerResult {
         $classReference = $package->getClassReferenceByPath($file->getPathname());
@@ -75,7 +74,7 @@ class PhpFiles implements DependenciesScannerInterface
         $softDependencies = [];
 
         foreach ($collectedDependencies as $i => $dependency) {
-            $packageName = PackagesRegistry::getInstance()->getPackageNameByNamespace($dependency);
+            $packageName = $this->packagesRegistry->getPackageNameByNamespace($dependency);
             if (!$packageName) {
                 unset($collectedDependencies[$i]);
                 continue;

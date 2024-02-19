@@ -5,7 +5,6 @@ namespace Vconnect\IntegrityChecker\Analysis\Service;
 use Vconnect\IntegrityChecker\Analysis\Data\Dependencies\Result;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Dependency;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DependenciesScannerInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\ScannerPool;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
@@ -19,17 +18,10 @@ class Dependencies implements AnalyzerInterface
         Package::MAGENTO_COMPONENT_TYPE
     ];
 
-    /**
-     * @var DependenciesScannerInterface[]
-     */
-    private ScannerPool $scanners;
-
-    private PackagesRegistry $packagesRegistry;
-
-    public function __construct()
-    {
-        $this->packagesRegistry = PackagesRegistry::getInstance();
-        $this->scanners = new ScannerPool();
+    public function __construct(
+        private readonly ScannerPool      $scanners,
+        private readonly PackagesRegistry $packagesRegistry
+    ) {
     }
 
     /**
@@ -95,10 +87,10 @@ class Dependencies implements AnalyzerInterface
                                                               ->getModuleXml()
                                                               ->getModuleName()
             , array_filter(
-            $dependencies->getHardDependencies(),
-            fn(string $packageName) => $this->packagesRegistry->getPackageType($packageName)
-                === Package::MAGENTO_PACKAGE_TYPE
-        )
+                $dependencies->getHardDependencies(),
+                fn(string $packageName) => $this->packagesRegistry->getPackageType($packageName)
+                    === Package::MAGENTO_PACKAGE_TYPE
+            )
         );
 
         return array_diff($dependenciesModules, $declaredModuleXml);

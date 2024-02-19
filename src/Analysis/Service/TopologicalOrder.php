@@ -11,14 +11,12 @@ use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 
 class TopologicalOrder implements AnalyzerInterface
 {
-    private ScannerPool $scanners;
-
     public function __construct(
-        private readonly array $whiteList = [],
-        private readonly ?string $explain = null,
-        private readonly bool $useCache = true
+        private readonly ScannerPool $scanners,
+        private readonly array       $whiteList = [],
+        private readonly ?string     $explain = null,
+        private readonly bool        $useCache = true
     ) {
-        $this->scanners = new ScannerPool();
     }
 
     public function analyse(iterable $packages): iterable

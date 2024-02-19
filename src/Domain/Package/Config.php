@@ -22,6 +22,7 @@ class Config
     private const QUEUE_CONSUMER = 'queue_consumer.xml';
     private const QUEUE_PUBLISHER = 'queue_publisher.xml';
     private const QUEUE_TOPOLOGY = 'queue_topology.xml';
+    private const GRAPHQL_SCHEMA_FILE = 'schema.graphqls';
 
     private ?ModuleXml $moduleXml = null;
     private ?DbSchema $dbSchema = null;
@@ -69,6 +70,10 @@ class Config
         return $this->queue;
     }
 
+    /**
+     * @return ModuleXml
+     * @throws FileNotFoundException
+     */
     public function getModuleXml(): ModuleXml
     {
         if ($this->moduleXml) {
@@ -140,6 +145,16 @@ class Config
         $this->extensionAttributes = $dom;
 
         return $this->extensionAttributes;
+    }
+
+    public function getGraphQlSchema(): ?string
+    {
+        $schema = new \SplFileInfo($this->package->getPackagePath() . '/etc/' . self::GRAPHQL_SCHEMA_FILE);
+        if ($schema->isReadable()) {
+            return $schema->openFile()->fread($schema->getSize());
+        }
+
+        return null;
     }
 
     /**
