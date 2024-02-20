@@ -70,7 +70,11 @@ class DbSchema implements DependenciesScannerInterface
         }
 
         foreach ($table['constraint'] as $constraint) {
-            if ($constraint['type'] == 'foreign') {
+            if (
+                $constraint['type'] == 'foreign' &&
+                (!isset($constraint['disabled']) || $constraint['disabled'] === "false")
+            ) {
+
                 /* Foreign keys are hard dependencies. */
                 $hard[$constraint['referenceTable']] = $this->schemaCollector->getSchemaOwnerPackageName(
                     $constraint['referenceTable']
