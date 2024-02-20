@@ -1,3 +1,8 @@
+2.7.0
+===========
+Dependency scanner extension release.
+* Added DB DDL usage scanner for PHP files: scans for `->getTable()` and `->getTableName()` calls;
+
 2.6.0
 ===========
 * Added GraphQl schema dependency checker;
