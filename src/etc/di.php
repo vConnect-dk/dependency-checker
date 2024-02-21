@@ -1,10 +1,13 @@
 <?php
 declare(strict_types=1);
 
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\{DbSchema,
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\{DbDDL,
+    DbSchema,
     GraphQlSchema,
     PhpFiles,
     QueueConfig,
+    ScannerResult\ScannerResult,
+    ScannerResult\ScannerResultInterface,
     XmlConfigFiles};
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\ScannerPool;
 
@@ -15,6 +18,8 @@ return [
             DI\get(XmlConfigFiles::class),
             DI\get(DbSchema::class),
             DI\get(QueueConfig::class),
-            DI\get(GraphQlSchema::class)
-        ])
+            DI\get(GraphQlSchema::class),
+            DI\get(DbDDL::class),
+        ]),
+    ScannerResultInterface::class => DI\create(ScannerResult::class),
 ];

@@ -1,7 +1,5 @@
 <?php declare(strict_types=1);
 
-use DI\FactoryInterface;
-use Psr\Container\ContainerInterface;
 use Vconnect\IntegrityChecker\Application;
 
 /**
@@ -43,7 +41,7 @@ if (!empty($GLOBALS['_composer_autoload_path'])) {
 
 define('PACKAGE_DIR', realpath(__DIR__));
 
-function App(): ContainerInterface&FactoryInterface
+function App()
 {
     return Application::get()->getContainer();
 }

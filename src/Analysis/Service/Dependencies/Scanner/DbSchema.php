@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultFactory;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
 use Vconnect\IntegrityChecker\Domain\Config\DbSchema\ModulesSchemaCollector;
 use Vconnect\IntegrityChecker\Domain\Package;
@@ -11,7 +11,8 @@ use Vconnect\IntegrityChecker\Domain\Package;
 class DbSchema implements DependenciesScannerInterface
 {
     public function __construct(
-        private readonly ModulesSchemaCollector $schemaCollector
+        private readonly ModulesSchemaCollector $schemaCollector,
+        private readonly ScannerResultFactory   $scannerResultFactory
     ) {
     }
 
@@ -24,7 +25,7 @@ class DbSchema implements DependenciesScannerInterface
      */
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
-        $scannerResult = new ScannerResult();
+        $scannerResult = $this->scannerResultFactory->create();
         $schema = $package->getConfig()->getDbSchema();
         if ($schema->getContent()) {
             $soft = $hard = [];
