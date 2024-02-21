@@ -1,7 +1,13 @@
 2.7.0
 ===========
-Dependency scanner extension release.
+New features:
 * Added DB DDL usage scanner for PHP files: scans for `->getTable()` and `->getTableName()` calls;
+
+Internal framework changes:
+* Implemented event observers mechanism;
+
+Fixes:
+* [Fix](https://vconnect.atlassian.net/browse/IE-271) for db_schema.xml dependency checker related to disabled foreign keys;
 
 2.6.0
 ===========
