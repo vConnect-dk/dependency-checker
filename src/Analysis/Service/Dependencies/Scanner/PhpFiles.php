@@ -4,6 +4,7 @@ namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles\RegExpFileAnalysis;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultFactory;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
 use Vconnect\IntegrityChecker\Domain\Config\Di\PluginMap;
 use Vconnect\IntegrityChecker\Domain\Package;
@@ -14,9 +15,10 @@ class PhpFiles implements DependenciesScannerInterface
     private const FILE_MASKS = ['php', 'phtml'];
 
     public function __construct(
-        private readonly RegExpFileAnalysis $regExpFileAnalysis,
-        private readonly PluginMap          $pluginMap,
-        private readonly PackagesRegistry   $packagesRegistry
+        private readonly RegExpFileAnalysis   $regExpFileAnalysis,
+        private readonly PluginMap            $pluginMap,
+        private readonly PackagesRegistry     $packagesRegistry,
+        private readonly ScannerResultFactory $scannerResultFactory
     ) {
     }
 
@@ -31,14 +33,14 @@ class PhpFiles implements DependenciesScannerInterface
      */
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
-        $scannerResult = new ScannerResult();
+        $scannerResult = $this->scannerResultFactory->create();
 
         foreach ($package->getPackageFiles() as $file) {
             if (\in_array($file->getFileInfo()->getExtension(), self::FILE_MASKS)) {
                 $collectedDependencies = array_unique(
                     $this->regExpFileAnalysis->analyzeFile(
                         $file,
-                        $package->getPackageNamespaces()
+                        $package
                     )
                 );
                 $scannerResult = $this->determineDependencies(

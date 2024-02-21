@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultFactory;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles\XmlFileAnalysis;
 use Vconnect\IntegrityChecker\Domain\Package;
@@ -38,7 +38,8 @@ class XmlConfigFiles implements DependenciesScannerInterface
     ];
 
     public function __construct(
-        private readonly XmlFileAnalysis $xmlFileAnalysis
+        private readonly XmlFileAnalysis      $xmlFileAnalysis,
+        private readonly ScannerResultFactory $scannerResultFactory
     ) {
     }
 
@@ -51,7 +52,7 @@ class XmlConfigFiles implements DependenciesScannerInterface
      */
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
-        $scannerResult = new ScannerResult();
+        $scannerResult = $this->scannerResultFactory->create();
         $scannerResult->addSoftDependencies(
             $this->xmlFileAnalysis->analyze(
                 $package,
