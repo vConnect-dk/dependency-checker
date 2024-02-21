@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles\DDLUsageRegexpAnalyzer;
+use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\DbDDL\PackageTablesUsageRegistry;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultFactory;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
 use Vconnect\IntegrityChecker\Domain\Config\DbSchema\ModulesSchemaCollector;
@@ -12,9 +12,9 @@ use Vconnect\IntegrityChecker\Domain\Package;
 class DbDDL implements DependenciesScannerInterface
 {
     public function __construct(
-        private readonly DDLUsageRegexpAnalyzer $ddlUsageRegexpAnalyzer,
-        private readonly ModulesSchemaCollector $tablesOwnershipMap,
-        private readonly ScannerResultFactory   $scannerResultFactory
+        private readonly PackageTablesUsageRegistry $packageTablesUsageRegistry,
+        private readonly ModulesSchemaCollector     $tablesOwnershipMap,
+        private readonly ScannerResultFactory       $scannerResultFactory
     ) {
     }
 
@@ -22,11 +22,13 @@ class DbDDL implements DependenciesScannerInterface
     {
         $scannerResult = $this->scannerResultFactory->create();
 
+        $packageName = $package->getPackageName();
         $dependencies = array_filter(
             array_map(
                 fn(string $table) => $this->tablesOwnershipMap->getSchemaOwnerPackageName($table),
-                array_keys($this->collectTables($package))
-            )
+                $this->packageTablesUsageRegistry->get($package)
+            ),
+            fn(?string $dependency) => $dependency && $dependency !== $packageName
         );
 
         if ($dependencies) {
@@ -34,21 +36,5 @@ class DbDDL implements DependenciesScannerInterface
         }
 
         return $scannerResult;
-    }
-
-    private function collectTables(Package $package): array
-    {
-        $tables = [];
-        foreach ($package->getPackageFiles() as $file) {
-            if ($file->getFileInfo()->getExtension() === 'php') {
-                foreach ($this->ddlUsageRegexpAnalyzer->getTablesUsed($file->getFileInfo()) as $table) {
-                    if (!isset($tables[$table])) {
-                        $tables[$table] = true;
-                    }
-                }
-            }
-        }
-
-        return $tables;
     }
 }

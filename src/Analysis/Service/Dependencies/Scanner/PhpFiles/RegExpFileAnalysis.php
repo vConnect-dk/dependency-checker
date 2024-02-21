@@ -3,14 +3,18 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
 
+use Vconnect\IntegrityChecker\Application\Framework\Events\Manager;
+use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class RegExpFileAnalysis
 {
+    public const EVENT_NAME = 'php_file_analysis';
     private ?string $regExp = null;
 
     public function __construct(
-        private readonly PackagesRegistry $packagesRegistry
+        private readonly PackagesRegistry $packagesRegistry,
+        private readonly Manager $eventsManager
     ) {
     }
 
@@ -18,11 +22,10 @@ class RegExpFileAnalysis
      * Get list of required packages dependencies from php file.
      *
      * @param \SplFileInfo $file
-     * @param string[] $currentModuleNamespaces
-     *
+     * @param Package $package
      * @return string[] - list of packages mentioned inside the file.
      */
-    public function analyzeFile(\SplFileInfo $file, array $currentModuleNamespaces): array
+    public function analyzeFile(\SplFileInfo $file, Package $package): array
     {
         $contents = \php_strip_whitespace($file->getPathname());
 
@@ -30,12 +33,18 @@ class RegExpFileAnalysis
             $contents = $this->stripeHtml($contents);
         }
 
+        $this->eventsManager->dispatchEvent(self::EVENT_NAME, [
+            'fileContent' => $contents,
+            'package' => $package
+        ]);
+
         if (!preg_match_all($this->getRegExp(), $contents, $matches)) {
             return [];
         }
 
         $candidates = array_unique($matches['class']);
         $dependenciesInfo = [];
+        $currentModuleNamespaces = $package->getPackageNamespaces();
 
         foreach ($candidates as $referenceModule) {
             $referenceModule = str_replace('_', '\\', $referenceModule);

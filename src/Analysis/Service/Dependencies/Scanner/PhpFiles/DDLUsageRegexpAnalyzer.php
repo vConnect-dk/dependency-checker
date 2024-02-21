@@ -8,10 +8,9 @@ class DDLUsageRegexpAnalyzer
     private const REGEXP = /** @lang RegExp */
         '/->getTable(?:Name)?\(\s*[\'"](?<tableName>[a-zA-Z0-9_]+)[\'"]\s*\)/';
 
-    public function getTablesUsed(\SplFileInfo $file): array
+    public function getTablesUsed(string $fileContent): array
     {
-        $contents = \php_strip_whitespace($file->getPathname());
-        if (!preg_match_all(self::REGEXP, $contents, $matches)) {
+        if (!preg_match_all(self::REGEXP, $fileContent, $matches)) {
             return [];
         }
 

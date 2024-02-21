@@ -40,7 +40,7 @@ class PhpFiles implements DependenciesScannerInterface
                 $collectedDependencies = array_unique(
                     $this->regExpFileAnalysis->analyzeFile(
                         $file,
-                        $package->getPackageNamespaces()
+                        $package
                     )
                 );
                 $scannerResult = $this->determineDependencies(
