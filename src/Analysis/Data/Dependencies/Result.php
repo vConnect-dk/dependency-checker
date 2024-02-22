@@ -15,8 +15,8 @@ class Result implements DefectiveResultInterface
 
     /**
      * @param string $packageName
-     * @param array $composerDefects
-     * @param array $moduleXmlDefects
+     * @param string[] $composerDefects
+     * @param string[] $moduleXmlDefects
      */
     public function __construct(string $packageName, array $composerDefects, array $moduleXmlDefects)
     {
@@ -32,7 +32,9 @@ class Result implements DefectiveResultInterface
     {
         return !empty($this->composerDefects[DependencyInterface::TYPE_SOFT]) ||
             !empty($this->composerDefects[DependencyInterface::TYPE_HARD]) ||
-            !empty($this->moduleXmlDefects);
+            !empty($this->composerDefects[DependencyInterface::TYPE_EXCESSIVE]) ||
+            !empty($this->moduleXmlDefects[DependencyInterface::TYPE_EXCESSIVE]) ||
+            !empty($this->moduleXmlDefects[DependencyInterface::TYPE_EXPECTED]);
     }
 
     /**

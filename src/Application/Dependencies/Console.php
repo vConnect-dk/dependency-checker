@@ -70,8 +70,16 @@ class Console implements ConsoleInterface
             $this->printComposerMissedDependencies($defects['composer']);
         }
 
-        if (!(empty($defects['module']))) {
-            $this->printModuleXmlMissedDependencies($defects['module']);
+        if (!empty($defects['composer'][DependencyInterface::TYPE_EXCESSIVE])) {
+            $this->printExcessiveComposerDependencies($defects['composer'][DependencyInterface::TYPE_EXCESSIVE]);
+        }
+
+        if (!(empty($defects['module'][DependencyInterface::TYPE_EXPECTED]))) {
+            $this->printModuleXmlMissedDependencies($defects['module'][DependencyInterface::TYPE_EXPECTED]);
+        }
+
+        if (!(empty($defects['module'][DependencyInterface::TYPE_EXCESSIVE]))) {
+            $this->printExcessiveModuleXmlDependencies($defects['module'][DependencyInterface::TYPE_EXCESSIVE]);
         }
     }
 
@@ -84,9 +92,16 @@ class Console implements ConsoleInterface
     {
         $this->cli->backgroundRed('Missed dependencies in etc/module.xml');
 
-        foreach ($missedDependencies as $moduleName) {
-            $this->cli->tab()->out(sprintf('<module name="%s"/>', $moduleName));
-        }
+        $this->printModules($missedDependencies);
+
+        $this->cli->br();
+    }
+
+    private function printExcessiveModuleXmlDependencies(array $deps): void
+    {
+        $this->cli->backgroundYellow('Excessive dependencies in etc/module.xml:');
+
+        $this->printModules($deps);
 
         $this->cli->br();
     }
@@ -111,6 +126,13 @@ class Console implements ConsoleInterface
                 $this->cli->tab()->out(sprintf('"%s": "*",', $require));
             }
         }
+        $this->cli->br();
+    }
+
+    private function printExcessiveComposerDependencies(array $deps): void
+    {
+        $this->cli->backgroundYellow('There are excessive Composer dependencies:');
+        $this->printComposerPackages($deps);
         $this->cli->br();
     }
 
@@ -174,5 +196,19 @@ class Console implements ConsoleInterface
         $argv = $_SERVER['argv'];
         $argv[2] = implode(' ', array_unique(array_slice($argv, 2)));
         $this->cli->arguments->parse($argv);
+    }
+
+    private function printModules(array $deps): void
+    {
+        foreach ($deps as $moduleName) {
+            $this->cli->tab()->out(sprintf('<module name="%s"/>', $moduleName));
+        }
+    }
+
+    private function printComposerPackages(array $deps): void
+    {
+        foreach ($deps as $dependency) {
+            $this->cli->tab()->out(sprintf('"%s": "*",', $dependency));
+        }
     }
 }
