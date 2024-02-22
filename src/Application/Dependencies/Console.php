@@ -61,7 +61,12 @@ class Console implements ConsoleInterface
         }
 
         $this->cli->out('------------------------------------------------------------');
-        $this->cli->out(sprintf('Package %s has defects(s).', $result->getPackageName()));
+        $this->cli->out(
+            sprintf('Package %s has %s(s).',
+                $result->getPackageName(),
+                $result->hasDefects() ? 'defect' : 'notice'
+            )
+        );
 
         $defects = $result->getResult();
 
