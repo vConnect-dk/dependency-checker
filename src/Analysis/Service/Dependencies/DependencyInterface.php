@@ -12,6 +12,9 @@ interface DependencyInterface
      */
     public const TYPE_SOFT = 'soft';
     public const TYPE_HARD = 'hard';
+    public const TYPE_EXCESSIVE = 'excessive';
+    public const TYPE_EXPECTED = 'expected';
+
 
     /**
      * @param array $hardDependency

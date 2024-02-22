@@ -5,6 +5,7 @@ namespace Vconnect\IntegrityChecker\Application\Dependencies;
 use League\CLImate\CLImate;
 use League\CLImate\Exceptions\InvalidArgumentException;
 use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Data\Dependencies\Result;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
 use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
@@ -49,13 +50,13 @@ class Console implements ConsoleInterface
     /**
      * Print result message for package.
      *
-     * @param DefectiveResultInterface $result
+     * @param DefectiveResultInterface|Result $result
      */
-    public function printOutput(DefectiveResultInterface $result): void
+    public function printOutput(DefectiveResultInterface|Result $result): void
     {
         $this->defectsState->registerResult($result);
 
-        if (!$result->hasDefects()) {
+        if (!$result->hasDefects() && !$result->hasNotices()) {
             return;
         }
 
@@ -70,8 +71,16 @@ class Console implements ConsoleInterface
             $this->printComposerMissedDependencies($defects['composer']);
         }
 
-        if (!(empty($defects['module']))) {
-            $this->printModuleXmlMissedDependencies($defects['module']);
+        if (!empty($defects['composer'][DependencyInterface::TYPE_EXCESSIVE])) {
+            $this->printExcessiveComposerDependencies($defects['composer'][DependencyInterface::TYPE_EXCESSIVE]);
+        }
+
+        if (!(empty($defects['module'][DependencyInterface::TYPE_EXPECTED]))) {
+            $this->printModuleXmlMissedDependencies($defects['module'][DependencyInterface::TYPE_EXPECTED]);
+        }
+
+        if (!(empty($defects['module'][DependencyInterface::TYPE_EXCESSIVE]))) {
+            $this->printExcessiveModuleXmlDependencies($defects['module'][DependencyInterface::TYPE_EXCESSIVE]);
         }
     }
 
@@ -84,9 +93,18 @@ class Console implements ConsoleInterface
     {
         $this->cli->backgroundRed('Missed dependencies in etc/module.xml');
 
-        foreach ($missedDependencies as $moduleName) {
-            $this->cli->tab()->out(sprintf('<module name="%s"/>', $moduleName));
-        }
+        $this->printModules($missedDependencies);
+
+        $this->cli->br();
+    }
+
+    private function printExcessiveModuleXmlDependencies(array $deps): void
+    {
+        $this->cli->bold()
+                  ->yellow('[Notice]')
+                  ->yellow('Potentially excessive dependencies in etc/module.xml:');
+
+        $this->printModules($deps);
 
         $this->cli->br();
     }
@@ -111,6 +129,16 @@ class Console implements ConsoleInterface
                 $this->cli->tab()->out(sprintf('"%s": "*",', $require));
             }
         }
+        $this->cli->br();
+    }
+
+    private function printExcessiveComposerDependencies(array $deps): void
+    {
+        $this->cli->bold()
+                  ->yellow('[Notice]')
+                  ->yellow('There are potentially excessive Composer dependencies:');
+
+        $this->printComposerPackages($deps);
         $this->cli->br();
     }
 
@@ -174,5 +202,19 @@ class Console implements ConsoleInterface
         $argv = $_SERVER['argv'];
         $argv[2] = implode(' ', array_unique(array_slice($argv, 2)));
         $this->cli->arguments->parse($argv);
+    }
+
+    private function printModules(array $deps): void
+    {
+        foreach ($deps as $moduleName) {
+            $this->cli->tab()->out(sprintf('<module name="%s"/>', $moduleName));
+        }
+    }
+
+    private function printComposerPackages(array $deps): void
+    {
+        foreach ($deps as $dependency) {
+            $this->cli->tab()->out(sprintf('"%s": "*",', $dependency));
+        }
     }
 }

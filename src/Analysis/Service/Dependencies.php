@@ -30,6 +30,7 @@ class Dependencies implements AnalyzerInterface
      * @param iterable $packages
      *
      * @return \Generator
+     * @throws FileNotFoundException
      */
     public function analyse(iterable $packages): \Generator
     {
@@ -54,6 +55,7 @@ class Dependencies implements AnalyzerInterface
      * @param Dependency $dependencies
      *
      * @return Result
+     * @throws FileNotFoundException
      */
     private function compareDependencies(Package $package, Dependency $dependencies): Result
     {
@@ -71,29 +73,24 @@ class Dependencies implements AnalyzerInterface
      * @param Dependency $dependencies
      *
      * @return array
+     * @throws FileNotFoundException
      */
     private function compareModuleXmlDependencies(Package $package, Dependency $dependencies): array
     {
         try {
-            $declaredModuleXml = $package->getModuleXmlDependencies();
+            $declaredDeps = $package->getModuleXmlDependencies();
         } catch (FileNotFoundException) {
             return [];
         }
 
-        // leave only Magento 2 modules
-        $dependenciesModules = array_map(
-            fn(string $packageName) => $this->packagesRegistry->getPackage($packageName)
-                                                              ->getConfig()
-                                                              ->getModuleXml()
-                                                              ->getModuleName()
-            , array_filter(
-                $dependencies->getHardDependencies(),
-                fn(string $packageName) => $this->packagesRegistry->getPackageType($packageName)
-                    === Package::MAGENTO_PACKAGE_TYPE
-            )
-        );
-
-        return array_diff($dependenciesModules, $declaredModuleXml);
+        $requiredDeps = $this->extractModuleXmlDependencies($dependencies->getHardDependencies());
+        $optionalDeps = $this->extractModuleXmlDependencies($dependencies->getSoftDependencies());
+        $possibleDeps = array_merge($requiredDeps, $optionalDeps);
+        
+        return [
+            DependencyInterface::TYPE_EXCESSIVE => (array_diff($declaredDeps, $possibleDeps)),
+            DependencyInterface::TYPE_EXPECTED => array_diff($requiredDeps, $declaredDeps)
+        ];
     }
 
     /**
@@ -128,6 +125,22 @@ class Dependencies implements AnalyzerInterface
             $composerDeps[DependencyInterface::TYPE_HARD]
         );
 
+        $allDependencies = array_merge(
+            $dependencies->getSoftDependencies(),
+            $dependencies->getHardDependencies()
+        );
+
+        /* Covering case if soft dependency is declared in a require section - that's OK */
+        $excessiveHardDeps = array_diff(
+            $composerDeps[DependencyInterface::TYPE_HARD],
+            $allDependencies
+        );
+        $excessiveSoftDeps = array_diff(
+            $composerDeps[DependencyInterface::TYPE_SOFT],
+            $dependencies->getSoftDependencies(),
+        );
+        $result[DependencyInterface::TYPE_EXCESSIVE] = array_unique(array_merge($excessiveHardDeps, $excessiveSoftDeps));
+
         return $result;
     }
 
@@ -145,6 +158,21 @@ class Dependencies implements AnalyzerInterface
         return array_filter(
             $collectedSoftDeps,
             fn(string $softDependency) => !in_array($softDependency, $composerHardDeps)
+        );
+    }
+
+    private function extractModuleXmlDependencies(array $dependencies): array
+    {
+        return array_map(
+            fn(string $packageName) => $this->packagesRegistry->getPackage($packageName)
+                                                              ->getConfig()
+                                                              ->getModuleXml()
+                                                              ->getModuleName(),
+            array_filter(
+                $dependencies,
+                fn(string $packageName) => $this->packagesRegistry->getPackageType($packageName)
+                    === Package::MAGENTO_PACKAGE_TYPE
+            )
         );
     }
 }
