@@ -5,6 +5,7 @@ namespace Vconnect\IntegrityChecker\Application\Dependencies;
 use League\CLImate\CLImate;
 use League\CLImate\Exceptions\InvalidArgumentException;
 use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
+use Vconnect\IntegrityChecker\Analysis\Data\Dependencies\Result;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
 use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
@@ -49,13 +50,13 @@ class Console implements ConsoleInterface
     /**
      * Print result message for package.
      *
-     * @param DefectiveResultInterface $result
+     * @param DefectiveResultInterface|Result $result
      */
-    public function printOutput(DefectiveResultInterface $result): void
+    public function printOutput(DefectiveResultInterface|Result $result): void
     {
         $this->defectsState->registerResult($result);
 
-        if (!$result->hasDefects()) {
+        if (!$result->hasDefects() && !$result->hasNotices()) {
             return;
         }
 
@@ -99,7 +100,9 @@ class Console implements ConsoleInterface
 
     private function printExcessiveModuleXmlDependencies(array $deps): void
     {
-        $this->cli->backgroundYellow('Excessive dependencies in etc/module.xml:');
+        $this->cli->bold()
+                  ->yellow('[Notice]')
+                  ->yellow('Potentially excessive dependencies in etc/module.xml:');
 
         $this->printModules($deps);
 
@@ -131,7 +134,10 @@ class Console implements ConsoleInterface
 
     private function printExcessiveComposerDependencies(array $deps): void
     {
-        $this->cli->backgroundYellow('There are excessive Composer dependencies:');
+        $this->cli->bold()
+                  ->yellow('[Notice]')
+                  ->yellow('There are potentially excessive Composer dependencies:');
+
         $this->printComposerPackages($deps);
         $this->cli->br();
     }

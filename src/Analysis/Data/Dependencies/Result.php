@@ -32,9 +32,13 @@ class Result implements DefectiveResultInterface
     {
         return !empty($this->composerDefects[DependencyInterface::TYPE_SOFT]) ||
             !empty($this->composerDefects[DependencyInterface::TYPE_HARD]) ||
-            !empty($this->composerDefects[DependencyInterface::TYPE_EXCESSIVE]) ||
-            !empty($this->moduleXmlDefects[DependencyInterface::TYPE_EXCESSIVE]) ||
             !empty($this->moduleXmlDefects[DependencyInterface::TYPE_EXPECTED]);
+    }
+
+    public function hasNotices(): bool
+    {
+        return !empty($this->composerDefects[DependencyInterface::TYPE_EXCESSIVE]) ||
+            !empty($this->moduleXmlDefects[DependencyInterface::TYPE_EXCESSIVE]);
     }
 
     /**
