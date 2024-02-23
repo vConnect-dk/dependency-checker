@@ -23,7 +23,7 @@ class QueueConfig implements DependenciesScannerInterface
         $scannerResult->addHardDependencies(
             $this->configAnalysis->analyzeConfigFiles(
                 $package->getConfig()->getQueueConfig(),
-                $package->getPackageName()
+                $package->getName()
             )
         );
 

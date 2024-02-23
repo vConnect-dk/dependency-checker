@@ -22,7 +22,7 @@ class DbDDL implements DependenciesScannerInterface
     {
         $scannerResult = $this->scannerResultFactory->create();
 
-        $packageName = $package->getPackageName();
+        $packageName = $package->getName();
         $dependencies = array_filter(
             array_map(
                 fn(string $table) => $this->tablesOwnershipMap->getSchemaOwnerPackageName($table),

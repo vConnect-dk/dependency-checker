@@ -62,7 +62,7 @@ class PackagesRegistry
 
         foreach ($packages as $package) {
             foreach ($directories as $directory) {
-                if (str_contains($package->getPackagePath(), $directory)) {
+                if (str_contains($package->getPath(), $directory)) {
                     yield $package;
                     break;
                 }
@@ -95,14 +95,14 @@ class PackagesRegistry
         foreach (
             $fsScanner->getPackagesRecursively([self::MAGENTO_LOCAL], fileMask: '/registration.php/') as $appCodePackage
         ) {
-            $this->allPackages[$appCodePackage->getPackageName()] = $appCodePackage;
-            $this->packagesNamespaceMap[$appCodePackage->getPackageNamespaces()[0]] = $appCodePackage->getPackageName();
+            $this->allPackages[$appCodePackage->getName()] = $appCodePackage;
+            $this->packagesNamespaceMap[$appCodePackage->getPackageNamespaces()[0]] = $appCodePackage->getName();
         }
 
         foreach ($fsScanner->getPackagesByDirectPath($vendorPaths) as $vendorPackage) {
-            $this->allPackages[$vendorPackage->getPackageName()] = $vendorPackage;
+            $this->allPackages[$vendorPackage->getName()] = $vendorPackage;
             foreach ($vendorPackage->getPackageNamespaces() as $namespace) {
-                $this->packagesNamespaceMap[$namespace] = $vendorPackage->getPackageName();
+                $this->packagesNamespaceMap[$namespace] = $vendorPackage->getName();
             }
         }
 

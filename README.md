@@ -71,6 +71,7 @@ bin/disassembling {magento root} {whitelist.txt} {explain} {no-cache}
 {no-cache} - flag to disable collected dependencies cache. By default, 5m cache is used.
 
 Recommended minimum whitelist to have running Magento 2 store (with functional checkout and order placement):
+```
 colinmollenhour/cache-backend-file
 colinmollenhour/cache-backend-redis
 phpseclib/mcrypt_compat
@@ -80,7 +81,13 @@ magento/theme-adminhtml-backend
 magento/module-mysql-mq
 magento/module-offline-payments
 magento/module-offline-shipping
+```
 
+Also, the whitelist supports wildcards:
+```
+vconnect/*
+magento/*-graphql
+```
 Examples of command usage
 Project Analysis:
 ```bash

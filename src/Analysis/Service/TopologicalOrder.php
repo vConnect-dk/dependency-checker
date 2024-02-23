@@ -78,7 +78,7 @@ class TopologicalOrder implements AnalyzerInterface
             } catch (FileNotFoundException) {
             }
 
-            $graph->addDependencies($package->getPackageName(), $dependencies);
+            $graph->addDependencies($package->getName(), $dependencies);
         }
 
         return $graph;

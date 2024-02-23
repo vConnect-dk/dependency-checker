@@ -4,6 +4,7 @@
 use Vconnect\IntegrityChecker\Analysis\Data\TopologicalOrder\Result;
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder;
+use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\WhitelistProcessor;
 use Vconnect\IntegrityChecker\Application\Disassembling\Console;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
@@ -25,6 +26,7 @@ if (!$console->validateParameters()) {
 $directories = [ROOT_DIR . DefaultAnalysisFolders::APP, ROOT_DIR . DefaultAnalysisFolders::SRC, ROOT_DIR . 'vendor'];
 
 $packages = App()->get(PackagesRegistry::class)->getPackages($directories, false);
+$packages = iterator_to_array($packages);
 
 $whitelist = [];
 $whitelistArgument = $console->getWhitelist();
@@ -46,7 +48,7 @@ if (!empty($whitelistArgument)) {
 
 $analyzer = App()->make(
     TopologicalOrder::class, [
-        'whiteList' => $whitelist,
+        'whiteList' => App()->get(WhitelistProcessor::class)->process($whitelist, $packages),
         'explain' => $console->getExplainArgument(),
         'useCache' => !$console->getNoCacheArgument()]
 );

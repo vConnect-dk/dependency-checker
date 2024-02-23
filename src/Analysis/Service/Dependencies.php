@@ -60,7 +60,7 @@ class Dependencies implements AnalyzerInterface
     private function compareDependencies(Package $package, Dependency $dependencies): Result
     {
         return new Result(
-            $package->getPackageName(),
+            $package->getName(),
             $this->compareComposerDependencies($package, $dependencies),
             $this->compareModuleXmlDependencies($package, $dependencies)
         );
