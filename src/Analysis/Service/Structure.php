@@ -43,7 +43,7 @@ class Structure implements AnalyzerInterface
 
             $tree = $this->buildPackageTree($package);
 
-            yield new Result($package->getPackageName(), $this->compareTrees($this->standardStructure, $tree));
+            yield new Result($package->getName(), $this->compareTrees($this->standardStructure, $tree));
         }
     }
 
@@ -89,7 +89,7 @@ class Structure implements AnalyzerInterface
      */
     private function buildPackageTree(Package $package): array
     {
-        $packageRoot = $package->getPackagePath();
+        $packageRoot = $package->getPath();
         $tree = [];
 
         foreach ($package->getPackageFiles() as $file) {

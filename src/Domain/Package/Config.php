@@ -83,7 +83,7 @@ class Config
         $file = $this->getFileByName(self::MODULE_XML);
 
         if (!$file || !$file->isReadable()) {
-            throw new FileNotFoundException(self::MODULE_XML, $this->package->getPackagePath());
+            throw new FileNotFoundException(self::MODULE_XML, $this->package->getPath());
         }
 
         $this->moduleXml = new ModuleXml($file->getPathname());
@@ -149,7 +149,7 @@ class Config
 
     public function getGraphQlSchema(): ?string
     {
-        $schema = new \SplFileInfo($this->package->getPackagePath() . '/etc/' . self::GRAPHQL_SCHEMA_FILE);
+        $schema = new \SplFileInfo($this->package->getPath() . '/etc/' . self::GRAPHQL_SCHEMA_FILE);
         if ($schema->isReadable()) {
             return $schema->openFile()->fread($schema->getSize());
         }

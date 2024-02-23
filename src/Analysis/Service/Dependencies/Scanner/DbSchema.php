@@ -34,7 +34,7 @@ class DbSchema implements DependenciesScannerInterface
                 $hard += $this->getHardSchemaDependencies($table);
             }
 
-            $excludeItself = fn(string $packageName) => $packageName != $package->getPackageName();
+            $excludeItself = fn(string $packageName) => $packageName != $package->getName();
 
             $soft = array_filter($soft, $excludeItself);
             $hard = array_filter($hard, $excludeItself);

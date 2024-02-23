@@ -28,7 +28,7 @@ class GraphQlSchemaDependencyProvider
     {
         $hardDependencies = [];
         $softDependencies = [];
-        $packageName = $package->getPackageName();
+        $packageName = $package->getName();
         $packageSchemaDefinitionTypes = $this->extractSchemaDefinitionTypesForPackage($packageName);
         foreach ($packageSchemaDefinitionTypes as $definitionType => $definition) {
             $softDependencies[] = $this->schemaDefinitionOwnerMapper->getSoftDependency($definitionType);

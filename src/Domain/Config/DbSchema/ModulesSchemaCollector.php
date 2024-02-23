@@ -53,7 +53,7 @@ class ModulesSchemaCollector
                         $candidates,
                         $tableName,
                         $tableDefinition,
-                        $package->getPackageName()
+                        $package->getName()
                     );
                 }
             }

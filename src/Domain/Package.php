@@ -32,7 +32,7 @@ class Package
      *
      * @return string
      */
-    public function getPackagePath(): string
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -162,7 +162,7 @@ class Package
      *
      * @return string
      */
-    public function getPackageName(): string
+    public function getName(): string
     {
         try {
             $packageName = $this->getComposerJson()->getPackageName();
@@ -170,7 +170,7 @@ class Package
             $packageName = null;
         }
 
-        return $packageName ?? $this->getPackagePath();
+        return $packageName ?? $this->getPath();
     }
 
     /**
@@ -210,8 +210,8 @@ class Package
             return $this->composerJson;
         }
 
-        if (is_file($this->getPackagePath() . DIRECTORY_SEPARATOR . 'composer.json')) {
-            $this->composerJson = new Json($this->getPackagePath() . DIRECTORY_SEPARATOR . 'composer.json');
+        if (is_file($this->getPath() . DIRECTORY_SEPARATOR . 'composer.json')) {
+            $this->composerJson = new Json($this->getPath() . DIRECTORY_SEPARATOR . 'composer.json');
             return $this->composerJson;
         }
 

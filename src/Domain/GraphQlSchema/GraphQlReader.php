@@ -122,7 +122,7 @@ class GraphQlReader
         foreach ($this->packagesRegistry->getAllPackages() as $package) {
             $graphQlSchema = $package->getConfig()->getGraphQlSchema();
             if ($graphQlSchema !== null) {
-                $files[$package->getPackageName()] = $graphQlSchema;
+                $files[$package->getName()] = $graphQlSchema;
             }
         }
 
