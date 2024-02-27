@@ -8,12 +8,12 @@ use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class PhpFilesListProvider
 {
+    private ?array $filesList = null;
+
     public function __construct(
         private readonly PackagesRegistry $packagesRegistry
     ) {
     }
-
-    private ?array $filesList = null;
 
     public function getPhpFiles(): array
     {
