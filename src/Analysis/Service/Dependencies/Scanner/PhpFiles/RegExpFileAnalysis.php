@@ -35,7 +35,8 @@ class RegExpFileAnalysis
 
         $this->eventsManager->dispatchEvent(self::EVENT_NAME, [
             'fileContent' => $contents,
-            'package' => $package
+            'package' => $package,
+            'file' => $file,
         ]);
 
         if (!preg_match_all($this->getRegExp(), $contents, $matches)) {

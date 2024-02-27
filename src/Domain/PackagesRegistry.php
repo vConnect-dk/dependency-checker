@@ -70,6 +70,9 @@ class PackagesRegistry
         }
     }
 
+    /**
+     * @return Package[]
+     */
     public function getAllPackagesExcludingDev(): array
     {
         return array_diff_key($this->getAllPackages(), array_flip($this->devPackages));

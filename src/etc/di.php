@@ -6,6 +6,7 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\{DbDDL,
     GraphQlSchema,
     PhpFiles,
     QueueConfig,
+    Routes,
     ScannerResult\ScannerResult,
     ScannerResult\ScannerResultInterface,
     XmlConfigFiles};
@@ -20,6 +21,7 @@ return [
             DI\get(QueueConfig::class),
             DI\get(GraphQlSchema::class),
             DI\get(DbDDL::class),
+            DI\get(Routes::class),
         ]),
     ScannerResultInterface::class => DI\create(ScannerResult::class),
 ];
