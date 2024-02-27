@@ -117,7 +117,7 @@ class RouteMapper
         'while' => 1,
         'xor' => 1,
         'yield' => 1
-    ]; // TODO: replace with ENUM
+    ];
 
     public function __construct(
         private readonly PackagesRegistry     $packagesRegistry,
@@ -129,9 +129,6 @@ class RouteMapper
     {
         if (str_contains($path, '*')) {
             return $this->processWildcardUrl($path, $phpFilePath);
-        } elseif (preg_match('#rest(?<service>/V1/.+)#i', $path, $apiMatch)) {
-//                $modules = $this->processApiUrl($apiMatch['service']); TODO
-            return null;
         } else {
             return $this->processStandardUrl($path);
         }
