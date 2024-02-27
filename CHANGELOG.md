@@ -1,3 +1,12 @@
+2.8.0
+===========
+New features:
+* [Reporting notices about potential redundant dependencies](https://vconnect.atlassian.net/browse/IE-274) in `composer.json` and `module.xml` files:
+    * It is a notice report level, meaning that it is not treated as defect and returns 0 exit code;
+* [Detecting dependencies between extension that declares url route and extension that uses it;](https://vconnect.atlassian.net/browse/IE-273)
+  * It scans PHP files for `->getUrl()` calls to get the requested route URL path and find its dependency;
+* [Wildcards support](https://vconnect.atlassian.net/browse/IE-276) for `bin/dependencies` whitelist.
+
 2.7.0
 ===========
 New features:
