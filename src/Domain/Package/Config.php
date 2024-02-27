@@ -23,6 +23,7 @@ class Config
     private const QUEUE_PUBLISHER = 'queue_publisher.xml';
     private const QUEUE_TOPOLOGY = 'queue_topology.xml';
     private const GRAPHQL_SCHEMA_FILE = 'schema.graphqls';
+    private const ROUTES_XML = 'routes.xml';
 
     private ?ModuleXml $moduleXml = null;
     private ?DbSchema $dbSchema = null;
@@ -110,6 +111,11 @@ class Config
         }
 
         return $this->diConfig;
+    }
+
+    public function getRoutesXml(): array
+    {
+        return $this->getMultipleFilesByName(self::ROUTES_XML);
     }
 
     public function getSystemXmlConfig(): \DOMDocument
