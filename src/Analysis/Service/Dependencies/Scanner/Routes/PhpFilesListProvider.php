@@ -26,10 +26,7 @@ class PhpFilesListProvider
 
     private function initFilesList(): array
     {
-        $packages = array_filter(
-            $this->packagesRegistry->getAllPackages(),
-            fn(Package $package) => $package->getPackageType() === Package::MAGENTO_PACKAGE_TYPE
-        );
+        $packages = $this->packagesRegistry->getMagentoModules();
 
         $filesList = [];
         foreach ($packages as $package) {

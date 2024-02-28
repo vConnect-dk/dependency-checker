@@ -79,6 +79,17 @@ class PackagesRegistry
     }
 
     /**
+     * @return Package[]
+     */
+    public function getMagentoModules(): array
+    {
+        return array_filter(
+            $this->getAllPackages(),
+            fn(Package $package) => $package->getPackageType() === Package::MAGENTO_PACKAGE_TYPE
+        );
+    }
+
+    /**
      * Get all packages from app/code and packages installed via composer.
      *
      * @return Package[]
