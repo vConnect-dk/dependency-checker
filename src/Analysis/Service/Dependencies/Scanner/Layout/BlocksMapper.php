@@ -39,7 +39,7 @@ class BlocksMapper
         ];
         foreach ($packages as $package) {
             $module = $package->getName();
-            foreach ($package->getPackageFiles() as $file) {
+            foreach ($package->getFiles('view') as $file) {
                 $path = $file->getPathname();
                 if ($file->getExtension() === 'xml' && preg_match(self::LAYOUT_FILE_PATTERN, $path, $matches)) {
                     $area = $matches['area'];
