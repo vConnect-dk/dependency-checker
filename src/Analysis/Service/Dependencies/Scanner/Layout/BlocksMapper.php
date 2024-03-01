@@ -3,22 +3,38 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\Layout;
 
+use Vconnect\IntegrityChecker\Domain\MagentoArea;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class BlocksMapper
 {
+    private const DEFAULT_DEPENDENCY = [
+        MagentoArea::AREA_FRONTEND => 'magento/module-theme',
+        MagentoArea::AREA_ADMINHTML => 'magento/module-backend',
+    ];
+
     private const LAYOUT_FILE_PATTERN = /** @lang RegExp */
         '#view/(?<area>adminhtml|frontend)/layout/\w+.xml#';
     private ?array $map = null;
+    private array $layoutHandlesHierarchy = [];
 
     public function __construct(
         private readonly PackagesRegistry $packagesRegistry
     ) {
     }
 
-    public function getBlockDependency(string $area, string $name): array
+    public function getBlockDependency(string $area, string $name, string $layoutHandle): ?string
     {
-        return $this->getMap()[$area][$name] ?? [];
+        $dependencyWithinTheSameLayout = $this->getMap()[$area][$name][$layoutHandle] ?? null;
+        if ($dependencyWithinTheSameLayout === null) {
+            foreach ($this->layoutHandlesHierarchy[$layoutHandle] ?? [] as $parentHandle) {
+                if ($dependencyFromParentLayout = $this->getMap()[$area][$name][$parentHandle] ?? null) {
+                    return $dependencyFromParentLayout;
+                }
+            }
+        }
+
+        return $dependencyWithinTheSameLayout;
     }
 
     private function getMap(): array
@@ -43,25 +59,92 @@ class BlocksMapper
                 $path = $file->getPathname();
                 if ($file->getExtension() === 'xml' && preg_match(self::LAYOUT_FILE_PATTERN, $path, $matches)) {
                     $area = $matches['area'];
-                    $this->parseLayoutBlocks(simplexml_load_file($path), $map, $area, $module);
+                    $xml = simplexml_load_file($file->getPathname());
+                    $layoutHandle = $file->getBasename('.xml');
+                    $this->parseLayoutBlocks($xml, $layoutHandle, $map, $area, $module);
+                    $this->mapLayoutHandles($xml, $layoutHandle);
                 }
-
             }
         }
+
+        $this->postProcessMap($map);
 
         return $map;
     }
 
-    private function parseLayoutBlocks(\SimpleXMLElement $xml, array &$map, string $area, string $module): void
-    {
+    private function parseLayoutBlocks(
+        \SimpleXMLElement $xml, string $handle, array &$map, string $area, string $module
+    ): void {
         foreach ((array)$xml->xpath('//container | //block') as $element) {
             /** @var \SimpleXMLElement $element */
             $attributes = $element->attributes();
             $block = (string)$attributes->name;
             if (!empty($block)) {
-                $map[$area][$block] = $map[$area][$block] ?? [];
-                $map[$area][$block][$module] = $module;
+                $map[$area][$block][$handle][$module] = $module;
             }
         }
+    }
+
+    private function mapLayoutHandles(\SimpleXMLElement $xml, string $parentHandle): void
+    {
+        foreach ((array)$xml->xpath('//update/@handle') as $element) {
+            $childHandle = (string)$element;
+            $this->layoutHandlesHierarchy[$childHandle][] = $parentHandle;
+        }
+    }
+
+    private function postProcessMap(array &$map): void
+    {
+        foreach ($map as $area => $blocks) {
+            foreach ($blocks as $block => $layoutHandles) {
+                foreach ($layoutHandles as $layoutHandle => $modules) {
+                    $map[$area][$block][$layoutHandle] = count($modules) > 1
+                        ? $this->reduceDependencies($area, $modules)
+                        : current($modules);
+                }
+            }
+        }
+    }
+
+    private function reduceDependencies(string $area, array $modules): string
+    {
+        if (isset($modules[self::DEFAULT_DEPENDENCY[$area]])) {
+            // blocks e.g. "root", "content"
+            return self::DEFAULT_DEPENDENCY[$area];
+        }
+        $modulesDependencies = [];
+        foreach ($modules as $module => $layoutHandle) {
+            $package = $this->packagesRegistry->getPackage($module);
+            $modulesDependencies[$module] = array_map(
+                fn(string $moduleName) => $this->packagesRegistry->getPackageNameByNamespace(
+                    str_replace('_', '\\', $moduleName)
+                ),
+                $package->getModuleXmlDependencies()
+            );
+            $modulesDependencies[$module] = array_unique(
+                array_merge(
+                    $modulesDependencies[$module],
+                    $package->getComposerRequirePackages(false)
+                )
+            );
+        }
+
+        uasort($modulesDependencies, fn($a, $b) => count($a) <=> count($b));
+
+        foreach ($modulesDependencies as $module => $dependencyList) {
+            foreach ($dependencyList as $dependency) {
+                if (isset($modules[$dependency])) {
+                    unset($modules[$module]);
+                }
+            }
+        }
+        if (count($modules) > 1) {
+            // Some shitty 3rd party are more likely to have invalid dependencies declared. So priority is given to magento modules
+            $magentoOnlyModules = array_filter($modules, fn(string $module) => str_starts_with($module, 'magento/'))
+                ?: null;
+        }
+        $deps = $magentoOnlyModules ?? $modules;
+
+        return current($deps);
     }
 }

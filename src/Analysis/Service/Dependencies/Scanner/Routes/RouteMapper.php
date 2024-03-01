@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\Routes;
 
 use Adbar\Dot;
+use Vconnect\IntegrityChecker\Domain\MagentoArea;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 /**
@@ -14,7 +15,14 @@ class RouteMapper
 {
     private const ROUTER_TYPE_ADMIN = 'admin';
     private const ROUTER_TYPE_STANDARD = 'standard';
-    private const ROUTER_TYPES = [self::ROUTER_TYPE_ADMIN, self::ROUTER_TYPE_STANDARD];
+    private const ROUTER_AREA_TYPES = [
+        self::ROUTER_TYPE_ADMIN => MagentoArea::AREA_ADMINHTML,
+        self::ROUTER_TYPE_STANDARD => MagentoArea::AREA_FRONTEND
+    ];
+    private const AREAS = [
+        MagentoArea::AREA_ADMINHTML,
+        MagentoArea::AREA_FRONTEND
+    ];
 
     /**
      * List of routers
@@ -125,16 +133,19 @@ class RouteMapper
     ) {
     }
 
-    public function getDependencyFromRoutePath(string $path, string $phpFilePath): ?string
+    public function getDependencyByRouteParams(string $path, ?string $phpFilePath = null, ?string $area = null): ?string
     {
-        if (str_contains($path, '*')) {
-            return $this->processWildcardUrl($path, $phpFilePath);
+        if ($area) {
+            $area = MagentoArea::from($area)->value;
+        }
+        if ($phpFilePath && str_contains($path, '*')) {
+            return $this->processWildcardUrl($path, $phpFilePath, $area);
         } else {
-            return $this->processStandardUrl($path);
+            return $this->processStandardUrl($path, $area);
         }
     }
 
-    private function processWildcardUrl(string $urlPath, string $filePath): ?string
+    private function processWildcardUrl(string $urlPath, string $filePath, ?MagentoArea $area): ?string
     {
         $filePath = strtolower($filePath);
         $urlRoutePieces = explode('/', $urlPath);
@@ -174,11 +185,11 @@ class RouteMapper
             $actionName .= 'action';
         }
 
-        return $this->getDependency("$routeId/$controllerName/$actionName");
+        return $this->getDependency("$routeId/$controllerName/$actionName", $area);
     }
 
 
-    private function processStandardUrl(string $path): ?string
+    private function processStandardUrl(string $path, ?MagentoArea $area): ?string
     {
         $pattern = '#(?<route_id>[a-z0-9\-_]{3,})'
             . '(/(?<controller_name>[a-z0-9\-_]+))?(/(?<action_name>[a-z0-9\-_]+))?#i';
@@ -192,17 +203,17 @@ class RouteMapper
             $actionName .= 'action';
         }
 
-        return $this->getDependency("$routeId/$controllerName/$actionName");
+        return $this->getDependency("$routeId/$controllerName/$actionName", $area);
     }
 
-    private function getDependency(
-        string $routePath
-    ): ?string {
+    public function getDependency(string $routePath, ?MagentoArea $area): ?string
+    {
         $routePath = strtolower($routePath);
+        $areas = $area ? [$area->value] : self::AREAS;
 
-        foreach (self::ROUTER_TYPES as $routerId) {
-            if ($this->getActionsMap()[$routerId]->has($routePath)) {
-                return $this->getActionsMap()[$routerId]->get($routePath);
+        foreach ($areas as $area) {
+            if ($this->getActionsMap()[$area]->has($routePath)) {
+                return $this->getActionsMap()[$area]->get($routePath);
             }
         }
 
@@ -242,7 +253,7 @@ class RouteMapper
 
         $routers = $config->xpath("/config/router");
         foreach ($routers as $router) {
-            $routerId = (string)$router['id'];
+            $routerId = self::ROUTER_AREA_TYPES[(string)$router['id']];
             foreach ($router->xpath('route') as $route) {
                 $routeId = (string)$route['id'];
                 if (!isset($this->routers[$routerId][$routeId])) {
