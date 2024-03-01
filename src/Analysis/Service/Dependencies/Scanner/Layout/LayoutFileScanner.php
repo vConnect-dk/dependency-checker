@@ -24,11 +24,13 @@ class LayoutFileScanner
 
         $deps = [DependencyInterface::TYPE_SOFT => [], DependencyInterface::TYPE_HARD => []];
         $layoutHandle = $file->getBasename('.xml');
+        $xml = simplexml_load_string($contents);
+
 
         $this->getLayoutDependencyFromFileName($deps, $layoutHandle, $area);
         $this->getBlockClassAndTemplateDeps($deps, $contents);
-        $this->getLayoutHandleUpdateDeps($deps, $contents, $area);
-        $this->getReferenceDependencies($deps, $contents, $area, $layoutHandle);
+        $this->getLayoutHandleUpdateDeps($deps, $xml, $area);
+        $this->getReferenceDependencies($deps, $xml, $area, $layoutHandle);
 
         return [
             array_keys($deps[DependencyInterface::TYPE_SOFT]),
@@ -83,17 +85,12 @@ class LayoutFileScanner
      * Ex.: <update handle="{name}" />
      *
      * @param array $deps
-     * @param string $contents
+     * @param \SimpleXMLElement $xml
      * @param string $area
      * @return void
      */
-    private function getLayoutHandleUpdateDeps(array &$deps, string $contents, string $area): void
+    private function getLayoutHandleUpdateDeps(array &$deps, \SimpleXMLElement $xml, string $area): void
     {
-        $xml = simplexml_load_string($contents);
-        if (!$xml) {
-            return;
-        }
-
         foreach ((array)$xml->xpath('//update/@handle') as $element) {
             $dependency = $this->getLayoutHandleDependency($area, (string)$element);
             $deps[DependencyInterface::TYPE_SOFT][$dependency] = true;
@@ -106,17 +103,13 @@ class LayoutFileScanner
      * Ex.: <referenceBlock name="{name}">
      *
      * @param array $deps
-     * @param string $contents
+     * @param \SimpleXMLElement $xml
      * @param string $area
+     * @param string $layoutHandle
      * @return void
      */
-    protected function getReferenceDependencies(array &$deps, string $contents, string $area, string $layoutHandle): void
+    protected function getReferenceDependencies(array &$deps, \SimpleXMLElement $xml, string $area, string $layoutHandle): void
     {
-        $xml = simplexml_load_string($contents);
-        if (!$xml) {
-            return;
-        }
-
         foreach ((array)$xml->xpath('//referenceBlock/@name | //referenceContainer/@name') as $element) {
             $blockDependency = $this->blocksMapper->getBlockDependency($area, (string)$element, $layoutHandle);
             if ($blockDependency) {
