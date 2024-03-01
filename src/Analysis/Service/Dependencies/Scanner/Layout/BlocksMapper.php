@@ -109,21 +109,15 @@ class BlocksMapper
     private function reduceDependencies(string $area, array $modules): string
     {
         if (isset($modules[self::DEFAULT_DEPENDENCY[$area]])) {
-            // blocks e.g. "root", "content"
             return self::DEFAULT_DEPENDENCY[$area];
         }
+
         $modulesDependencies = [];
         foreach ($modules as $module => $layoutHandle) {
             $package = $this->packagesRegistry->getPackage($module);
-            $modulesDependencies[$module] = array_map(
-                fn(string $moduleName) => $this->packagesRegistry->getPackageNameByNamespace(
-                    str_replace('_', '\\', $moduleName)
-                ),
-                $package->getModuleXmlDependencies()
-            );
             $modulesDependencies[$module] = array_unique(
                 array_merge(
-                    $modulesDependencies[$module],
+                    $this->getModuleXmlDependencies($package),
                     $package->getComposerRequirePackages(false)
                 )
             );
@@ -138,13 +132,22 @@ class BlocksMapper
                 }
             }
         }
-        if (count($modules) > 1) {
-            // Some shitty 3rd party are more likely to have invalid dependencies declared. So priority is given to magento modules
-            $magentoOnlyModules = array_filter($modules, fn(string $module) => str_starts_with($module, 'magento/'))
-                ?: null;
-        }
+
+        $magentoOnlyModules = array_filter(
+            $modules, fn(string $module) => str_starts_with($module, 'magento/')
+        ) ?: null;
         $deps = $magentoOnlyModules ?? $modules;
 
         return current($deps);
+    }
+
+    private function getModuleXmlDependencies($package): array
+    {
+        return array_map(
+            fn(string $moduleName) => $this->packagesRegistry->getPackageNameByNamespace(
+                str_replace('_', '\\', $moduleName)
+            ),
+            $package->getModuleXmlDependencies()
+        );
     }
 }

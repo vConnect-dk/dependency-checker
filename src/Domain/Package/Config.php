@@ -152,8 +152,8 @@ class Config
 
     public function getGraphQlSchema(): ?string
     {
-        $schema = new \SplFileInfo($this->package->getPath() . '/etc/' . self::GRAPHQL_SCHEMA_FILE);
-        if ($schema->isReadable()) {
+        $schema = $this->package->getFile(self::GRAPHQL_SCHEMA_FILE);
+        if ($schema?->isReadable()) {
             return $schema->openFile()->fread($schema->getSize());
         }
 

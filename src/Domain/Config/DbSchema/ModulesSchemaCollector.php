@@ -58,9 +58,8 @@ class ModulesSchemaCollector
                 }
             }
         }
-        array_walk($candidates, fn(array &$candidate) => ksort($candidate));
 
-        return array_map(fn(array $candidates): string => current($candidates), $candidates);
+        return array_map(fn(\SplPriorityQueue $candidates): string => $candidates->top(), $candidates);
     }
 
     /**
@@ -99,7 +98,7 @@ class ModulesSchemaCollector
     /**
      * Collect candidates to be owner of that table.
      *
-     * @param array $candidates
+     * @param \SplPriorityQueue[] $candidates
      * @param string $tableName
      * @param array $tableDefinition
      * @param string $packageName
@@ -112,10 +111,10 @@ class ModulesSchemaCollector
         array  $tableDefinition,
         string $packageName
     ): void {
-        $tableCandidates = $candidates[$tableName] ?? [];
+        $tableCandidates = $candidates[$tableName] ?? new \SplPriorityQueue();
         foreach ($this->getTableOwnerCandidatesPriorityRules() as $priority => $rule) {
             if ($rule($tableDefinition)) {
-                $tableCandidates[$priority] = $packageName;
+                $tableCandidates->insert($packageName, $priority);
                 break;
             }
         }
@@ -128,12 +127,12 @@ class ModulesSchemaCollector
     private function getTableOwnerCandidatesPriorityRules(): array
     {
         return [
-            0 => [$this, 'hasResourceAndPrimaryKey'],
-            1 => [$this, 'hasPrimaryKey'],
-            2 => [$this, 'hasResource'],
-            3 => [$this, 'hasConstraint'],
-            4 => [$this, 'hasIndex'],
-            5 => fn(array $tableDefinition) => true
+            5 => [$this, 'hasResourceAndPrimaryKey'],
+            4 => [$this, 'hasPrimaryKey'],
+            3 => [$this, 'hasResource'],
+            2 => [$this, 'hasConstraint'],
+            1 => [$this, 'hasIndex'],
+            0 => fn(array $tableDefinition) => true
         ];
     }
 

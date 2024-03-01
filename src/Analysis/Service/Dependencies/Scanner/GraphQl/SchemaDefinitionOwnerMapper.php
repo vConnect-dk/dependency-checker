@@ -54,11 +54,12 @@ class SchemaDefinitionOwnerMapper
         $allTypes = $this->schemaReader->getAllGraphQlTypesDefinitions();
         $ownersMapping = [];
         foreach ($allTypes as $type => $definitions) {
+            $candidates = new \SplPriorityQueue();
             foreach ($definitions as $package => $definition) {
-                $ownersMapping[$type][$this->prioritizeCandidate($definition, $package)] = $package;
+                $candidates->insert($package, $this->prioritizeCandidate($definition, $package));
             }
-            ksort($ownersMapping[$type]);
-            $ownersMapping[$type] = current($ownersMapping[$type]) ?? null;
+
+            $ownersMapping[$type] = $candidates->top();
         }
 
         return $ownersMapping;
@@ -85,13 +86,13 @@ class SchemaDefinitionOwnerMapper
     private function getTypeOwnerPriorityRules(): array
     {
         return [
-            0 => [$this, 'isInterfaceWithTypeResolver'],
-            1 => [$this, 'hasInterfaceImplementation'],
-            2 => fn(string $package, array $parsedAST) => $this->isMagentoCoreType($package, $parsedAST)
+            5 => [$this, 'isInterfaceWithTypeResolver'],
+            4 => [$this, 'hasInterfaceImplementation'],
+            3 => fn(string $package, array $parsedAST) => $this->isMagentoCoreType($package, $parsedAST)
                 && $this->hasDescription($package, $parsedAST),
-            3 => [$this, 'isMagentoCoreType'],
-            4 => [$this, 'hasDescription'],
-            5 => fn(string $package, array $parsedAST) => true
+            2 => [$this, 'isMagentoCoreType'],
+            1 => [$this, 'hasDescription'],
+            0 => fn(string $package, array $parsedAST) => true
         ];
     }
 
