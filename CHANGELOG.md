@@ -1,3 +1,8 @@
+2.9.0
+===========
+New features:
+* [Layout dependencies scanner](https://vconnect.atlassian.net/browse/IE-278)
+
 2.8.0
 ===========
 New features:
