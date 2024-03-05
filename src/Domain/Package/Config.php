@@ -11,18 +11,15 @@ use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 class Config
 {
     private const DI = 'di.xml';
-    private const EXT_ATR = 'extension_attributes.xml';
-    private const ADMIN_UI = 'system.xml';
-
-    private const DB_SCHEMA = 'db_schema.xml';
-
-    private const MODULE_XML = 'module.xml';
-
-    private const QUEUE_COMMUNICATION = 'communication.xml';
-    private const QUEUE_CONSUMER = 'queue_consumer.xml';
-    private const QUEUE_PUBLISHER = 'queue_publisher.xml';
-    private const QUEUE_TOPOLOGY = 'queue_topology.xml';
-    private const GRAPHQL_SCHEMA_FILE = 'schema.graphqls';
+    private const EXT_ATR = 'etc/extension_attributes.xml';
+    private const ADMIN_UI = 'etc/adminhtml/system.xml';
+    private const DB_SCHEMA = 'etc/db_schema.xml';
+    private const MODULE_XML = 'etc/module.xml';
+    private const QUEUE_COMMUNICATION = 'etc/communication.xml';
+    private const QUEUE_CONSUMER = 'etc/queue_consumer.xml';
+    private const QUEUE_PUBLISHER = 'etc/queue_publisher.xml';
+    private const QUEUE_TOPOLOGY = 'etc/queue_topology.xml';
+    private const GRAPHQL_SCHEMA_FILE = 'etc/schema.graphqls';
     private const ROUTES_XML = 'routes.xml';
 
     private ?ModuleXml $moduleXml = null;
@@ -45,7 +42,7 @@ class Config
         }
 
         $content = null;
-        $file = $this->getFileByName(self::DB_SCHEMA);
+        $file = $this->package->getFile(self::DB_SCHEMA);
 
         if ($file && $file->isReadable()) {
             $content = new \DOMDocument();
@@ -61,10 +58,10 @@ class Config
     {
         if (!$this->queue) {
             $this->queue = new Queue(
-                $this->getFileByName(self::QUEUE_COMMUNICATION),
-                $this->getFileByName(self::QUEUE_CONSUMER),
-                $this->getFileByName(self::QUEUE_PUBLISHER),
-                $this->getFileByName(self::QUEUE_TOPOLOGY)
+                $this->package->getFile(self::QUEUE_COMMUNICATION),
+                $this->package->getFile(self::QUEUE_CONSUMER),
+                $this->package->getFile(self::QUEUE_PUBLISHER),
+                $this->package->getFile(self::QUEUE_TOPOLOGY)
             );
         }
 
@@ -81,7 +78,7 @@ class Config
             return $this->moduleXml;
         }
 
-        $file = $this->getFileByName(self::MODULE_XML);
+        $file = $this->package->getFile(self::MODULE_XML);
 
         if (!$file || !$file->isReadable()) {
             throw new FileNotFoundException(self::MODULE_XML, $this->package->getPath());
@@ -102,7 +99,7 @@ class Config
 
         $this->diConfig = [];
 
-        foreach ($this->getMultipleFilesByName(self::DI) as $file) {
+        foreach ($this->getMultipleEtcFiles(self::DI) as $file) {
             if ($file->isReadable()) {
                 $dom = new \DOMDocument();
                 $dom->loadXML($file->openFile()->fread($file->getSize()));
@@ -115,7 +112,7 @@ class Config
 
     public function getRoutesXml(): array
     {
-        return $this->getMultipleFilesByName(self::ROUTES_XML);
+        return $this->getMultipleEtcFiles(self::ROUTES_XML);
     }
 
     public function getSystemXmlConfig(): \DOMDocument
@@ -124,7 +121,7 @@ class Config
             return $this->systemXml;
         }
 
-        $file = $this->getFileByName(self::ADMIN_UI);
+        $file = $this->package->getFile(self::ADMIN_UI);
         $dom = new \DOMDocument();
 
         if ($file && $file->isReadable()) {
@@ -142,7 +139,7 @@ class Config
             return $this->extensionAttributes;
         }
 
-        $file = $this->getFileByName(self::EXT_ATR);
+        $file = $this->package->getFile(self::EXT_ATR);
         $dom = new \DOMDocument();
 
         if ($file && $file->isReadable()) {
@@ -155,8 +152,8 @@ class Config
 
     public function getGraphQlSchema(): ?string
     {
-        $schema = new \SplFileInfo($this->package->getPath() . '/etc/' . self::GRAPHQL_SCHEMA_FILE);
-        if ($schema->isReadable()) {
+        $schema = $this->package->getFile(self::GRAPHQL_SCHEMA_FILE);
+        if ($schema?->isReadable()) {
             return $schema->openFile()->fread($schema->getSize());
         }
 
@@ -168,27 +165,16 @@ class Config
      *
      * @return \SplFileInfo[]
      */
-    private function getMultipleFilesByName(string $filename): array
+    private function getMultipleEtcFiles(string $filename): array
     {
         $result = [];
 
-        foreach ($this->package->getPackageFiles() as $file) {
+        foreach ($this->package->getFiles('etc') as $file) {
             if ($file->getFilename() === $filename) {
                 $result[] = $file;
             }
         }
 
         return $result;
-    }
-
-    private function getFileByName(string $filename): ?\SplFileInfo
-    {
-        foreach ($this->package->getPackageFiles() as $file) {
-            if ($file->getFilename() === $filename) {
-                return $file;
-            }
-        }
-
-        return null;
     }
 }

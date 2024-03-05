@@ -26,16 +26,13 @@ class PhpFilesListProvider
 
     private function initFilesList(): array
     {
-        $packages = array_filter(
-            $this->packagesRegistry->getAllPackages(),
-            fn(Package $package) => $package->getPackageType() === Package::MAGENTO_PACKAGE_TYPE
-        );
+        $packages = $this->packagesRegistry->getMagentoModules();
 
         $filesList = [];
         foreach ($packages as $package) {
-            foreach ($package->getPackageFiles() as $file) {
+            foreach ($package->getFiles('Controller') as $file) {
                 $path = $file->getPathname();
-                if ($file->getExtension() === 'php' && str_contains($path, '/Controller/')) {
+                if ($file->getExtension() === 'php') {
                     $filesList[$package->getName()][] = $path;
                 }
             }

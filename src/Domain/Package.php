@@ -2,11 +2,13 @@
 
 namespace Vconnect\IntegrityChecker\Domain;
 
+use Adbar\Dot;
 use FilesystemIterator;
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
 use Vconnect\IntegrityChecker\Domain\Package\Config;
-use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Domain\Scanner\FileClassScanner;
+use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
+use Vconnect\IntegrityChecker\Utils\RecursiveArrayLeavesIterator;
 
 class Package
 {
@@ -15,7 +17,7 @@ class Package
     public const MAGENTO_COMPONENT_TYPE = 'magento2-component';
     public const UNKNOWN_PACKAGE_TYPE = 'unknown';
 
-    private ?array $packageFiles = null;
+    private ?Dot $filesTree = null;
     private array $loadedFileClasses = [];
     private ?Json $composerJson = null;
     private Config $config;
@@ -42,7 +44,8 @@ class Package
         $type = null;
         try {
             $type = $this->getComposerJson()->getPackageType();
-        } catch (FileNotFoundException) {}
+        } catch (FileNotFoundException) {
+        }
 
         if ($type !== null) {
             return $type;
@@ -51,7 +54,8 @@ class Package
         try {
             $this->getConfig()->getModuleXml();
             return self::MAGENTO_PACKAGE_TYPE;
-        } catch (FileNotFoundException) {}
+        } catch (FileNotFoundException) {
+        }
 
         return self::UNKNOWN_PACKAGE_TYPE;
     }
@@ -106,14 +110,28 @@ class Package
         return $this->getConfig()->getModuleXml()->getDependencies();
     }
 
+    public function getFile(string $filePath): ?\SplFileInfo
+    {
+        $file = $this->getFilesTree()[$filePath];
+        if ($file instanceof \SplFileInfo && $file->isFile()) {
+            return $file;
+        }
+
+        return null;
+    }
+
     /**
      * Load all files in the package.
      *
      * @return \SplFileInfo[]
      */
-    public function getPackageFiles(): array
+    public function getFiles(?string $directory = null): iterable
     {
-        return $this->getPackageFilesList();
+        $files = $this->getFilesTree();
+
+        return $directory === null
+            ? new RecursiveArrayLeavesIterator($files->all())
+            : new RecursiveArrayLeavesIterator($files->get($directory, []));
     }
 
     /**
@@ -137,7 +155,7 @@ class Package
     {
         try {
             $namespaces = $this->getComposerJson()->getNamespaces();
-            $namespaces = array_map(fn ($namespace) => trim($namespace, '\\'), $namespaces);
+            $namespaces = array_map(fn($namespace) => trim($namespace, '\\'), $namespaces);
         } catch (FileNotFoundException) {
             $namespaces = [];
         }
@@ -176,26 +194,30 @@ class Package
     /**
      * Get Package File Info.
      *
-     * @return \SplFileInfo[]
+     * @return Dot<\SplFileInfo>|\SplFileInfo[]|\SplFileInfo[][]
      */
-    private function getPackageFilesList(): array
+    public function getFilesTree(): Dot|array
     {
-        if (!$this->packageFiles) {
-            $this->packageFiles = iterator_to_array(
-                new \CallbackFilterIterator(
-                    new \RecursiveIteratorIterator(
-                        new \RecursiveDirectoryIterator($this->path, FilesystemIterator::SKIP_DOTS),
-                        \RecursiveIteratorIterator::SELF_FIRST
-                    ),
-                    function (\SplFileInfo $fileInfo) {
-                        return $fileInfo->isFile() &&
-                            !preg_match('/(\/Test\/|\/tests\/|\/Tests\/|\/Test.php)/i', $fileInfo->getPathname());
-                    }
-                )
+        if (!$this->filesTree) {
+            $packageFiles = [];
+            $iterator = new \CallbackFilterIterator(
+                new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($this->path, FilesystemIterator::SKIP_DOTS),
+                    \RecursiveIteratorIterator::SELF_FIRST
+                ),
+                function (\SplFileInfo $fileInfo) {
+                    return $fileInfo->isFile() &&
+                        !preg_match('/(\/Test\/|\/tests\/|\/Tests\/|\/Test.php)/i', $fileInfo->getPathname());
+                }
             );
+            foreach ($iterator as $path => $fileInfo) {
+                $key = str_replace($this->path . DIRECTORY_SEPARATOR, '', $path);
+                $packageFiles[$key] = $fileInfo;
+            }
+            $this->filesTree = new Dot($packageFiles, parse: true, delimiter: '/');
         }
 
-        return $this->packageFiles;
+        return $this->filesTree;
     }
 
     /**
@@ -210,12 +232,12 @@ class Package
             return $this->composerJson;
         }
 
-        if (is_file($this->getPath() . DIRECTORY_SEPARATOR . 'composer.json')) {
-            $this->composerJson = new Json($this->getPath() . DIRECTORY_SEPARATOR . 'composer.json');
+        if ($file = $this->getFile('composer.json')) {
+            $this->composerJson = new Json($file->getPathname());
             return $this->composerJson;
         }
 
-        foreach ($this->getPackageFilesList() as $file) {
+        foreach ($this->getFiles() as $file) {
             if ($file->getFilename() === 'composer.json') {
                 $this->composerJson = new Json($file->getPathname());
 

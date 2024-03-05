@@ -24,7 +24,7 @@ class Routes implements DependenciesScannerInterface
         $routes = $this->urlRoutesCollector->getCollectedRoutes($package);
         $deps = [];
         foreach ($routes as $route => $phpFilePath) {
-            $deps[] = $this->routeMapper->getDependencyFromRoutePath($route, $phpFilePath);
+            $deps[] = $this->routeMapper->getDependencyByRouteParams($route, $phpFilePath);
         }
 
         $deps = array_filter(

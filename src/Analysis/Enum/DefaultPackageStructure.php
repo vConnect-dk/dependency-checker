@@ -5,10 +5,10 @@ namespace Vconnect\IntegrityChecker\Analysis\Enum;
 class DefaultPackageStructure
 {
     public const STRUCTURE = [
-        'composer.json',
-        'registration.php',
+        'composer.json' => 'composer.json',
+        'registration.php' => 'registration.php',
         'etc' => [
-            'module.xml'
+            'module.xml' => 'module.xml'
         ]
     ];
 }

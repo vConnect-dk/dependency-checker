@@ -41,7 +41,7 @@ class Structure implements AnalyzerInterface
                 continue;
             }
 
-            $tree = $this->buildPackageTree($package);
+            $tree = $package->getFilesTree()->all();
 
             yield new Result($package->getName(), $this->compareTrees($this->standardStructure, $tree));
         }
@@ -59,7 +59,7 @@ class Structure implements AnalyzerInterface
     {
         $diff = [];
         foreach ($standardTree as $name => $standardStem) {
-            if (!is_array($standardStem) && !in_array($standardStem, $packageTree)) {
+            if (!is_array($standardStem) && empty($packageTree[$standardStem])) {
                 // we found a leaf - it's a file!
                 $diff[] = $standardStem;
             }
@@ -78,48 +78,5 @@ class Structure implements AnalyzerInterface
         }
 
         return $diff;
-    }
-
-    /**
-     * Build tree for package, based on information about folders and files inside.
-     *
-     * @param Package $package
-     *
-     * @return array
-     */
-    private function buildPackageTree(Package $package): array
-    {
-        $packageRoot = $package->getPath();
-        $tree = [];
-
-        foreach ($package->getPackageFiles() as $file) {
-            if ($file->isDir()) {
-                continue;
-            }
-            $parts = explode(
-                DIRECTORY_SEPARATOR,
-                str_replace($packageRoot . DIRECTORY_SEPARATOR, '', $file->getPathname())
-            );
-
-            $stem = &$tree;
-
-            for ($i = 0; $i < count($parts); $i++) {
-                $part = $parts[$i];
-
-                if ($i + 1 === count($parts)) {
-                    // We found a leaf.
-                    $stem[] = $part;
-                    break;
-                }
-
-                if (!isset($stem[$part])) {
-                    $stem[$part] = [];
-                }
-
-                $stem = &$stem[$part];
-            }
-        }
-
-        return $tree;
     }
 }

@@ -35,7 +35,7 @@ class PhpFiles implements DependenciesScannerInterface
     {
         $scannerResult = $this->scannerResultFactory->create();
 
-        foreach ($package->getPackageFiles() as $file) {
+        foreach ($package->getFiles() as $file) {
             if (\in_array($file->getFileInfo()->getExtension(), self::FILE_MASKS)) {
                 $collectedDependencies = array_unique(
                     $this->regExpFileAnalysis->analyzeFile(
