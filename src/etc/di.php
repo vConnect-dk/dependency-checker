@@ -12,6 +12,10 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\{DbDDL,
     ScannerResult\ScannerResultInterface,
     XmlConfigFiles};
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\ScannerPool;
+use Vconnect\IntegrityChecker\Domain\Package\Loader\AppCode;
+use Vconnect\IntegrityChecker\Domain\Package\Loader\Vendor;
+use Vconnect\IntegrityChecker\Domain\Package\LoaderChain;
+use Vconnect\IntegrityChecker\Domain\Package\LoaderInterface;
 
 return [
     ScannerPool::class => DI\autowire()
@@ -26,4 +30,9 @@ return [
             DI\get(Layouts::class),
         ]),
     ScannerResultInterface::class => DI\create(ScannerResult::class),
+    LoaderInterface::class => DI\autowire(LoaderChain::class)
+        ->constructorParameter('loaders', [
+            DI\get(AppCode::class),
+            DI\get(Vendor::class),
+        ]),
 ];

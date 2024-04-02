@@ -2,26 +2,21 @@
 
 namespace Vconnect\IntegrityChecker\Domain\Scanner;
 
+use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\Package;
 
 class FileSystemPackagesProvider
 {
-    /**
-     * Get files according to paths.
-     *
-     * @param array $paths
-     * @param string $fileMask
-     * @param callable|null $filter
-     *
-     * @return \Generator
-     */
-    public function getPackagesRecursively(array $paths, ?callable $filter = null, string $fileMask = '/composer\\.json/'): \Generator
-    {
+    public function getPackagesRecursively(
+        array $paths,
+        ?callable $filter = null,
+        string $fileMask = '/composer\\.json/'
+    ): \Generator {
         $collectedPaths = [];
         $paths = array_unique($paths);
         foreach ($paths as $path) {
-            if (is_dir(ROOT_DIR . $path)) {
-                $collectedPaths[] = $this->getMatchedFilesFolders(ROOT_DIR . $path, $fileMask, $filter);
+            if (is_dir(DirectoryRegistry::getRoot() . $path)) {
+                $collectedPaths[] = $this->getMatchedFilesFolders(DirectoryRegistry::getRoot() . $path, $fileMask, $filter);
             }
         }
 
@@ -38,7 +33,7 @@ class FileSystemPackagesProvider
         $paths = array_unique($paths);
         foreach ($paths as $path) {
             /* @phpstan-ignore-next-line */
-            $file = new \SplFileInfo(ROOT_DIR . $path . DIRECTORY_SEPARATOR . $rootPackageFileName);
+            $file = new \SplFileInfo(DirectoryRegistry::getRoot() . $path . DIRECTORY_SEPARATOR . $rootPackageFileName);
 
             if ($file->isFile()) {
                 $collectedPaths[] = dirname($file->getRealPath());
@@ -70,6 +65,6 @@ class FileSystemPackagesProvider
             $matchedFiles = array_filter($matchedFiles, $filter);
         }
 
-        return array_map(fn (\SplFileInfo $file) => dirname($file->getRealPath()), $matchedFiles);
+        return array_map(fn(\SplFileInfo $file) => dirname($file->getRealPath()), $matchedFiles);
     }
 }

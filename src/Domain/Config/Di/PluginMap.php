@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Config\Di;
 
+use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class PluginMap
@@ -61,7 +62,7 @@ class PluginMap
     {
         $iterator = new \CallbackFilterIterator(
             new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator(ROOT_DIR . 'app/etc/', \FilesystemIterator::SKIP_DOTS),
+                new \RecursiveDirectoryIterator(DirectoryRegistry::getRoot() . 'app/etc/', \FilesystemIterator::SKIP_DOTS),
                 \RecursiveIteratorIterator::SELF_FIRST
             ),
             function (\SplFileInfo $fileInfo) {

@@ -5,12 +5,13 @@ use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies;
 use Vconnect\IntegrityChecker\Application\Dependencies\Console;
+use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 try {
     require_once __DIR__ . '/../bootstrap.php';
 } catch (Throwable $exception) {
-    echo 'Can not load autoload file. Please try to re-install project';
+    echo $exception;
     die(2);
 }
 
@@ -21,10 +22,11 @@ if (!$console->validateParameters()) {
     die(2);
 }
 
+$root = DirectoryRegistry::getRoot();
 $directories = array_slice($argv, 2);
 
 if (empty($directories)) {
-    $directories = [ROOT_DIR . DefaultAnalysisFolders::APP, ROOT_DIR . DefaultAnalysisFolders::SRC];
+    $directories = [$root . DefaultAnalysisFolders::APP, $root . DefaultAnalysisFolders::SRC];
 }
 
 $packages = App()->get(PackagesRegistry::class)->getPackages($directories);

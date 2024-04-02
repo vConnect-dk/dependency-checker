@@ -2,6 +2,7 @@
 
 namespace Vconnect\IntegrityChecker\Domain\Package;
 
+use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema;
 use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
@@ -24,6 +25,7 @@ class Config
 
     private ?ModuleXml $moduleXml = null;
     private ?DbSchema $dbSchema = null;
+    /** @var \DOMDocument[] */
     private ?array $diConfig = null;
     private ?\DOMDocument $systemXml = null;
     private ?\DOMDocument $extensionAttributes = null;
@@ -35,6 +37,12 @@ class Config
         $this->package = $package;
     }
 
+    public function __sleep(): array
+    {
+        // Prevents serialization of non-serializable properties like \DomDocument type
+        return ['moduleXml', 'package', 'queue', 'dbSchema'];
+    }
+
     public function getDbSchema(): DbSchema
     {
         if ($this->dbSchema) {
@@ -44,9 +52,9 @@ class Config
         $content = null;
         $file = $this->package->getFile(self::DB_SCHEMA);
 
-        if ($file && $file->isReadable()) {
+        if ($file) {
             $content = new \DOMDocument();
-            $content->loadXML($file->openFile()->fread($file->getSize()));
+            $content->loadXML($file->getContents());
         }
 
         $this->dbSchema = new DbSchema($content);
@@ -80,7 +88,7 @@ class Config
 
         $file = $this->package->getFile(self::MODULE_XML);
 
-        if (!$file || !$file->isReadable()) {
+        if (!$file) {
             throw new FileNotFoundException(self::MODULE_XML, $this->package->getPath());
         }
 
@@ -100,11 +108,9 @@ class Config
         $this->diConfig = [];
 
         foreach ($this->getMultipleEtcFiles(self::DI) as $file) {
-            if ($file->isReadable()) {
-                $dom = new \DOMDocument();
-                $dom->loadXML($file->openFile()->fread($file->getSize()));
-                $this->diConfig[] = $dom;
-            }
+            $dom = new \DOMDocument();
+            $dom->loadXML($file->getContents());
+            $this->diConfig[] = $dom;
         }
 
         return $this->diConfig;
@@ -124,8 +130,8 @@ class Config
         $file = $this->package->getFile(self::ADMIN_UI);
         $dom = new \DOMDocument();
 
-        if ($file && $file->isReadable()) {
-            $dom->loadXML($file->openFile()->fread($file->getSize()));
+        if ($file) {
+            $dom->loadXML($file->getContents());
         }
 
         $this->systemXml = $dom;
@@ -142,8 +148,8 @@ class Config
         $file = $this->package->getFile(self::EXT_ATR);
         $dom = new \DOMDocument();
 
-        if ($file && $file->isReadable()) {
-            $dom->loadXML($file->openFile()->fread($file->getSize()));
+        if ($file) {
+            $dom->loadXML($file->getContents());
         }
         $this->extensionAttributes = $dom;
 
@@ -153,17 +159,13 @@ class Config
     public function getGraphQlSchema(): ?string
     {
         $schema = $this->package->getFile(self::GRAPHQL_SCHEMA_FILE);
-        if ($schema?->isReadable()) {
-            return $schema->openFile()->fread($schema->getSize());
-        }
-
-        return null;
+        return $schema?->getContents();
     }
 
     /**
      * @param string $filename
      *
-     * @return \SplFileInfo[]
+     * @return FileInfo[]
      */
     private function getMultipleEtcFiles(string $filename): array
     {

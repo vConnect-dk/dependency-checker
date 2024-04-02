@@ -6,6 +6,7 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles\Reg
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultFactory;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
+use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 use Vconnect\IntegrityChecker\Domain\Config\Di\PluginMap;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
@@ -15,9 +16,9 @@ class PhpFiles implements DependenciesScannerInterface
     private const FILE_MASKS = ['php', 'phtml'];
 
     public function __construct(
-        private readonly RegExpFileAnalysis   $regExpFileAnalysis,
-        private readonly PluginMap            $pluginMap,
-        private readonly PackagesRegistry     $packagesRegistry,
+        private readonly RegExpFileAnalysis $regExpFileAnalysis,
+        private readonly PluginMap $pluginMap,
+        private readonly PackagesRegistry $packagesRegistry,
         private readonly ScannerResultFactory $scannerResultFactory
     ) {
     }
@@ -36,7 +37,7 @@ class PhpFiles implements DependenciesScannerInterface
         $scannerResult = $this->scannerResultFactory->create();
 
         foreach ($package->getFiles() as $file) {
-            if (\in_array($file->getFileInfo()->getExtension(), self::FILE_MASKS)) {
+            if (\in_array($file->getExtension(), self::FILE_MASKS)) {
                 $collectedDependencies = array_unique(
                     $this->regExpFileAnalysis->analyzeFile(
                         $file,
@@ -59,16 +60,16 @@ class PhpFiles implements DependenciesScannerInterface
      * Determine dependencies from plugin class
      *
      * @param Package $package
-     * @param \SplFileInfo $file
+     * @param FileInfo $file
      * @param array $collectedDependencies
      * @param ScannerResult $scannerResult
      *
      * @return ScannerResult
      */
     private function determineDependencies(
-        Package       $package,
-        \SplFileInfo  $file,
-        array         $collectedDependencies,
+        Package $package,
+        FileInfo $file,
+        array $collectedDependencies,
         ScannerResult $scannerResult
     ): ScannerResult {
         $classReference = $package->getClassReferenceByPath($file->getPathname());

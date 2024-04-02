@@ -86,7 +86,7 @@ class Dependencies implements AnalyzerInterface
         $requiredDeps = $this->extractModuleXmlDependencies($dependencies->getHardDependencies());
         $optionalDeps = $this->extractModuleXmlDependencies($dependencies->getSoftDependencies());
         $possibleDeps = array_merge($requiredDeps, $optionalDeps);
-        
+
         return [
             DependencyInterface::TYPE_EXCESSIVE => (array_diff($declaredDeps, $possibleDeps)),
             DependencyInterface::TYPE_EXPECTED => array_diff($requiredDeps, $declaredDeps)

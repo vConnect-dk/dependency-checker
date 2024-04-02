@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
 
+use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 use Vconnect\IntegrityChecker\Application\Framework\Events\Manager;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
@@ -21,11 +22,11 @@ class RegExpFileAnalysis
     /**
      * Get list of required packages dependencies from php file.
      *
-     * @param \SplFileInfo $file
+     * @param FileInfo $file
      * @param Package $package
      * @return string[] - list of packages mentioned inside the file.
      */
-    public function analyzeFile(\SplFileInfo $file, Package $package): array
+    public function analyzeFile(FileInfo $file, Package $package): array
     {
         $contents = \php_strip_whitespace($file->getPathname());
 

@@ -11,7 +11,7 @@ use Psr\Container\ContainerInterface;
 
 class Application
 {
-    private ContainerInterface $container;
+    private ContainerInterface&FactoryInterface&InvokerInterface $container;
     private static self $instance;
 
     /**

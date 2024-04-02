@@ -8,6 +8,7 @@ use Vconnect\IntegrityChecker\Analysis\Data\DefectiveResultInterface;
 use Vconnect\IntegrityChecker\Analysis\Data\Dependencies\Result;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
+use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Application\Registry\DefectsState;
 
 class Console implements ConsoleInterface
@@ -173,6 +174,8 @@ class Console implements ConsoleInterface
 
             return false;
         }
+        $root = realpath($m2root) . '/';
+        DirectoryRegistry::setRoot($root);
 
         if (!is_file($m2root . DIRECTORY_SEPARATOR . 'composer.lock')) {
             $this->cli->error('"composer.lock" file was not found in Magento 2 Directory.');
@@ -182,11 +185,11 @@ class Console implements ConsoleInterface
 
         $folders = explode(' ', $this->cli->arguments->get(self::ARG_FOLDERS));
         foreach ($folders as $folder) {
-            if (!is_dir(ROOT_DIR . $folder)) {
+            if (!is_dir($root . $folder)) {
                 $this->cli->yellow(
                     sprintf(
                         'Notice: Can not find directory "%s". Please check your input parameters.',
-                        ROOT_DIR . $folder
+                        $root . $folder
                     )
                 );
                 $this->cli->dim(sprintf('Path "%s" should be relative to Magento 2 Directory.', $folder));

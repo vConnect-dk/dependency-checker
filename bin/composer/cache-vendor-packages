@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
+use Vconnect\IntegrityChecker\Domain\Package\Cache;
+use Vconnect\IntegrityChecker\Domain\Package\Loader\Vendor;
+
+try {
+    require_once __DIR__ . '/../../bootstrap.php';
+} catch (Throwable $exception) {
+    echo 'Can not load autoload file. Please try to re-install project';
+    die(2);
+}
+
+$root = $argv[1] ?? getcwd();
+DirectoryRegistry::setRoot(rtrim($root, '/') . '/');
+
+$cache = App()->get(Cache::class);
+$packages = App()->get(Vendor::class)->loadPackages();
+$cache->save($packages);

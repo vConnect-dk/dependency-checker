@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Vconnect\IntegrityChecker\Application\Observer\PhpFilesAnalysis;
 
 use SplObjectStorage;
+use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 use Vconnect\IntegrityChecker\Application\Framework\Events\ObserverInterface;
 use Vconnect\IntegrityChecker\Domain\Package;
 
@@ -22,7 +23,7 @@ class UrlRoutesCollector implements ObserverInterface
         $package = $eventData['package'];
         /** @var string $content */
         $content = $eventData['fileContent'];
-        /** @var \SplFileInfo $file */
+        /** @var FileInfo $file */
         $file = $eventData['file'];
 
         $this->add($package, $this->getRoutesUsed($content), $file->getPathname());

@@ -4,6 +4,7 @@ namespace Vconnect\IntegrityChecker\Domain;
 
 use Adbar\Dot;
 use FilesystemIterator;
+use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
 use Vconnect\IntegrityChecker\Domain\Package\Config;
 use Vconnect\IntegrityChecker\Domain\Scanner\FileClassScanner;
@@ -63,6 +64,7 @@ class Package
     /**
      * Get dependencies from 'require' section
      *
+     * @param bool $withDev
      * @return array
      * @throws FileNotFoundException
      */
@@ -110,20 +112,16 @@ class Package
         return $this->getConfig()->getModuleXml()->getDependencies();
     }
 
-    public function getFile(string $filePath): ?\SplFileInfo
+    public function getFile(string $filePath): ?FileInfo
     {
-        $file = $this->getFilesTree()[$filePath];
-        if ($file instanceof \SplFileInfo && $file->isFile()) {
-            return $file;
-        }
-
-        return null;
+        return $this->getFilesTree()[$filePath] ?: null;
     }
 
     /**
      * Load all files in the package.
      *
-     * @return \SplFileInfo[]
+     * @param string|null $directory
+     * @return FileInfo[]
      */
     public function getFiles(?string $directory = null): iterable
     {
@@ -194,7 +192,7 @@ class Package
     /**
      * Get Package File Info.
      *
-     * @return Dot<\SplFileInfo>|\SplFileInfo[]|\SplFileInfo[][]
+     * @return Dot<FileInfo>|FileInfo[]|FileInfo[][]
      */
     public function getFilesTree(): Dot|array
     {
@@ -212,7 +210,7 @@ class Package
             );
             foreach ($iterator as $path => $fileInfo) {
                 $key = str_replace($this->path . DIRECTORY_SEPARATOR, '', $path);
-                $packageFiles[$key] = $fileInfo;
+                $packageFiles[$key] = FileInfo::fromSplFileInfo($fileInfo);
             }
             $this->filesTree = new Dot($packageFiles, parse: true, delimiter: '/');
         }

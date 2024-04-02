@@ -2,7 +2,7 @@
 
 namespace Vconnect\IntegrityChecker\Domain\Package\Config;
 
-use SplFileInfo;
+use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 use Vconnect\IntegrityChecker\Domain\Package\Config\Queue\Communication;
 use Vconnect\IntegrityChecker\Domain\Package\Config\Queue\Consumer;
 use Vconnect\IntegrityChecker\Domain\Package\Config\Queue\Publisher;
@@ -16,17 +16,11 @@ class Queue
     private ?Topology $topologyConfig = null;
 
 
-    /**
-     * @param SplFileInfo|null $communication
-     * @param SplFileInfo|null $consumer
-     * @param SplFileInfo|null $publisher
-     * @param SplFileInfo|null $topology
-     */
     public function __construct(
-        private readonly ?SplFileInfo $communication = null,
-        private readonly ?SplFileInfo $consumer = null,
-        private readonly ?SplFileInfo $publisher = null,
-        private readonly ?SplFileInfo $topology = null
+        private readonly ?FileInfo $communication = null,
+        private readonly ?FileInfo $consumer = null,
+        private readonly ?FileInfo $publisher = null,
+        private readonly ?FileInfo $topology = null
     ) {
     }
 
@@ -37,9 +31,9 @@ class Queue
         }
 
         $config = null;
-        if ($this->communication && $this->communication->isReadable()) {
+        if ($this->communication) {
             $config = new \DOMDocument();
-            $config->loadXML($this->communication->openFile()->fread($this->communication->getSize()));
+            $config->loadXML($this->communication->getContents());
         }
         $this->communicationConfig = new Communication($config);
 
@@ -53,9 +47,9 @@ class Queue
         }
 
         $config = null;
-        if ($this->consumer && $this->consumer->isReadable()) {
+        if ($this->consumer) {
             $config = new \DOMDocument();
-            $config->loadXML($this->consumer->openFile()->fread($this->consumer->getSize()));
+            $config->loadXML($this->consumer->getContents());
         }
         $this->consumerConfig = new Consumer($config);
 
@@ -69,9 +63,9 @@ class Queue
         }
 
         $config = null;
-        if ($this->publisher && $this->publisher->isReadable()) {
+        if ($this->publisher) {
             $config = new \DomDocument();
-            $config->loadXML($this->publisher->openFile()->fread($this->publisher->getSize()));
+            $config->loadXML($this->publisher->getContents());
         }
         $this->publisherConfig = new Publisher($config);
 
@@ -85,9 +79,9 @@ class Queue
         }
 
         $config = null;
-        if ($this->topology && $this->topology->isReadable()) {
+        if ($this->topology) {
             $config = new \DomDocument();
-            $config->loadXML($this->topology->openFile()->fread($this->topology->getSize()));
+            $config->loadXML($this->topology->getContents());
         }
 
         $this->topologyConfig = new Topology($config);

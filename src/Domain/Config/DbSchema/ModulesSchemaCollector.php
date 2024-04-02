@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Config\DbSchema;
 
+use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
@@ -70,7 +71,7 @@ class ModulesSchemaCollector
     private function collectRootConfig(): array
     {
         $candidates = [];
-        $fileInfo = new \SplFileInfo(ROOT_DIR . 'app/etc/db_schema.xml');
+        $fileInfo = new \SplFileInfo(DirectoryRegistry::getRoot() . 'app/etc/db_schema.xml');
 
         $content = null;
         if ($fileInfo->isReadable()) {
@@ -106,9 +107,9 @@ class ModulesSchemaCollector
      * @return void
      */
     private function collectOwnerCandidates(
-        array  &$candidates,
+        array &$candidates,
         string $tableName,
-        array  $tableDefinition,
+        array $tableDefinition,
         string $packageName
     ): void {
         $tableCandidates = $candidates[$tableName] ?? new \SplPriorityQueue();

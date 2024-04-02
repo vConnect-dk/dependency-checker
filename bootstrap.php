@@ -19,10 +19,18 @@ ini_set('memory_limit', '-1');
 
 
 if (isset($argv[1])) {
-    define('ROOT_DIR', realpath($argv[1]) . '/');
+    $rootDir = realpath($argv[1]) . '/';
+    /**
+     * @deprecated
+     * @see \Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry
+     */
+    define('ROOT_DIR', $rootDir);
 }
 if (!empty($GLOBALS['_composer_autoload_path'])) {
     require_once $GLOBALS['_composer_autoload_path'];
+} elseif (isset($rootDir) && is_file($rootDir . 'vendor/autoload.php')) {
+    //Installed as package.
+    include_once $rootDir . 'vendor/autoload.php';
 } elseif (is_file(__DIR__ . '/../autoload.php')) {
     //Installed as package.
     include_once __DIR__ . '/../autoload.php';

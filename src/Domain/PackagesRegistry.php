@@ -2,46 +2,23 @@
 
 namespace Vconnect\IntegrityChecker\Domain;
 
-use Composer\Factory;
-use Composer\IO\BufferIO;
-use Composer\Package\BasePackage;
-use Composer\Repository\LockArrayRepository;
-use Vconnect\IntegrityChecker\Domain\Scanner\FileSystemPackagesProvider;
+use Generator;
+use Vconnect\IntegrityChecker\Domain\Package\LoaderInterface;
+use Vconnect\IntegrityChecker\Domain\Project\ComposerProvider;
 
 class PackagesRegistry
 {
-    public const MAGENTO_LOCAL = 'app/code';
-
     private array $packagesNamespaceMap = [];
 
     /**
      * @var Package[]
      */
     private array $allPackages = [];
-    private LockArrayRepository $composerLockRepo;
-    private array $devPackages;
 
-    public function __construct()
-    {
-        $composer = Factory::create(
-            new BufferIO(),
-            ROOT_DIR . 'composer.json'
-        );
-        try {
-            $this->composerLockRepo = $composer->getLocker()->getLockedRepository(true);
-        } catch (\RuntimeException) {
-            $this->composerLockRepo = $composer->getLocker()->getLockedRepository();
-        }
-
-        $this->devPackages = $composer->getLocker()->getDevPackageNames();
-    }
-
-    /**
-     * @return BasePackage[]
-     */
-    private function getAllComposerLockPackages(): array
-    {
-        return $this->composerLockRepo->getPackages();
+    public function __construct(
+        private readonly LoaderInterface $loader,
+        private readonly ComposerProvider  $lock,
+    ) {
     }
 
     /**
@@ -50,9 +27,9 @@ class PackagesRegistry
      * @param string[] $directories absolute directory path.
      * @param bool $withDev
      *
-     * @return \Generator
+     * @return Generator
      */
-    public function getPackages(array $directories = [], bool $withDev = true): \Generator
+    public function getPackages(array $directories = [], bool $withDev = true): Generator
     {
         if ($withDev) {
             $packages = $this->getAllPackages();
@@ -75,7 +52,7 @@ class PackagesRegistry
      */
     public function getAllPackagesExcludingDev(): array
     {
-        return array_diff_key($this->getAllPackages(), array_flip($this->devPackages));
+        return array_diff_key($this->getAllPackages(), array_flip($this->lock->getDevPackages()));
     }
 
     /**
@@ -85,7 +62,7 @@ class PackagesRegistry
     {
         return array_filter(
             $this->getAllPackages(),
-            fn(Package $package) => $package->getPackageType() === Package::MAGENTO_PACKAGE_TYPE
+            fn (Package $package) => $package->getPackageType() === Package::MAGENTO_PACKAGE_TYPE
         );
     }
 
@@ -99,27 +76,14 @@ class PackagesRegistry
         if (!empty($this->allPackages)) {
             return $this->allPackages;
         }
-
-        $vendorPaths = [];
-        foreach ($this->getAllComposerLockPackages() as $composerLockPackage) {
-            $vendorPaths[] = 'vendor' . DIRECTORY_SEPARATOR . $composerLockPackage->getName();
-        }
-        $fsScanner = new FileSystemPackagesProvider();
-
-        foreach (
-            $fsScanner->getPackagesRecursively([self::MAGENTO_LOCAL], fileMask: '/registration.php/') as $appCodePackage
-        ) {
-            $this->allPackages[$appCodePackage->getName()] = $appCodePackage;
-            $this->packagesNamespaceMap[$appCodePackage->getPackageNamespaces()[0]] = $appCodePackage->getName();
-        }
-
-        foreach ($fsScanner->getPackagesByDirectPath($vendorPaths) as $vendorPackage) {
-            $this->allPackages[$vendorPackage->getName()] = $vendorPackage;
-            foreach ($vendorPackage->getPackageNamespaces() as $namespace) {
-                $this->packagesNamespaceMap[$namespace] = $vendorPackage->getName();
+        $packages = $this->loader->loadPackages();
+        foreach ($packages as $package) {
+            foreach ($package->getPackageNamespaces() as $namespace) {
+                $this->packagesNamespaceMap[$namespace] = $package->getName();
             }
         }
 
+        $this->allPackages = $packages;
         return $this->allPackages;
     }
 

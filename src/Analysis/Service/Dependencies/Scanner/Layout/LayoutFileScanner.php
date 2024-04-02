@@ -5,6 +5,7 @@ namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\Layout
 
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\Routes\RouteMapper;
+use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class LayoutFileScanner
@@ -18,9 +19,9 @@ class LayoutFileScanner
     ) {
     }
 
-    public function getDependenciesFromLayoutFile(\SplFileInfo $file, string $area): array
+    public function getDependenciesFromLayoutFile(FileInfo $file, string $area): array
     {
-        $contents = file_get_contents($file->getPathname());
+        $contents = $file->getContents();
 
         $deps = [DependencyInterface::TYPE_SOFT => [], DependencyInterface::TYPE_HARD => []];
         $layoutHandle = $file->getBasename('.xml');
