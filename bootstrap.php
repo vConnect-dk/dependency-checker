@@ -28,18 +28,15 @@ if (isset($argv[1])) {
 }
 if (!empty($GLOBALS['_composer_autoload_path'])) {
     require_once $GLOBALS['_composer_autoload_path'];
-} elseif (isset($rootDir) && is_file($rootDir . 'vendor/autoload.php')) {
-    //Installed as package.
-    include_once $rootDir . 'vendor/autoload.php';
 } elseif (is_file(__DIR__ . '/../autoload.php')) {
     //Installed as package.
     include_once __DIR__ . '/../autoload.php';
-} elseif (is_file(__DIR__ . '/../../../vendor/autoload.php')) {
-    //Installed as symlink.
-    include_once __DIR__ . '/../../../vendor/autoload.php';
 } elseif (is_file(__DIR__ . '/vendor/autoload.php')) {
     //Installed as project.
     require_once __DIR__ . '/vendor/autoload.php';
+} elseif (isset($rootDir) && is_file($rootDir . 'vendor/autoload.php')) {
+    //Installed as symlink.
+    include_once $rootDir . 'vendor/autoload.php';
 } else {
     echo 'Can not find vendor autoload.php file.' . PHP_EOL;
     echo 'Please run \'composer install\' and check that' .
