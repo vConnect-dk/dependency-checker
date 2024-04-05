@@ -6,6 +6,7 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Dependency;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\ScannerPool;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Graph;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Kahn;
+use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 
@@ -37,7 +38,11 @@ class TopologicalOrder implements AnalyzerInterface
             return $this->createGraph($packages);
         }
 
-        $cache = ROOT_DIR . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'dependency-checker-cache.srz';
+        $cache = DirectoryRegistry::getRoot() .
+            DIRECTORY_SEPARATOR .
+            'var' .
+            DIRECTORY_SEPARATOR .
+            'dependency-checker-cache.srz';
 
         if (is_file($cache)) {
             if (time() - filectime($cache) > 300) {

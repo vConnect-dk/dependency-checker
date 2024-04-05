@@ -1,3 +1,13 @@
+2.10.1
+===========
+Fixes:
+* [Fix broken disassemble command](https://vconnect.atlassian.net/browse/IE-301)
+
+2.10.0
+===========
+Internal framework changes:
+* Implement caching mechanism based on composer plugin
+
 2.9.0
 ===========
 New features:

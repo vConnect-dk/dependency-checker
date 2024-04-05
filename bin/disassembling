@@ -6,6 +6,7 @@ use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\WhitelistProcessor;
 use Vconnect\IntegrityChecker\Application\Disassembling\Console;
+use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 $dir = __DIR__;
@@ -22,8 +23,9 @@ if (!$console->validateParameters()) {
     $console->printHelp();
     die(2);
 }
+$root = DirectoryRegistry::getRoot();
 
-$directories = [ROOT_DIR . DefaultAnalysisFolders::APP, ROOT_DIR . DefaultAnalysisFolders::SRC, ROOT_DIR . 'vendor'];
+$directories = [$root . DefaultAnalysisFolders::APP, $root . DefaultAnalysisFolders::SRC, $root . 'vendor'];
 
 $packages = App()->get(PackagesRegistry::class)->getPackages($directories, false);
 $packages = iterator_to_array($packages);
@@ -35,8 +37,8 @@ if (!empty($whitelistArgument)) {
     $file = null;
     if (is_file($whitelistArgument)) {
         $file = $whitelistArgument;
-    } elseif (is_file(ROOT_DIR . '/' . $whitelistArgument)) {
-        $file = ROOT_DIR . '/' . $whitelistArgument;
+    } elseif (is_file(DirectoryRegistry::getRoot() . '/' . $whitelistArgument)) {
+        $file = DirectoryRegistry::getRoot() . '/' . $whitelistArgument;
     }
 
     if ($file) {

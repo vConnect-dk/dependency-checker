@@ -6,6 +6,7 @@ use League\CLImate\CLImate;
 use League\CLImate\Exceptions\InvalidArgumentException;
 use Vconnect\IntegrityChecker\Analysis\Data\ResultInterface;
 use Vconnect\IntegrityChecker\Application\ConsoleInterface;
+use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 
 class Console implements ConsoleInterface
 {
@@ -145,6 +146,9 @@ class Console implements ConsoleInterface
 
             return false;
         }
+
+        $root = realpath($m2root) . '/';
+        DirectoryRegistry::setRoot($root);
 
         if (!is_file($m2root . DIRECTORY_SEPARATOR . 'composer.lock')) {
             $this->cli->error('"composer.lock" file was not found in Magento 2 Directory.');

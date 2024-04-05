@@ -1,14 +1,14 @@
 {
     "name": "vconnect/integrity-checker",
     "type": "project",
-    "version": "2.10.0",
+    "version": "2.10.1",
     "bin": [
         "bin/dependencies",
         "bin/structure",
         "bin/disassembling"
     ],
     "require": {
-        "php": "~8.1.0|~8.2.0",
+        "php": "~8.1.0|~8.2.0|~8.3.0",
         "ext-json": "*",
         "ext-simplexml": "*",
         "ext-dom": "*",
@@ -17,8 +17,10 @@
         "composer/composer": "^2",
         "webonyx/graphql-php": "^15.0",
         "php-di/php-di": "^7.0",
-        "adbario/php-dot-notation": "^3.3",
-        "vconnect/integrity-checker-composer-plugin": "~1"
+        "adbario/php-dot-notation": "^3.3"
+    },
+    "suggest": {
+        "vconnect/integrity-checker-composer-plugin": "Enables vendor packages cache to improve analysis performaance"
     },
     "autoload": {
         "psr-4": {
