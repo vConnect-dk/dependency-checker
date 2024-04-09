@@ -8,6 +8,8 @@ class Json
 
     private ?array $content = null;
 
+    private ?string $registrationPhp = null;
+
     /**
      * @param string $path
      */
@@ -53,8 +55,7 @@ class Json
      */
     public function getNamespaces(): array
     {
-        return isset($this->getContent()['autoload']['psr-4']) ?
-            array_keys($this->getContent()['autoload']['psr-4']) : [];
+        return array_keys($this->getNamespacesFolders());
     }
 
     /**
@@ -121,5 +122,15 @@ class Json
         }
 
         return $this->content;
+    }
+
+    /**
+     * Get Autoload PSR-4 section.
+     *
+     * @return array
+     */
+    public function getNamespacesFolders(): array
+    {
+        return $this->getContent()['autoload']['psr-4'] ?? [];
     }
 }

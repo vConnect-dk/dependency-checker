@@ -114,7 +114,12 @@ class Package
 
     public function getFile(string $filePath): ?FileInfo
     {
-        return $this->getFilesTree()[$filePath] ?: null;
+        $files = $this->getFilesTree();
+        if ($files->has($filePath)) {
+            return $files->get($filePath);
+        }
+
+        return $this->searchWithNamespace($files, $filePath);
     }
 
     /**
@@ -125,11 +130,56 @@ class Package
      */
     public function getFiles(?string $directory = null): iterable
     {
+        return $directory === null
+            ? new RecursiveArrayLeavesIterator($this->getFilesTree()->all())
+            : $this->getFilesByDirectory($directory);
+    }
+
+    /**
+     * Perform search, considering that package files can be placed under subfolders
+     *
+     * @param Dot|array $files
+     * @param string $subject
+     * @return mixed
+     */
+    private function searchWithNamespace(Dot|array $files, string $subject): mixed
+    {
+        try {
+            foreach ($this->getComposerJson()->getNamespacesFolders() as $path) {
+                if (!is_array($path)) {
+                    $path = [$path];
+                }
+                foreach ($path as $folder) {
+                    if (!str_ends_with($folder , '/')) {
+                        $folder .= '/';
+                    }
+
+                    if ($files->has($folder . $subject)) {
+                        return $files->get($folder . $subject);
+                    }
+                }
+            }
+        } catch (FileNotFoundException) {}
+
+        return null;
+    }
+
+    /**
+     * Fetch files from requested directory.
+     *
+     * @param string $directory
+     * @return iterable
+     */
+    private function getFilesByDirectory(string $directory): iterable
+    {
         $files = $this->getFilesTree();
 
-        return $directory === null
-            ? new RecursiveArrayLeavesIterator($files->all())
-            : new RecursiveArrayLeavesIterator($files->get($directory, []));
+        if ($files->has($directory)) {
+            return new RecursiveArrayLeavesIterator($files->get($directory));
+        }
+
+
+        return new RecursiveArrayLeavesIterator($this->searchWithNamespace($files, $directory) ?? []);
     }
 
     /**
@@ -230,7 +280,7 @@ class Package
             return $this->composerJson;
         }
 
-        if ($file = $this->getFile('composer.json')) {
+        if ($file = $this->getFilesTree()['composer.json']) {
             $this->composerJson = new Json($file->getPathname());
             return $this->composerJson;
         }
