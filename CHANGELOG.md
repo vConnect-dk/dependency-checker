@@ -1,3 +1,8 @@
+2.10.2
+===========
+Fixes:
+* [Fix run with composer packages that are placed under subdirectories](https://vconnect.atlassian.net/browse/IE-305)
+
 2.10.1
 ===========
 Fixes:

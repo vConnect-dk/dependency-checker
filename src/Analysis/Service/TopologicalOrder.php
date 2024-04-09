@@ -76,7 +76,7 @@ class TopologicalOrder implements AnalyzerInterface
                 $dependencies = array_unique(
                     array_merge(
                         $dependencies,
-                        //$package->getComposerRequirePackages(false),
+                        $package->getComposerRequirePackages(false),
                         $package->getComposerReplacePackages()
                     )
                 );
