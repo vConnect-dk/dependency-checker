@@ -21,6 +21,11 @@ class Package
     private ?Dot $filesTree = null;
     private array $loadedFileClasses = [];
     private ?Json $composerJson = null;
+
+    /**
+     * @var string|null SubFolder of Magento 2 module.
+     */
+    private ?string $subFolder = null;
     private Config $config;
 
     public function __construct(
@@ -119,7 +124,7 @@ class Package
             return $files->get($filePath);
         }
 
-        return $this->searchWithNamespace($files, $filePath);
+        return $this->subFolder ? $files->get($this->subFolder . DIRECTORY_SEPARATOR . $filePath) : null;
     }
 
     /**
@@ -136,35 +141,6 @@ class Package
     }
 
     /**
-     * Perform search, considering that package files can be placed under subfolders
-     *
-     * @param Dot|array $files
-     * @param string $subject
-     * @return mixed
-     */
-    private function searchWithNamespace(Dot|array $files, string $subject): mixed
-    {
-        try {
-            foreach ($this->getComposerJson()->getNamespacesFolders() as $path) {
-                if (!is_array($path)) {
-                    $path = [$path];
-                }
-                foreach ($path as $folder) {
-                    if (!str_ends_with($folder , '/')) {
-                        $folder .= '/';
-                    }
-
-                    if ($files->has($folder . $subject)) {
-                        return $files->get($folder . $subject);
-                    }
-                }
-            }
-        } catch (FileNotFoundException) {}
-
-        return null;
-    }
-
-    /**
      * Fetch files from requested directory.
      *
      * @param string $directory
@@ -178,8 +154,11 @@ class Package
             return new RecursiveArrayLeavesIterator($files->get($directory));
         }
 
+        if ($this->subFolder) {
+            $directory = $this->subFolder . DIRECTORY_SEPARATOR . $directory;
+        }
 
-        return new RecursiveArrayLeavesIterator($this->searchWithNamespace($files, $directory) ?? []);
+        return new RecursiveArrayLeavesIterator($files->get($directory) ?? []);
     }
 
     /**
@@ -276,23 +255,37 @@ class Package
      */
     private function getComposerJson(): Json
     {
+
         if ($this->composerJson) {
             return $this->composerJson;
         }
 
-        if ($file = $this->getFilesTree()['composer.json']) {
+        if ($file = $this->getFile('composer.json')) {
             $this->composerJson = new Json($file->getPathname());
-            return $this->composerJson;
         }
 
-        foreach ($this->getFiles() as $file) {
-            if ($file->getFilename() === 'composer.json') {
-                $this->composerJson = new Json($file->getPathname());
-
-                return $this->composerJson;
+        if (!$this->composerJson) {
+            foreach ($this->getFiles() as $file) {
+                if ($file->getFilename() === 'composer.json') {
+                    $this->composerJson = new Json($file->getPathname());
+                    break;
+                }
             }
         }
-        throw new FileNotFoundException('composer.json', $this->path);
+
+        if (!$this->composerJson) {
+            throw new FileNotFoundException('composer.json', $this->path);
+        }
+
+        $files = $this->composerJson->getAutoload()['files'] ??[];
+
+        foreach ($files as $file) {
+            if (str_ends_with($file, 'registration.php')) {
+                $this->subFolder = (str_contains($file, '/') ? trim(dirname($file), "/") : '');
+            }
+        }
+
+        return $this->composerJson;
     }
 
     public function getConfig(): Config

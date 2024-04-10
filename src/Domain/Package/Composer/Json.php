@@ -8,8 +8,6 @@ class Json
 
     private ?array $content = null;
 
-    private ?string $registrationPhp = null;
-
     /**
      * @param string $path
      */
@@ -50,12 +48,12 @@ class Json
 
     /**
      * Get psr-4 package namespaces. Some packages could declare more than one namespace.
-     *
+     * //@TODO add support of PSR-0
      * @return array
      */
     public function getNamespaces(): array
     {
-        return array_keys($this->getNamespacesFolders());
+        return array_keys($this->getAutoload()['psr-4'] ?? []);
     }
 
     /**
@@ -125,12 +123,12 @@ class Json
     }
 
     /**
-     * Get Autoload PSR-4 section.
+     * Get Autoload section.
      *
      * @return array
      */
-    public function getNamespacesFolders(): array
+    public function getAutoload(): array
     {
-        return $this->getContent()['autoload']['psr-4'] ?? [];
+        return $this->getContent()['autoload'] ?? [];
     }
 }
