@@ -28,9 +28,7 @@ class TopologicalOrder implements AnalyzerInterface
      */
     public function analyse(iterable $packages): iterable
     {
-        $graph = $this->getGraph($packages);
-
-        $kahn = new Kahn($graph, $this->whiteList, $this->notMagentoExtensions);
+        $kahn = new Kahn($this->getGraph($packages), $this->whiteList, $this->notMagentoExtensions);
         $kahn->processGraph();
 
         if ($this->explain) {

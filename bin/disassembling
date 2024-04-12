@@ -4,7 +4,8 @@
 use Vconnect\IntegrityChecker\Analysis\Data\TopologicalOrder\Result;
 use Vconnect\IntegrityChecker\Analysis\Enum\DefaultAnalysisFolders;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder;
-use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\NotMagentoExtensionsProcessor;use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\WhitelistProcessor;
+use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\NotMagentoExtensionsProcessor;
+use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\WhitelistProcessor;
 use Vconnect\IntegrityChecker\Application\Disassembling\Console;
 use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
