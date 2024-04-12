@@ -8,7 +8,8 @@ class Kahn
 
     public function __construct(
         private readonly Graph $graph,
-        private readonly array $whitelist
+        private readonly array $whitelist = [],
+        private readonly array $nonMagento = []
     ) {}
 
     public function processGraph(): void
@@ -19,9 +20,10 @@ class Kahn
         $generation = 1;
         $queue = [];
         $nextGeneration = [];
+        $notRemovable = array_merge($this->whitelist, $this->nonMagento);
 
         foreach ($nodes as $node) {
-            if (isset($this->whitelist[$node->getName()])) {
+            if (isset($notRemovable[$node->getName()])) {
                 $representation[$node->getName()] = INF;
             } else {
                 $representation[$node->getName()] = count($node->getInEdges());
@@ -86,9 +88,19 @@ class Kahn
         $nodes = $this->graph->getAllNodes();
         $visited = [];
         $whitelist = $this->whitelist;
+        $notMagento = $this->nonMagento;
         $finished = [];
 
-        $dfs = function(Node $node, $num, $prefix) use (&$visited, &$finished, &$results, $whitelist, $orderedNodes, $nodes, &$dfs) {
+        $dfs = function(Node $node, $num, $prefix) use (
+            &$visited,
+            &$finished,
+            &$results,
+            $whitelist,
+            $notMagento,
+            $orderedNodes,
+            $nodes,
+            &$dfs
+        ) {
             $prefix .= '-' . $num;
 
             if (isset($finished[$node->getName()])) {
@@ -107,6 +119,18 @@ class Kahn
                 $results[] = [
                     'message' => sprintf(
                         '%s| Extension "%s" can not be removed because it is whitelisted',
+                        $prefix,
+                        $node->getName()
+                    ),
+                    'problem' => true
+                ];
+                return;
+            }
+
+            if (isset($notMagento[$node->getName()])) {
+                $results[] = [
+                    'message' => sprintf(
+                        '%s| Extension "%s" can not be removed because it is not Magento 2 extension',
                         $prefix,
                         $node->getName()
                     ),

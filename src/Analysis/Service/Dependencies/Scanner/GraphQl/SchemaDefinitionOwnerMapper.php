@@ -7,6 +7,7 @@ use Exception;
 use GraphQL\Language\Parser;
 use GraphQL\Type\Definition\Type;
 use Vconnect\IntegrityChecker\Domain\GraphQlSchema\GraphQlReader;
+use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class SchemaDefinitionOwnerMapper
 {
@@ -14,6 +15,7 @@ class SchemaDefinitionOwnerMapper
 
     public function __construct(
         private readonly GraphQlReader $schemaReader,
+        private readonly PackagesRegistry $packagesRegistry
     ) {
     }
 
@@ -70,14 +72,13 @@ class SchemaDefinitionOwnerMapper
         string $package
     ): ?int {
         $parsedAST = $this->parseDefinition($definition);
+        $priority = 0;
 
-        foreach ($this->getTypeOwnerPriorityRules() as $priority => $rule) {
-            if ($rule($package, $parsedAST)) {
-                return $priority;
-            }
+        foreach ($this->getTypeOwnerPriorityRules() as $rule) {
+            $priority = max($rule($package, $parsedAST), $priority);
         }
 
-        return null;
+        return $priority;
     }
 
     /**
@@ -86,61 +87,59 @@ class SchemaDefinitionOwnerMapper
     private function getTypeOwnerPriorityRules(): array
     {
         return [
-            5 => [$this, 'isInterfaceWithTypeResolver'],
-            4 => [$this, 'hasInterfaceImplementation'],
-            3 => fn(string $package, array $parsedAST) => $this->isMagentoCoreType($package, $parsedAST)
-                && $this->hasDescription($package, $parsedAST),
-            2 => [$this, 'isMagentoCoreType'],
-            1 => [$this, 'hasDescription'],
-            0 => fn(string $package, array $parsedAST) => true
+            [$this, 'isMagentoCoreType'],
+            [$this, 'isInterfaceWithTypeResolver'],
+            [$this, 'hasInterfaceImplementation'],
+            [$this, 'hasDescription'],
+            fn(string $package, array $parsedAST) => 1
         ];
     }
 
-    private function isInterfaceWithTypeResolver(string $package, array $parsedAST): bool
+    private function isMagentoCoreType(string $package, array $parsedAST): int
+    {
+        return $this->packagesRegistry->getTopologicallySortedCorePackages()[$package] ?? 0;
+    }
+
+    private function isInterfaceWithTypeResolver(string $package, array $parsedAST): int
     {
         $parsedAST = dot($parsedAST);
         $isInterface = $parsedAST['definitions.0.kind'] === 'InterfaceTypeDefinition';
         if ($isInterface) {
             foreach ($parsedAST['definitions.0.directives'] as $directive) {
                 if (dot($directive)['name.value'] === 'typeResolver') {
-                    return true;
+                    return 3;
                 }
             }
         }
 
-        return false;
+        return 0;
     }
 
-    private function hasInterfaceImplementation(string $package, array $parsedAST): bool
+    private function hasInterfaceImplementation(string $package, array $parsedAST): int
     {
         $parsedAST = dot($parsedAST);
         if ($parsedAST['definitions.0.kind'] === 'ObjectTypeDefinition') {
             foreach ($parsedAST['definitions.0.interfaces'] as $interface) {
                 if (dot($interface)['name.value']) {
-                    return true;
+                    return 2;
                 }
             }
         }
 
-        return false;
+        return 0;
     }
 
-    private function hasDescription(string $package, array $parsedAST): bool
+    private function hasDescription(string $package, array $parsedAST): int
     {
         $parsedAST = dot($parsedAST);
         foreach ($parsedAST->get('definitions.0.directives', []) as $directive) {
             $directive = dot($directive);
             if ($directive['arguments.0.name.value'] === 'description' && $directive['arguments.0.value.value']) {
-                return true;
+                return 1;
             }
         }
 
-        return false;
-    }
-
-    private function isMagentoCoreType(string $package, array $parsedAST = null): bool
-    {
-        return str_starts_with($package, 'magento/module');
+        return 0;
     }
 
     private function getTypesUsedInDefinition(string $definition): array

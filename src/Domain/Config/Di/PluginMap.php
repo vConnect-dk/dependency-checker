@@ -5,13 +5,15 @@ namespace Vconnect\IntegrityChecker\Domain\Config\Di;
 
 use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
+use Vconnect\IntegrityChecker\Domain\Project\Config\Root;
 
 class PluginMap
 {
     private ?array $pluginMap = null;
 
     public function __construct(
-        private readonly PackagesRegistry $packagesRegistry
+        private readonly PackagesRegistry $packagesRegistry,
+        private readonly Root $rootConfig
     ) {
     }
 
@@ -28,7 +30,7 @@ class PluginMap
     {
         $this->pluginMap = [];
 
-        foreach ($this->getRootDi() as $dom) {
+        foreach ($this->rootConfig->getRootDiXml() as $dom) {
             $this->collectPluginsFromDom($dom);
         }
 
@@ -56,28 +58,5 @@ class PluginMap
                 }
             }
         }
-    }
-
-    private function getRootDi(): iterable
-    {
-        $iterator = new \CallbackFilterIterator(
-            new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator(DirectoryRegistry::getRoot() . 'app/etc/', \FilesystemIterator::SKIP_DOTS),
-                \RecursiveIteratorIterator::SELF_FIRST
-            ),
-            function (\SplFileInfo $fileInfo) {
-                return $fileInfo->isFile() && preg_match('/\/di.xml/i', $fileInfo->getPathname());
-            }
-        );
-
-        foreach ($iterator as $fileInfo) {
-            if ($fileInfo->isReadable()) {
-                $content = new \DOMDocument();
-                $content->loadXML($fileInfo->openFile()->fread($fileInfo->getSize()));
-                yield $content;
-            }
-        }
-
-        return [];
     }
 }

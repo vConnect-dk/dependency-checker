@@ -8,6 +8,7 @@ use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Graph;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Kahn;
 use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\Package;
+use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 
 class TopologicalOrder implements AnalyzerInterface
@@ -15,14 +16,21 @@ class TopologicalOrder implements AnalyzerInterface
     public function __construct(
         private readonly ScannerPool $scanners,
         private readonly array       $whiteList = [],
+        private readonly array       $notMagentoExtensions = [],
         private readonly ?string     $explain = null,
         private readonly bool        $useCache = true
     ) {
     }
 
+    /**
+     * @param Package[] $packages
+     * @return iterable
+     */
     public function analyse(iterable $packages): iterable
     {
-        $kahn = new Kahn($this->getGraph($packages), $this->whiteList);
+        $graph = $this->getGraph($packages);
+
+        $kahn = new Kahn($graph, $this->whiteList, $this->notMagentoExtensions);
         $kahn->processGraph();
 
         if ($this->explain) {
@@ -76,7 +84,7 @@ class TopologicalOrder implements AnalyzerInterface
                 $dependencies = array_unique(
                     array_merge(
                         $dependencies,
-                        $package->getComposerRequirePackages(false),
+                        //$package->getComposerRequirePackages(false),
                         $package->getComposerReplacePackages()
                     )
                 );

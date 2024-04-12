@@ -7,6 +7,8 @@ use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema;
 use Vconnect\IntegrityChecker\Domain\Package\Config\ModuleXml;
 use Vconnect\IntegrityChecker\Domain\Package\Config\Queue;
+use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
+use Vconnect\IntegrityChecker\Domain\Project\Config\Root;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 
 class Config
@@ -30,11 +32,9 @@ class Config
     private ?\DOMDocument $systemXml = null;
     private ?\DOMDocument $extensionAttributes = null;
     private ?Queue $queue = null;
-    private Package $package;
 
-    public function __construct(Package $package)
+    public function __construct(private readonly Package $package, private readonly Root $rootConfig)
     {
-        $this->package = $package;
     }
 
     public function __sleep(): array
@@ -101,19 +101,27 @@ class Config
      */
     public function getDiConfig(): array
     {
-        if ($this->diConfig !== null) {
-            return $this->diConfig;
+        if (!isset($this->diConfig)) {
+           $this->loadDiConfig();
         }
 
+        return $this->diConfig;
+    }
+
+    private function loadDiConfig(): void
+    {
         $this->diConfig = [];
+
+        if ($this->package->getName() === PackagesRegistry::MAGENTO_LIBRARY) {
+            $this->diConfig = $this->rootConfig->getRootDiXml();
+            return;
+        }
 
         foreach ($this->getMultipleEtcFiles(self::DI) as $file) {
             $dom = new \DOMDocument();
             $dom->loadXML($file->getContents());
             $this->diConfig[] = $dom;
         }
-
-        return $this->diConfig;
     }
 
     public function getRoutesXml(): array

@@ -6,6 +6,7 @@ namespace Vconnect\IntegrityChecker\Domain\Config\DbSchema;
 use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
+use Vconnect\IntegrityChecker\Domain\Project\Config\Root;
 
 class ModulesSchemaCollector
 {
@@ -13,7 +14,8 @@ class ModulesSchemaCollector
     private ?array $schemaModuleRelationsMap = null;
 
     public function __construct(
-        private readonly PackagesRegistry $packagesRegistry
+        private readonly PackagesRegistry $packagesRegistry,
+        private readonly Root $rootConfig
     ) {
     }
 
@@ -71,14 +73,8 @@ class ModulesSchemaCollector
     private function collectRootConfig(): array
     {
         $candidates = [];
-        $fileInfo = new \SplFileInfo(DirectoryRegistry::getRoot() . 'app/etc/db_schema.xml');
 
-        $content = null;
-        if ($fileInfo->isReadable()) {
-            $content = new \DOMDocument();
-            $content->loadXML($fileInfo->openFile()->fread($fileInfo->getSize()));
-        }
-
+        $content = $this->rootConfig->getRootDbSchema();
         $config = new DbSchema($content);
 
         if (!$config->getContent()) {
@@ -89,7 +85,7 @@ class ModulesSchemaCollector
                 $candidates,
                 $tableName,
                 $tableDefinition,
-                'magento/framework'
+                PackagesRegistry::MAGENTO_LIBRARY
             );
         }
 
@@ -113,8 +109,8 @@ class ModulesSchemaCollector
         string $packageName
     ): void {
         $tableCandidates = $candidates[$tableName] ?? new \SplPriorityQueue();
-        foreach ($this->getTableOwnerCandidatesPriorityRules() as $priority => $rule) {
-            if ($rule($tableDefinition)) {
+        foreach ($this->getTableOwnerCandidatesPriorityRules() as $rule) {
+            if ($priority = $rule($packageName, $tableDefinition)) {
                 $tableCandidates->insert($packageName, $priority);
                 break;
             }
@@ -128,13 +124,19 @@ class ModulesSchemaCollector
     private function getTableOwnerCandidatesPriorityRules(): array
     {
         return [
-            5 => [$this, 'hasResourceAndPrimaryKey'],
-            4 => [$this, 'hasPrimaryKey'],
-            3 => [$this, 'hasResource'],
-            2 => [$this, 'hasConstraint'],
-            1 => [$this, 'hasIndex'],
-            0 => fn(array $tableDefinition) => true
+            [$this, 'isMagentoCorePackage'],
+            [$this, 'hasResourceAndPrimaryKey'],
+            [$this, 'hasPrimaryKey'],
+            [$this, 'hasResource'],
+            [$this, 'hasConstraint'],
+            [$this, 'hasIndex'],
+            fn(string $packageName, array $tableDefinition) => 1
         ];
+    }
+
+    private function isMagentoCorePackage(string $packageName, array $tableDefinition): int
+    {
+        return $this->packagesRegistry->getTopologicallySortedCorePackages()[$packageName] ?? 0;
     }
 
     /**
@@ -142,38 +144,40 @@ class ModulesSchemaCollector
      * Typically, you often define table resource and primary key when you create it - so they are 2 main criteria to
      * be first priority
      *
+     * @param string $packageName
      * @param array $tableDefinition
      *
-     * @return bool
+     * @return int
      */
-    private function hasResourceAndPrimaryKey(array $tableDefinition): bool
+    private function hasResourceAndPrimaryKey(string $packageName, array $tableDefinition): int
     {
-        return $this->hasResource($tableDefinition) && $this->hasPrimaryKey($tableDefinition);
+        return $this->hasResource($packageName, $tableDefinition) &&
+        $this->hasPrimaryKey($packageName, $tableDefinition) ? 6 : 0;
     }
 
-    private function hasPrimaryKey(array $tableDefinition): bool
+    private function hasPrimaryKey(string $packageName, array $tableDefinition): int
     {
         foreach ($tableDefinition['constraint'] ?? [] as $constraint) {
             if ($constraint['type'] == 'primary') {
-                return true;
+                return 5;
             }
         }
 
-        return false;
+        return 0;
     }
 
-    private function hasResource(array $tableDefinition): bool
+    private function hasResource(string $packageName, array $tableDefinition): int
     {
-        return !empty($tableDefinition['resource']);
+        return !empty($tableDefinition['resource']) ? 4 : 0;
     }
 
-    private function hasConstraint(array $tableDefinition): bool
+    private function hasConstraint(string $packageName, array $tableDefinition): int
     {
-        return !empty($tableDefinition['constraint']);
+        return !empty($tableDefinition['constraint']) ? 3 : 0;
     }
 
-    private function hasIndex(array $tableDefinition): bool
+    private function hasIndex(string $packageName, array $tableDefinition): int
     {
-        return !empty($tableDefinition['index']);
+        return !empty($tableDefinition['index']) ? 2 : 0;
     }
 }

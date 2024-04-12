@@ -4,11 +4,16 @@ namespace Vconnect\IntegrityChecker\Domain;
 
 use Generator;
 use Vconnect\IntegrityChecker\Domain\Package\LoaderInterface;
+use Vconnect\IntegrityChecker\Domain\Package\SortOrder\Topological;
 use Vconnect\IntegrityChecker\Domain\Project\ComposerProvider;
 
 class PackagesRegistry
 {
+    public const MAGENTO_LIBRARY = 'magento/framework';
+
     private array $packagesNamespaceMap = [];
+    private ?array $topologicalSort = null;
+    private Topological $topologicalSorter;
 
     /**
      * @var Package[]
@@ -19,6 +24,7 @@ class PackagesRegistry
         private readonly LoaderInterface $loader,
         private readonly ComposerProvider  $lock,
     ) {
+        $this->topologicalSorter = new Topological($this);
     }
 
     /**
@@ -64,6 +70,15 @@ class PackagesRegistry
             $this->getAllPackages(),
             fn (Package $package) => $package->getPackageType() === Package::MAGENTO_PACKAGE_TYPE
         );
+    }
+
+    public function getTopologicallySortedCorePackages(): array
+    {
+        if (!isset($this->topologicalSort)) {
+            $this->topologicalSort = $this->topologicalSorter->getTopologicallyOrderedMagentoPackages();
+        }
+
+        return $this->topologicalSort;
     }
 
     /**

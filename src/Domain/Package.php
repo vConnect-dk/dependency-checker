@@ -7,6 +7,8 @@ use FilesystemIterator;
 use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
 use Vconnect\IntegrityChecker\Domain\Package\Config;
+use Vconnect\IntegrityChecker\Domain\Package\Config\Factory;
+use Vconnect\IntegrityChecker\Domain\Project\Config\Root;
 use Vconnect\IntegrityChecker\Domain\Scanner\FileClassScanner;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Utils\RecursiveArrayLeavesIterator;
@@ -31,8 +33,9 @@ class Package
     public function __construct(
         private readonly string           $path,
         private readonly FileClassScanner $fileClassScanner,
+        Factory $configFactory
     ) {
-        $this->config = new Config($this);
+        $this->config = $configFactory->create($this);
     }
 
     /**

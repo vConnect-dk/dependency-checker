@@ -8,7 +8,7 @@ class DbSchema
 
     public function __construct(?\DOMDocument $source = null)
     {
-        if ($source) {
+        if ($source && $source->childNodes->length !== 0) {
             $this->content = $this->recursiveConvert($this->getTablesNode($source));
         }
     }
