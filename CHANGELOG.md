@@ -1,3 +1,7 @@
+2.11.0
+===========
+* [Changes to Disassembling algorithm](https://vconnect.atlassian.net/browse/IE-302)
+
 2.10.2
 ===========
 Fixes:
