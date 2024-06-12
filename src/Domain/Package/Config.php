@@ -40,7 +40,7 @@ class Config
     public function __sleep(): array
     {
         // Prevents serialization of non-serializable properties like \DomDocument type
-        return ['moduleXml', 'package', 'queue', 'dbSchema'];
+        return ['moduleXml', 'package', 'queue', 'dbSchema', 'rootConfig'];
     }
 
     public function getDbSchema(): DbSchema

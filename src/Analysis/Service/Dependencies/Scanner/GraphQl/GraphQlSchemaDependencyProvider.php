@@ -38,7 +38,7 @@ class GraphQlSchemaDependencyProvider
             );
         }
 
-        $excludeSelf = fn(string $dependencyName) => $dependencyName != $packageName;
+        $excludeSelf = fn(?string $dependencyName) => $dependencyName !== null && $dependencyName != $packageName;
         $hardDependencies = array_filter(array_unique($hardDependencies), $excludeSelf);
         $softDependencies = array_filter(array_unique($softDependencies), $excludeSelf);
 

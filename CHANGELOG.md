@@ -1,3 +1,7 @@
+2.11.1
+===========
+* [Bugfixes fixes for Disassembling analysis](https://vconnect.atlassian.net/browse/IE-309)
+
 2.11.0
 ===========
 * [Changes to Disassembling algorithm](https://vconnect.atlassian.net/browse/IE-302)
