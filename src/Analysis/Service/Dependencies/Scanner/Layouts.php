@@ -14,6 +14,7 @@ class Layouts implements DependenciesScannerInterface
     private const LAYOUT_AREA_PATHS = [
         MagentoArea::AREA_ADMINHTML => 'view/adminhtml/layout',
         MagentoArea::AREA_FRONTEND => 'view/frontend/layout',
+        MagentoArea::AREA_GENERAL => 'view/base/layout',
     ];
 
     public function __construct(

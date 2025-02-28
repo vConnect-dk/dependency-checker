@@ -103,12 +103,8 @@ class Dependencies implements AnalyzerInterface
      */
     private function compareComposerDependencies(Package $package, Dependency $dependencies): array
     {
-        try {
-            $composerDeps[DependencyInterface::TYPE_HARD] = $package->getComposerRequirePackages();
-            $composerDeps[DependencyInterface::TYPE_SOFT] = $package->getComposerSuggestPackages();
-        } catch (FileNotFoundException) {
-            $composerDeps = [DependencyInterface::TYPE_HARD => [], DependencyInterface::TYPE_SOFT => []];
-        }
+        $composerDeps[DependencyInterface::TYPE_HARD] = $package->getComposerRequirePackages();
+        $composerDeps[DependencyInterface::TYPE_SOFT] = $package->getComposerSuggestPackages();
         $dependenciesPackages[DependencyInterface::TYPE_SOFT] = $this->deleteRedundantSoftDeps(
             $dependencies->getSoftDependencies(),
             $composerDeps[DependencyInterface::TYPE_HARD]

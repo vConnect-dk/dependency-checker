@@ -74,50 +74,62 @@ class Package
      *
      * @param bool $withDev
      * @return array
-     * @throws FileNotFoundException
      */
     public function getComposerRequirePackages(bool $withDev = true): array
     {
-        $require = $this->getComposerJson()->getRequire();
+        try {
+            $require = $this->getComposerJson()->getRequire();
 
-        if ($withDev) {
-            $require = array_merge($require, $this->getComposerJson()->getRequireDev());
+            if ($withDev) {
+                $require = array_merge($require, $this->getComposerJson()->getRequireDev());
+            }
+
+            return $require;
+        } catch (FileNotFoundException) {
+            return [];
         }
-
-        return $require;
     }
 
     /**
      * Get dependencies from 'suggest' section
      *
      * @return array
-     * @throws FileNotFoundException
      */
     public function getComposerSuggestPackages(): array
     {
-        return $this->getComposerJson()->getSuggest();
+        try {
+            return $this->getComposerJson()->getSuggest();
+        } catch (FileNotFoundException) {
+            return [];
+        }
     }
 
     /**
      * Get extension replace section
      *
      * @return array
-     * @throws FileNotFoundException
      */
     public function getComposerReplacePackages(): array
     {
-        return $this->getComposerJson()->getReplace();
+        try {
+            return $this->getComposerJson()->getReplace();
+        } catch (FileNotFoundException) {
+            return [];
+        }
     }
 
     /**
      * Get declared dependencies in module.xml file.
      *
      * @return array
-     * @throws FileNotFoundException
      */
     public function getModuleXmlDependencies(): array
     {
-        return $this->getConfig()->getModuleXml()->getDependencies();
+        try {
+            return $this->getConfig()->getModuleXml()->getDependencies();
+        } catch (FileNotFoundException) {
+            return [];
+        }
     }
 
     public function getFile(string $filePath): ?FileInfo
@@ -258,7 +270,6 @@ class Package
      */
     private function getComposerJson(): Json
     {
-
         if ($this->composerJson) {
             return $this->composerJson;
         }

@@ -78,16 +78,13 @@ class TopologicalOrder implements AnalyzerInterface
             }
 
             $dependencies = $dependencyModel->getHardDependencies();
-            try {
-                $dependencies = array_unique(
-                    array_merge(
-                        $dependencies,
-                        //$package->getComposerRequirePackages(false),
-                        $package->getComposerReplacePackages()
-                    )
-                );
-            } catch (FileNotFoundException) {
-            }
+            $dependencies = array_unique(
+                array_merge(
+                    $dependencies,
+                    //$package->getComposerRequirePackages(false),
+                    $package->getComposerReplacePackages()
+                )
+            );
 
             $graph->addDependencies($package->getName(), $dependencies);
         }

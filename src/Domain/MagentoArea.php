@@ -10,6 +10,7 @@ enum MagentoArea: string
     public const AREA_WEBAPI_REST = 'webapi_rest';
     public const AREA_WEBAPI_SOAP = 'webapi_soap';
     public const AREA_GRAPHQL = 'graphql';
+    public const AREA_GENERAL = 'general';
 
     case ADMINHTML = self::AREA_ADMINHTML;
     case FRONTEND = self::AREA_FRONTEND;

@@ -27,7 +27,6 @@ class LayoutFileScanner
         $layoutHandle = $file->getBasename('.xml');
         $xml = simplexml_load_string($contents);
 
-
         $this->getLayoutDependencyFromFileName($deps, $layoutHandle, $area);
         $this->getBlockClassAndTemplateDeps($deps, $contents);
         $this->getLayoutHandleUpdateDeps($deps, $xml, $area);
