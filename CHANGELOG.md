@@ -1,3 +1,8 @@
+2.11.4
+===========
+* [Bugfix] Resolve packages even if in the absolute path contains 'test' keyword
+* [Improvement] Prepare tests infrastructure for the future: add phpunit to composer.json and tests/sandbox folder for M2 sandbox.
+
 2.11.1
 ===========
 * [Bugfixes fixes for Disassembling analysis](https://vconnect.atlassian.net/browse/IE-309)

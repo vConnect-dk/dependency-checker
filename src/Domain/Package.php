@@ -70,7 +70,7 @@ class Package
     }
 
     /**
-     * Get dependencies from 'require' section
+     * Get dependencies from the 'require' section
      *
      * @param bool $withDev
      * @return array
@@ -248,8 +248,9 @@ class Package
                     \RecursiveIteratorIterator::SELF_FIRST
                 ),
                 function (\SplFileInfo $fileInfo) {
+                    $relativeRoot = str_replace($this->path, '', $fileInfo->getPathname());
                     return $fileInfo->isFile() &&
-                        !preg_match('/(\/Test\/|\/tests\/|\/Tests\/|\/Test.php)/i', $fileInfo->getPathname());
+                        !preg_match('/^(\/Test\/|\/tests\/|\/Tests\/|\/Test.php)/i', $relativeRoot);
                 }
             );
             foreach ($iterator as $path => $fileInfo) {
