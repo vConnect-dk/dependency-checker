@@ -1,0 +1,14 @@
+{
+  "name": "testvendor/dependent",
+  "description": "Dependent test fixture module - exercises many scanners",
+  "type": "magento2-module",
+  "license": ["OSL-3.0"],
+  "autoload": {
+    "psr-4": {
+      "TestVendor\\Dependent\\": ""
+    },
+    "files": [
+      "registration.php"
+    ]
+  }
+}

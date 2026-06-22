@@ -1,10 +1,21 @@
 <?php
+declare(strict_types=1);
+
+/**
+ * PHPUnit bootstrap (unit + integration).
+ *
+ * Does not load project bootstrap.php / define App() — production CLI entry points do that.
+ * Integration tests go through {@see \Vconnect\IntegrityChecker\Tests\Support\TestApplication}
+ * for container / sandbox isolation (no production Application::reset()).
+ *
+ * System tests exec bin/* and therefore use the real bootstrap + App() path.
+ */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $sandboxPath = __DIR__ . '/sandbox';
 
-if (file_exists($sandboxPath . '/composer.json') & !file_exists($sandboxPath . '/composer.lock')) {
+if (file_exists($sandboxPath . '/composer.json') && !file_exists($sandboxPath . '/composer.lock')) {
     echo "Running composer install in sandbox..." . PHP_EOL;
     $originalDir = getcwd();
     chdir($sandboxPath);

@@ -12,23 +12,26 @@ use Psr\Container\ContainerInterface;
 class Application
 {
     private ContainerInterface&FactoryInterface&InvokerInterface $container;
-    private static self $instance;
+    private static ?self $instance = null;
 
     /**
      * @throws Exception
      */
     private function __construct()
     {
+        $this->container = $this->buildContainer();
+    }
+
+    private function buildContainer(): ContainerInterface&FactoryInterface&InvokerInterface
+    {
         $containerBuilder = new ContainerBuilder;
-        $containerBuilder
-            ->addDefinitions(__DIR__ . '/etc/di.php')
-            ->addDefinitions(__DIR__ . '/etc/events.php');
-        $this->container = $containerBuilder->build();
+        $containerBuilder->addDefinitions(__DIR__ . '/etc/di.php');
+        return $containerBuilder->build();
     }
 
     public static function get(): self
     {
-        if (!isset(self::$instance)) {
+        if (self::$instance === null) {
             self::$instance = new self();
         }
         return self::$instance;

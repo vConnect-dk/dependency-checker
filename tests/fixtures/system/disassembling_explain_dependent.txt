@@ -1,0 +1,2 @@
+Extension "testvendor/dependent" can be removed.
+"testvendor/dependent": "*",

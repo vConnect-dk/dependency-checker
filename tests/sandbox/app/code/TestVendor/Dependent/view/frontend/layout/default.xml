@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- Hard dep: block class from Base -->
+        <block class="TestVendor\Base\Block\SampleBlock" name="dependent.uses.base.block"
+               template="TestVendor_Base::sample.phtml"/>
+        <!-- Soft dep via referenceBlock to a block defined by Base -->
+        <referenceBlock name="testvendor.base.block"/>
+        <!-- update handle to Base's handle -->
+        <update handle="testvendor_base_base_index"/>
+    </body>
+</page>

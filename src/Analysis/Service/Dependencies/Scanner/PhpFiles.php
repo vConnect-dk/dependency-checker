@@ -72,7 +72,7 @@ class PhpFiles implements DependenciesScannerInterface
         array $collectedDependencies,
         ScannerResult $scannerResult
     ): ScannerResult {
-        $classReference = $package->getClassReferenceByPath($file->getPathname());
+        $classReference = $package->getClassReferenceByPath($file);
         $pluginMap = $this->pluginMap->getPluginMap();
         $softDependencies = [];
 

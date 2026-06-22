@@ -2,11 +2,17 @@
 
 namespace Vconnect\IntegrityChecker\Domain\Scanner;
 
+use DI\FactoryInterface;
 use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\Package;
 
 class FileSystemPackagesProvider
 {
+    public function __construct(
+        private readonly FactoryInterface $factory
+    ) {
+    }
+
     public function getPackagesRecursively(
         array $paths,
         ?callable $filter = null,
@@ -23,7 +29,7 @@ class FileSystemPackagesProvider
         $uniquePackages = array_unique(array_merge([], ...$collectedPaths));
 
         foreach ($uniquePackages as $packagePath) {
-            yield App()->make(Package::class, ['path' => $packagePath]);
+            yield $this->factory->make(Package::class, ['path' => $packagePath]);
         }
     }
 
@@ -41,7 +47,7 @@ class FileSystemPackagesProvider
         }
 
         foreach (array_unique($collectedPaths) as $packagePath) {
-            yield App()->make(Package::class, ['path' => $packagePath]);
+            yield $this->factory->make(Package::class, ['path' => $packagePath]);
         }
     }
 

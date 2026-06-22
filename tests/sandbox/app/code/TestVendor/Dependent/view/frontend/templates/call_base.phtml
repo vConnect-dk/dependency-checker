@@ -1,0 +1,8 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+?>
+<?php
+// Class reference inside phtml should be picked up
+$svc = \TestVendor\Base\Model\SomeService::class;
+echo $svc;
+?>

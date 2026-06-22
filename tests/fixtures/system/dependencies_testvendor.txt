@@ -1,0 +1,27 @@
+------------------------------------------------------------
+Package testvendor/clean has defect(s).
+Missed dependencies in composer.json
+Require:
+	"mage-os/framework": "*",
+
+------------------------------------------------------------
+Package testvendor/dependent has defect(s).
+Missed dependencies in composer.json
+Require:
+	"mage-os/framework": "*",
+	"testvendor/base": "*",
+	"magento/module-mysql-mq": "*",
+
+Missed dependencies in etc/module.xml
+	<module name="TestVendor_Base"/>
+
+------------------------------------------------------------
+Package testvendor/base has defect(s).
+Missed dependencies in composer.json
+Suggest:
+	"testvendor/dependent": "*",
+	"mage-os/module-theme": "*",
+Require:
+	"mage-os/framework": "*",
+	"magento/module-mysql-mq": "*",
+

@@ -1,0 +1,17 @@
+{
+  "name": "testvendor/clean",
+  "description": "Clean module with correctly declared dependencies",
+  "type": "magento2-module",
+  "license": ["OSL-3.0"],
+  "require": {
+    "testvendor/base": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "TestVendor\\Clean\\": ""
+    },
+    "files": [
+      "registration.php"
+    ]
+  }
+}

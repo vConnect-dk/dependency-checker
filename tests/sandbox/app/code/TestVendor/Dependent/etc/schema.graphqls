@@ -1,0 +1,9 @@
+# Extends BaseType -> soft dependency via GraphQlSchema scanner
+type BaseType @doc(description="Extended by dependent") {
+    extra: String
+}
+
+# Uses BaseType in field -> hard dependency
+type DependentOutput {
+    base: BaseType
+}

@@ -1,0 +1,14 @@
+{
+  "name": "testvendor/base",
+  "description": "Base test fixture module",
+  "type": "magento2-module",
+  "license": ["OSL-3.0"],
+  "autoload": {
+    "psr-4": {
+      "TestVendor\\Base\\": ""
+    },
+    "files": [
+      "registration.php"
+    ]
+  }
+}

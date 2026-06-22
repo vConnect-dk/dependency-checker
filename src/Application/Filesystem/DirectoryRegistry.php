@@ -3,22 +3,29 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Application\Filesystem;
 
-use DI\DependencyException;
-use DI\NotFoundException;
-
 class DirectoryRegistry
 {
+    private static ?string $rootDirectory = null;
+
     public static function setRoot(string $rootDirectory): void
     {
-        App()->set('root', $rootDirectory);
+        self::$rootDirectory = $rootDirectory;
     }
 
-    public static function getRoot(): ?string
+    public static function getRoot(): string
     {
-        try {
-            return App()->get('root');
-        } catch (DependencyException|NotFoundException) {
+        if (self::$rootDirectory === null) {
             throw new \RuntimeException('Root directory is not set');
         }
+
+        return self::$rootDirectory;
+    }
+
+    /**
+     * Reset root directory. Primarily for testing purposes.
+     */
+    public static function reset(): void
+    {
+        self::$rootDirectory = null;
     }
 }

@@ -93,7 +93,9 @@ class LayoutFileScanner
     {
         foreach ((array)$xml->xpath('//update/@handle') as $element) {
             $dependency = $this->getLayoutHandleDependency($area, (string)$element);
-            $deps[DependencyInterface::TYPE_SOFT][$dependency] = true;
+            if ($dependency) {
+                $deps[DependencyInterface::TYPE_SOFT][$dependency] = true;
+            }
         }
     }
 
@@ -124,7 +126,10 @@ class LayoutFileScanner
             if (preg_match_all($pattern, $contents, $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
                     $namespace = $match['namespace'] . '\\' . $match['module'];
-                    $deps[$type][$this->packagesRegistry->getPackageNameByNamespace($namespace)] = true;
+                    $packageName = $this->packagesRegistry->getPackageNameByNamespace($namespace);
+                    if ($packageName) {
+                        $deps[$type][$packageName] = true;
+                    }
                 }
             }
         }

@@ -1,0 +1,1 @@
+Extension "nonexistent/vendor/module" can not be found in the project codebase.

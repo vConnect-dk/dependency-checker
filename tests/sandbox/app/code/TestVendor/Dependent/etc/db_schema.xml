@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="testvendor_dependent_entity" resource="default" engine="innodb" comment="Dependent entity">
+        <column name="entity_id" xsi:type="int" identity="true" unsigned="true" nullable="false" comment="Entity ID"/>
+        <column name="base_ref" xsi:type="int" unsigned="true" nullable="true" comment="Ref to base"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <!-- Hard dependency via FK to Base table -->
+        <constraint xsi:type="foreign" referenceId="DEP_BASE_FK"
+                    table="testvendor_dependent_entity" column="base_ref"
+                    referenceTable="testvendor_base_entity" referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+    </table>
+    <!-- Soft dep: just another table referencing base table name without FK constraint -->
+    <table name="testvendor_dependent_extra" resource="default">
+        <column name="id" xsi:type="int" identity="true" nullable="false"/>
+    </table>
+</schema>

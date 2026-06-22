@@ -4,11 +4,10 @@ namespace Vconnect\IntegrityChecker\Domain;
 
 use Adbar\Dot;
 use FilesystemIterator;
+use DI\FactoryInterface;
 use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 use Vconnect\IntegrityChecker\Domain\Package\Composer\Json;
 use Vconnect\IntegrityChecker\Domain\Package\Config;
-use Vconnect\IntegrityChecker\Domain\Package\Config\Factory;
-use Vconnect\IntegrityChecker\Domain\Project\Config\Root;
 use Vconnect\IntegrityChecker\Domain\Scanner\FileClassScanner;
 use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 use Vconnect\IntegrityChecker\Utils\RecursiveArrayLeavesIterator;
@@ -33,9 +32,9 @@ class Package
     public function __construct(
         private readonly string           $path,
         private readonly FileClassScanner $fileClassScanner,
-        Factory $configFactory
+        private readonly FactoryInterface $factory
     ) {
-        $this->config = $configFactory->create($this);
+        $this->config = $this->factory->make(Config::class, ['package' => $this]);
     }
 
     /**
@@ -309,16 +308,17 @@ class Package
     }
 
     /**
-     * Resolve class reference by path
+     * Resolve class reference for a package file.
      *
-     * @param string $filePath
+     * @param FileInfo $file
      * @return string
      */
-    public function getClassReferenceByPath(string $filePath): string
+    public function getClassReferenceByPath(FileInfo $file): string
     {
-        if (!isset($this->loadedFileClasses[$filePath])) {
-            $this->loadedFileClasses[$filePath] = $this->fileClassScanner->getClassName($filePath);
+        $cacheKey = $file->getPathname();
+        if (!isset($this->loadedFileClasses[$cacheKey])) {
+            $this->loadedFileClasses[$cacheKey] = $this->fileClassScanner->getClassName($file);
         }
-        return $this->loadedFileClasses[$filePath];
+        return $this->loadedFileClasses[$cacheKey];
     }
 }

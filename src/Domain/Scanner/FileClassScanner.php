@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Scanner;
 
+use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 use Vconnect\IntegrityChecker\Exception\InvalidFileException;
 
 class FileClassScanner
@@ -22,35 +23,15 @@ class FileClassScanner
     ];
 
     /**
-     * Retrieves the contents of a file.
-     *
-     * @param string $path
-     * @return string
-     */
-    private function getFileContents(string $path): string
-    {
-        $filename = realpath($path);
-        // phpcs:ignore
-        if (!file_exists($filename) || !\is_file($filename)) {
-            throw new InvalidFileException(
-                sprintf(
-                    'The file "%s" does not exist or is not a file',
-                    $filename
-                )
-            );
-        }
-
-        // phpcs:ignore
-        return file_get_contents($filename);
-    }
-
-    /**
      * Extracts the fully qualified class name from a file.
      *
-     * @param string $path
+     * File contents are read via {@see FileInfo::getContents()} so I/O stays at the FileInfo boundary
+     * and unit tests can supply in-memory FileInfo doubles without touching the filesystem.
+     *
+     * @param FileInfo $file
      * @return string
      */
-    public function getClassName(string $path): string
+    public function getClassName(FileInfo $file): string
     {
         $namespaceParts = [];
         $class = '';
@@ -60,7 +41,7 @@ class FileClassScanner
         $bracedNamespace = false;
 
         // phpcs:ignore
-        $tokens = token_get_all($this->getFileContents($path));
+        $tokens = token_get_all($file->getContents());
         foreach ($tokens as $index => $token) {
             $tokenIsArray = is_array($token);
             // Is either a literal brace or an interpolated brace with a variable

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Hard dependency via preference -->
+    <preference for="TestVendor\Base\Model\SomeService" type="TestVendor\Dependent\Model\UsesBase"/>
+
+    <!-- Plugin declaration: makes the plugin class reference to subject a SOFT dep -->
+    <type name="TestVendor\Base\Model\SomeService">
+        <plugin name="dependent_plugin" type="TestVendor\Dependent\Plugin\SomeServicePlugin"/>
+    </type>
+
+    <!-- Hard via attribute type -->
+    <type name="TestVendor\Dependent\Model\Sample">
+        <arguments>
+            <argument name="someModel" xsi:type="object">TestVendor\Base\Model\SomeService</argument>
+        </arguments>
+    </type>
+</config>

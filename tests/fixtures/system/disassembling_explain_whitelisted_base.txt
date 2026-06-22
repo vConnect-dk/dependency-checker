@@ -1,0 +1,1 @@
+|-1| Extension "testvendor/base" can not be removed because it is whitelisted
