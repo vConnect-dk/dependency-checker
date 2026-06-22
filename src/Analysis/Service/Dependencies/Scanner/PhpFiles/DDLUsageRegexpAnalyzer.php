@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
@@ -6,7 +7,7 @@ namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFil
 class DDLUsageRegexpAnalyzer
 {
     private const REGEXP = /** @lang RegExp */
-        '/->getTable(?:Name)?\(\s*[\'"](?<tableName>[a-zA-Z0-9_]+)[\'"]\s*\)/';
+        '/->getTable(?:Name)?\(\s*[\'"](?<tableName>\w+)[\'"]\s*\)/';
 
     public function getTablesUsed(string $fileContent): array
     {

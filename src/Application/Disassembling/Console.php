@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Application\Disassembling;
 
@@ -65,9 +67,8 @@ class Console implements ConsoleInterface
     {
         if ($this->cli->arguments->defined(self::ARG_NO_CACHE)) {
             return $this->cli->arguments->get(self::ARG_NO_CACHE);
-        } else {
-            return false;
         }
+        return false;
     }
 
     public function getMagentoRoot(): string
@@ -87,8 +88,6 @@ class Console implements ConsoleInterface
 
     /**
      * Print result message for package.
-     *
-     * @param ResultInterface $result
      */
     public function printOutput(ResultInterface $result): void
     {

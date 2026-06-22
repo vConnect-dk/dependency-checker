@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain;
 
@@ -13,7 +15,7 @@ class PackagesRegistry
 
     private array $packagesNamespaceMap = [];
     private ?array $topologicalSort = null;
-    private Topological $topologicalSorter;
+    private readonly Topological $topologicalSorter;
 
     /**
      * @var Package[]
@@ -31,17 +33,11 @@ class PackagesRegistry
      * Provide already preloaded packages by directories filter.
      *
      * @param string[] $directories absolute directory path.
-     * @param bool $withDev
      *
-     * @return Generator
      */
     public function getPackages(array $directories = [], bool $withDev = true): Generator
     {
-        if ($withDev) {
-            $packages = $this->getAllPackages();
-        } else {
-            $packages = $this->getAllPackagesExcludingDev();
-        }
+        $packages = $withDev ? $this->getAllPackages() : $this->getAllPackagesExcludingDev();
 
         foreach ($packages as $package) {
             foreach ($directories as $directory) {
@@ -68,13 +64,13 @@ class PackagesRegistry
     {
         return array_filter(
             $this->getAllPackages(),
-            fn (Package $package) => $package->getPackageType() === Package::MAGENTO_PACKAGE_TYPE
+            fn (Package $package): bool => $package->getPackageType() === Package::MAGENTO_PACKAGE_TYPE
         );
     }
 
     public function getTopologicallySortedCorePackages(): array
     {
-        if (!isset($this->topologicalSort)) {
+        if ($this->topologicalSort === null) {
             $this->topologicalSort = $this->topologicalSorter->getTopologicallyOrderedMagentoPackages();
         }
 
@@ -88,7 +84,7 @@ class PackagesRegistry
      */
     public function getAllPackages(): array
     {
-        if (!empty($this->allPackages)) {
+        if ($this->allPackages !== []) {
             return $this->allPackages;
         }
         $packages = $this->loader->loadPackages();
@@ -105,13 +101,11 @@ class PackagesRegistry
     /**
      * Provide Package Name by Module Namespace.
      *
-     * @param string $namespace
      *
-     * @return string|null
      */
     public function getPackageNameByNamespace(string $namespace): ?string
     {
-        if (empty($this->packagesNamespaceMap)) {
+        if ($this->packagesNamespaceMap === []) {
             $this->getAllPackages();
         }
 
@@ -125,7 +119,7 @@ class PackagesRegistry
 
     public function getRealPackageNamespace(string $namespace): ?string
     {
-        if (empty($this->packagesNamespaceMap)) {
+        if ($this->packagesNamespaceMap === []) {
             $this->getAllPackages();
         }
 
@@ -154,7 +148,7 @@ class PackagesRegistry
 
     public function getAllProjectNamespaces(): array
     {
-        if (empty($this->packagesNamespaceMap)) {
+        if ($this->packagesNamespaceMap === []) {
             $this->getAllPackages();
         }
 

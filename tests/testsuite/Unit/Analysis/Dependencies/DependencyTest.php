@@ -1,11 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Tests\Unit\Analysis\Dependencies;
 
 use PHPUnit\Framework\TestCase;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Dependency;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
 
 class DependencyTest extends TestCase

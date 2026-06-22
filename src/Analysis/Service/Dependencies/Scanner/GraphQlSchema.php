@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
@@ -19,7 +21,7 @@ class GraphQlSchema implements DependenciesScannerInterface
     {
         $scannerResult = $this->scannerResultFactory->create();
 
-        list($hard, $soft) = $this->graphQlSchemaDependencyProvider->getPackageDependencies($package);
+        [$hard, $soft] = $this->graphQlSchemaDependencyProvider->getPackageDependencies($package);
 
         $scannerResult->addSoftDependencies($soft);
         $scannerResult->addHardDependencies($hard);

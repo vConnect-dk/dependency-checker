@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Data;
 
@@ -7,13 +9,7 @@ namespace Vconnect\IntegrityChecker\Analysis\Data;
  */
 interface DefectiveResultInterface extends ResultInterface
 {
-    /**
-     * @return bool
-     */
     public function hasDefects(): bool;
 
-    /**
-     * @return string
-     */
     public function getPackageName(): string;
 }

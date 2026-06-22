@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Application\Structure;
 
@@ -30,9 +32,6 @@ class Console implements ConsoleInterface
 
     /**
      * Recursively print the tree.
-     *
-     * @param array $tree
-     * @param int $tabs
      */
     private function printTree(array $tree, int $tabs = 1): void
     {
@@ -72,9 +71,9 @@ class Console implements ConsoleInterface
         for ($i = 2; $i < $argc; $i++) {
             if (!is_dir(ROOT_DIR . $argv[$i])) {
                 echo sprintf(
-                        "Notice: Can not find directory \"%s\". Please check your input parameters.",
-                        ROOT_DIR . $argv[$i]
-                    ) . PHP_EOL
+                    "Notice: Can not find directory \"%s\". Please check your input parameters.",
+                    ROOT_DIR . $argv[$i]
+                ) . PHP_EOL
                     . sprintf("Path \"%s\" should be relative to Magento 2 Directory.", $argv[$i])
                     . PHP_EOL;
             }

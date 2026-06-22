@@ -1,11 +1,13 @@
 <?php
+
 declare(strict_types=1);
+use Vconnect\IntegrityChecker\Tests\Support\TestApplication;
 
 /**
  * PHPUnit bootstrap (unit + integration).
  *
  * Does not load project bootstrap.php / define App() — production CLI entry points do that.
- * Integration tests go through {@see \Vconnect\IntegrityChecker\Tests\Support\TestApplication}
+ * Integration tests go through {@see TestApplication}
  * for container / sandbox isolation (no production Application::reset()).
  *
  * System tests exec bin/* and therefore use the real bootstrap + App() path.

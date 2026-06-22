@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\Routes;
@@ -30,8 +31,6 @@ class RouteMapper
      * Format: array(
      *  '{Router_Id}' => '{Route_Id}' => ['{Module_Name}']
      * )
-     *
-     * @var array
      */
     private array $routers = [];
 
@@ -41,8 +40,6 @@ class RouteMapper
      * Format: array(
      *  '{Module_Name}' => ['{Filename}']
      * )
-     *
-     * @var array
      */
     private array $routeConfigFiles = [];
 
@@ -52,8 +49,6 @@ class RouteMapper
      * Format: array(
      *  '{Router_Id}' => '{Route_Id}' => '{Controller_Name}' => '{Action_Name}' => [{'Module_Name'}]
      * )
-     *
-     * @var array
      */
     private array $actions = [];
 
@@ -140,9 +135,8 @@ class RouteMapper
         }
         if ($phpFilePath && str_contains($path, '*')) {
             return $this->processWildcardUrl($path, $phpFilePath, $area);
-        } else {
-            return $this->processStandardUrl($path, $area);
         }
+        return $this->processStandardUrl($path, $area);
     }
 
     private function processWildcardUrl(string $urlPath, string $filePath, ?MagentoArea $area): ?string
@@ -172,7 +166,7 @@ class RouteMapper
             $controllerName = str_replace('/', '_', $fileParts['controller_name']);
         }
 
-        if (empty($urlRoutePieces) || !$urlRoutePieces[0]) {
+        if ($urlRoutePieces === [] || !$urlRoutePieces[0]) {
             $actionName = 'index';
         } else {
             $actionName = array_shift($urlRoutePieces);
@@ -222,12 +216,10 @@ class RouteMapper
 
     /**
      * Provide routing declaration
-     *
-     * @return array
      */
     private function getRoutersMap(): array
     {
-        if (empty($this->routers)) {
+        if ($this->routers === []) {
             foreach ($this->getListRoutesXml() as $module => $configFiles) {
                 foreach ($configFiles as $configFile) {
                     $this->processConfigFile($module, $configFile);
@@ -241,10 +233,7 @@ class RouteMapper
     /**
      * Update routers map for the module basing on the routing config file
      *
-     * @param string $module
-     * @param string $configFile
      *
-     * @return void
      */
     private function processConfigFile(string $module, string $configFile): void
     {
@@ -271,7 +260,7 @@ class RouteMapper
      */
     private function getListRoutesXml(): array
     {
-        if (empty($this->routeConfigFiles)) {
+        if ($this->routeConfigFiles === []) {
             $packages = $this->packagesRegistry->getAllPackagesExcludingDev();
             foreach ($packages as $package) {
                 $packageName = $package->getName();
@@ -290,7 +279,7 @@ class RouteMapper
      */
     private function getActionsMap(): array
     {
-        if (empty($this->actions)) {
+        if ($this->actions === []) {
             $files = $this->filesListProvider->getPhpFiles();
             $actionsMap = [];
             foreach ($this->getRoutersMap() as $routerId => $routes) {
@@ -300,7 +289,7 @@ class RouteMapper
                         if (empty($files[$packageName])) {
                             continue;
                         }
-                        $actionsMapPerArea[$routeId] = $actionsMapPerArea[$routeId] ?? [];
+                        $actionsMapPerArea[$routeId] ??= [];
                         $this->setModuleActionsMapping(
                             actions: $actionsMapPerArea[$routeId],
                             module: $packageName,
@@ -331,7 +320,7 @@ class RouteMapper
         $actionsPattern = sprintf("#%s(?<controller>\\S+)/(?<action_name>\\w+)\\.php\$#", $controllersDirPattern);
 
         foreach ($files as $controllerAction) {
-            if (preg_match($actionsPattern, $controllerAction, $matches)) {
+            if (preg_match($actionsPattern, (string) $controllerAction, $matches)) {
                 $controllerName = strtolower(str_replace('/', '_', $matches['controller']));
                 $actionName = strtolower($matches['action_name']);
                 $actions[$controllerName][$actionName] = $module;

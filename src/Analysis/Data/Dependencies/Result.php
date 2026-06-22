@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Data\Dependencies;
 
@@ -7,27 +9,14 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 
 class Result implements DefectiveResultInterface
 {
-    private string $packageName;
-
-    private array $composerDefects;
-
-    private array $moduleXmlDefects;
-
     /**
-     * @param string $packageName
      * @param string[] $composerDefects
      * @param string[] $moduleXmlDefects
      */
-    public function __construct(string $packageName, array $composerDefects, array $moduleXmlDefects)
+    public function __construct(private readonly string $packageName, private array $composerDefects, private array $moduleXmlDefects)
     {
-        $this->packageName = $packageName;
-        $this->composerDefects = $composerDefects;
-        $this->moduleXmlDefects = $moduleXmlDefects;
     }
 
-    /**
-     * @return bool
-     */
     public function hasDefects(): bool
     {
         return !empty($this->composerDefects[DependencyInterface::TYPE_SOFT]) ||
@@ -41,9 +30,6 @@ class Result implements DefectiveResultInterface
             !empty($this->moduleXmlDefects[DependencyInterface::TYPE_EXCESSIVE]);
     }
 
-    /**
-     * @return string
-     */
     public function getPackageName(): string
     {
         return $this->packageName;
@@ -62,8 +48,6 @@ class Result implements DefectiveResultInterface
      *          'Module_Two',
      *        ]
      * ]
-     *
-     * @return array
      */
     public function getResult(): array
     {

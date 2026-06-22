@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Scanner;
@@ -27,9 +28,6 @@ class FileClassScanner
      *
      * File contents are read via {@see FileInfo::getContents()} so I/O stays at the FileInfo boundary
      * and unit tests can supply in-memory FileInfo doubles without touching the filesystem.
-     *
-     * @param FileInfo $file
-     * @return string
      */
     public function getClassName(FileInfo $file): string
     {
@@ -60,10 +58,10 @@ class FileClassScanner
                 }
                 $namespaceParts[] = $token[1];
 
-            // `class` token is not used with a valid class name
+                // `class` token is not used with a valid class name
             } elseif ($triggerClass && !$tokenIsArray) {
                 $triggerClass = false;
-            // The class keyword was found in the last loop
+                // The class keyword was found in the last loop
             } elseif ($triggerClass && $token[0] === T_STRING) {
                 $triggerClass = false;
                 $class = $token[1];
@@ -78,7 +76,7 @@ class FileClassScanner
                     break;
                 case T_CLASS:
                     // Current loop contains the class keyword. Next loop will have the class name itself.
-                    if ($braceLevel == 0 || ($bracedNamespace && $braceLevel == 1)) {
+                    if ($braceLevel === 0 || ($bracedNamespace && $braceLevel === 1)) {
                         $triggerClass = true;
                     }
                     break;
@@ -86,7 +84,7 @@ class FileClassScanner
 
             // We have a class name, let's concatenate and return it!
             if ($class !== '') {
-                return trim(join('', $namespaceParts)) . trim($class);
+                return trim(implode('', $namespaceParts)) . trim($class);
             }
         }
         return $class;
@@ -94,10 +92,6 @@ class FileClassScanner
 
     /**
      * Looks forward from the current index to determine if the namespace is nested in {} or terminated with ;
-     *
-     * @param int $index
-     * @param array $tokens
-     * @return bool
      */
     private function isBracedNamespace(int $index, array $tokens): bool
     {
@@ -106,7 +100,8 @@ class FileClassScanner
             if (!is_array($tokens[$index])) {
                 if ($tokens[$index] === ';') {
                     return false;
-                } elseif ($tokens[$index] === '{') {
+                }
+                if ($tokens[$index] === '{') {
                     return true;
                 }
                 continue;

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\GraphQlSchema;
@@ -22,7 +23,10 @@ class GraphQlReader
                 $partialSchemaTypes = $this->parseTypesWithUnionHandling($partialSchemaContent);
 
                 foreach ($partialSchemaTypes as $type => $partialSchemaType) {
-                    if ($type === 'Query' || $type === 'Mutation') {
+                    if ($type === 'Query') {
+                        continue;
+                    }
+                    if ($type === 'Mutation') {
                         continue;
                     }
                     $definitions[$type][$package] = $partialSchemaType;
@@ -48,7 +52,6 @@ class GraphQlReader
      * This wrapper does some post processing as a workaround to split out the union data from the type data below it
      * which would give us two entries, X and foo
      *
-     * @param string $graphQlSchemaContent
      * @return string[] [$typeName => $typeDeclaration, ...]
      */
     private function parseTypesWithUnionHandling(string $graphQlSchemaContent): array
@@ -64,9 +67,7 @@ class GraphQlReader
          */
         $unionTypes = array_filter(
             $types,
-            function ($t) {
-                return (str_contains((string)$t, 'union ')) && (str_contains((string)$t, PHP_EOL . PHP_EOL));
-            }
+            fn (string $t): bool => (str_contains($t, 'union ')) && (str_contains($t, PHP_EOL . PHP_EOL))
         );
 
         foreach ($unionTypes as $type => $schema) {
@@ -88,7 +89,6 @@ class GraphQlReader
     /**
      * Extract types as string from a larger string that represents the graphql schema using regular expressions
      *
-     * @param string $graphQlSchemaContent
      * @return string[] [$typeName => $typeDeclaration, ...]
      */
     private function parseTypes(string $graphQlSchemaContent): array
@@ -103,17 +103,7 @@ class GraphQlReader
             $graphQlSchemaContent,
             $matches
         );
-
-        $parsedTypes = [];
-
-        if (!empty($matches)) {
-            /**
-             * $matches[0] is an indexed array with the whole type definitions
-             * $matches[2] is an indexed array with type names
-             */
-            $parsedTypes = array_combine($matches[2], $matches[0]);
-        }
-        return $parsedTypes;
+        return array_combine($matches[2], $matches[0]);
     }
 
     private function collectGraphQlSchemaFiles(): array

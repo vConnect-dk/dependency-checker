@@ -1,0 +1,10 @@
+{
+  "preset": "psr12",
+  "rules": {
+    "declare_strict_types": true,
+    "no_unused_imports": true,
+    "fully_qualified_strict_types": {
+      "import_symbols": true
+    }
+  }
+}

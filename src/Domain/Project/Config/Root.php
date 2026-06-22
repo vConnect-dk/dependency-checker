@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Project\Config;
@@ -14,7 +15,7 @@ class Root
 
     public function getRootDiXml(): array
     {
-        if (!isset($this->diXml)) {
+        if ($this->diXml === null) {
             $this->loadRootDi();
         }
 
@@ -33,9 +34,7 @@ class Root
                 ),
                 \RecursiveIteratorIterator::SELF_FIRST
             ),
-            function (\SplFileInfo $fileInfo) {
-                return $fileInfo->isFile() && preg_match('/\/di.xml/i', $fileInfo->getPathname());
-            }
+            fn (\SplFileInfo $fileInfo): bool => $fileInfo->isFile() && preg_match('/\/di.xml/i', $fileInfo->getPathname())
         );
 
         foreach ($iterator as $fileInfo) {
@@ -49,7 +48,7 @@ class Root
 
     public function getRootDbSchema(): ?DOMDocument
     {
-        if (!isset($this->dbSchema)) {
+        if (!$this->dbSchema instanceof DOMDocument) {
             $this->loaDbSchema();
         }
 
@@ -60,7 +59,7 @@ class Root
     {
         $fileInfo = new \SplFileInfo(DirectoryRegistry::getRoot() . 'app/etc/db_schema.xml');
 
-        $content = new \DOMDocument();
+        $content = new DOMDocument();
         if ($fileInfo->isReadable()) {
             $content->loadXML($fileInfo->openFile()->fread($fileInfo->getSize()));
         }

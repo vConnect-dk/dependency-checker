@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles\RegExpFileAnalysis;

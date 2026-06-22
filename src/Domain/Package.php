@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain;
 
@@ -27,7 +29,7 @@ class Package
      * @var string|null SubFolder of Magento 2 module.
      */
     private ?string $subFolder = null;
-    private Config $config;
+    private readonly Config $config;
 
     public function __construct(
         private readonly string           $path,
@@ -39,8 +41,6 @@ class Package
 
     /**
      * Return Package Path.
-     *
-     * @return string
      */
     public function getPath(): string
     {
@@ -70,9 +70,6 @@ class Package
 
     /**
      * Get dependencies from the 'require' section
-     *
-     * @param bool $withDev
-     * @return array
      */
     public function getComposerRequirePackages(bool $withDev = true): array
     {
@@ -80,7 +77,7 @@ class Package
             $require = $this->getComposerJson()->getRequire();
 
             if ($withDev) {
-                $require = array_merge($require, $this->getComposerJson()->getRequireDev());
+                return array_merge($require, $this->getComposerJson()->getRequireDev());
             }
 
             return $require;
@@ -91,8 +88,6 @@ class Package
 
     /**
      * Get dependencies from 'suggest' section
-     *
-     * @return array
      */
     public function getComposerSuggestPackages(): array
     {
@@ -105,8 +100,6 @@ class Package
 
     /**
      * Get extension replace section
-     *
-     * @return array
      */
     public function getComposerReplacePackages(): array
     {
@@ -119,8 +112,6 @@ class Package
 
     /**
      * Get declared dependencies in module.xml file.
-     *
-     * @return array
      */
     public function getModuleXmlDependencies(): array
     {
@@ -144,7 +135,6 @@ class Package
     /**
      * Load all files in the package.
      *
-     * @param string|null $directory
      * @return FileInfo[]
      */
     public function getFiles(?string $directory = null): iterable
@@ -156,9 +146,6 @@ class Package
 
     /**
      * Fetch files from requested directory.
-     *
-     * @param string $directory
-     * @return iterable
      */
     private function getFilesByDirectory(string $directory): iterable
     {
@@ -185,8 +172,8 @@ class Package
     {
         $namespaces = $this->resolveNamespacesFromComposerJson();
 
-        if (empty($namespaces)) {
-            $namespaces = $this->resolveNamespaceFromModuleXml() ? [$this->resolveNamespaceFromModuleXml()] : [];
+        if ($namespaces === []) {
+            return $this->resolveNamespaceFromModuleXml() ? [$this->resolveNamespaceFromModuleXml()] : [];
         }
 
         return $namespaces;
@@ -196,7 +183,7 @@ class Package
     {
         try {
             $namespaces = $this->getComposerJson()->getNamespaces();
-            $namespaces = array_map(fn($namespace) => trim($namespace, '\\'), $namespaces);
+            $namespaces = array_map(fn ($namespace): string => trim((string) $namespace, '\\'), $namespaces);
         } catch (FileNotFoundException) {
             $namespaces = [];
         }
@@ -218,8 +205,6 @@ class Package
 
     /**
      * Get package name from composer.json file.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -246,7 +231,7 @@ class Package
                     new \RecursiveDirectoryIterator($this->path, FilesystemIterator::SKIP_DOTS),
                     \RecursiveIteratorIterator::SELF_FIRST
                 ),
-                function (\SplFileInfo $fileInfo) {
+                function (\SplFileInfo $fileInfo): bool {
                     $relativeRoot = str_replace($this->path, '', $fileInfo->getPathname());
                     return $fileInfo->isFile() &&
                         !preg_match('/^(\/Test\/|\/tests\/|\/Tests\/|\/Test.php)/i', $relativeRoot);
@@ -265,7 +250,6 @@ class Package
     /**
      * Load composer.json file to provide dependencies.
      *
-     * @return Json
      * @throws FileNotFoundException
      */
     private function getComposerJson(): Json
@@ -291,11 +275,11 @@ class Package
             throw new FileNotFoundException('composer.json', $this->path);
         }
 
-        $files = $this->composerJson->getAutoload()['files'] ??[];
+        $files = $this->composerJson->getAutoload()['files'] ?? [];
 
         foreach ($files as $file) {
-            if (str_ends_with($file, 'registration.php')) {
-                $this->subFolder = (str_contains($file, '/') ? trim(dirname($file), "/") : '');
+            if (str_ends_with((string) $file, 'registration.php')) {
+                $this->subFolder = (str_contains((string) $file, '/') ? trim(dirname((string) $file), "/") : '');
             }
         }
 
@@ -309,9 +293,6 @@ class Package
 
     /**
      * Resolve class reference for a package file.
-     *
-     * @param FileInfo $file
-     * @return string
      */
     public function getClassReferenceByPath(FileInfo $file): string
     {

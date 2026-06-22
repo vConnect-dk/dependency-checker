@@ -1,9 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\Routes;
 
-use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class PhpFilesListProvider

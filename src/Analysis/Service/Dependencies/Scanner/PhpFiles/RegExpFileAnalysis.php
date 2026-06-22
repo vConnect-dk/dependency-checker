@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles;
@@ -22,8 +23,6 @@ class RegExpFileAnalysis
     /**
      * Get list of required packages dependencies from php file.
      *
-     * @param FileInfo $file
-     * @param Package $package
      * @return string[] - list of packages mentioned inside the file.
      */
     public function analyzeFile(FileInfo $file, Package $package): array
@@ -53,7 +52,7 @@ class RegExpFileAnalysis
 
             if (array_reduce(
                 $currentModuleNamespaces,
-                fn($carry, $namespace) => $carry || str_starts_with($referenceModule, $namespace)
+                fn ($carry, $namespace): bool => $carry || str_starts_with($referenceModule, (string) $namespace)
             )) {
                 continue;
             }
@@ -75,15 +74,13 @@ class RegExpFileAnalysis
     /**
      * Collects php content inside of template file and return it as result.
      *
-     * @param string $contents
      *
-     * @return string
      */
     private function stripeHtml(string $contents): string
     {
         return (string)preg_replace_callback(
             '~(<\?(php|=)\s+.*\?>)~sU',
-            function (array $matches) use ($contents, &$contentsWithoutHtml) {
+            function (array $matches) use ($contents, &$contentsWithoutHtml): string {
                 $contentsWithoutHtml .= $matches[1];
 
                 return $contents;
@@ -92,9 +89,6 @@ class RegExpFileAnalysis
         );
     }
 
-    /**
-     * @return string
-     */
     private function getRegExp(): string
     {
         if ($this->regExp) {
@@ -105,7 +99,7 @@ class RegExpFileAnalysis
         $availableVendors = [];
 
         foreach ($namespaces as $namespace) {
-            $availableVendors[] = explode('\\', $namespace)[0];
+            $availableVendors[] = explode('\\', (string) $namespace)[0];
         }
 
         /**

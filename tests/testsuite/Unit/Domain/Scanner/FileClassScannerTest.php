@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Tests\Unit\Domain\Scanner;
@@ -40,7 +41,7 @@ PHP);
      */
     private function fileInfoWithContents(string $contents): FileInfo
     {
-        return new class($contents) extends FileInfo {
+        return new class ($contents) extends FileInfo {
             public function __construct(private readonly string $inMemoryContents)
             {
                 parent::__construct(

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service;
 
@@ -7,14 +9,8 @@ use Vconnect\IntegrityChecker\Domain\Package;
 
 class Structure implements AnalyzerInterface
 {
-    private array $standardStructure;
-
-    /**
-     * @param array $expectedStructure
-     */
-    public function __construct(array $expectedStructure = [])
+    public function __construct(private readonly array $standardStructure = [])
     {
-        $this->standardStructure = $expectedStructure;
     }
 
     /**
@@ -29,9 +25,7 @@ class Structure implements AnalyzerInterface
      *      ]
      * ]
      *
-     * @param iterable $packages
      *
-     * @return \Generator
      */
     public function analyse(iterable $packages): \Generator
     {
@@ -50,10 +44,7 @@ class Structure implements AnalyzerInterface
     /**
      * Compare Standard Tree structure with extension one. Provide result as missed components.
      *
-     * @param array $standardTree
-     * @param array $packageTree
      *
-     * @return array
      */
     private function compareTrees(array $standardTree, array $packageTree): array
     {
@@ -71,7 +62,7 @@ class Structure implements AnalyzerInterface
             if (isset($packageTree[$name]) && is_array($packageTree[$name])) {
                 $result = $this->compareTrees($standardStem, $packageTree[$name]);
 
-                if (!empty($result)) {
+                if ($result !== []) {
                     $diff[$name] = $result;
                 }
             }

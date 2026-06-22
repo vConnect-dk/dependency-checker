@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Package;
 
@@ -77,7 +79,6 @@ class Config
     }
 
     /**
-     * @return ModuleXml
      * @throws FileNotFoundException
      */
     public function getModuleXml(): ModuleXml
@@ -101,8 +102,8 @@ class Config
      */
     public function getDiConfig(): array
     {
-        if (!isset($this->diConfig)) {
-           $this->loadDiConfig();
+        if ($this->diConfig === null) {
+            $this->loadDiConfig();
         }
 
         return $this->diConfig;
@@ -171,8 +172,6 @@ class Config
     }
 
     /**
-     * @param string $filename
-     *
      * @return FileInfo[]
      */
     private function getMultipleEtcFiles(string $filename): array

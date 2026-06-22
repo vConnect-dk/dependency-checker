@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Package;
@@ -39,7 +40,6 @@ class Cache
 
     /**
      * @param Package[] $packages
-     * @return void
      */
     public function save(array $packages): void
     {
@@ -69,7 +69,7 @@ class Cache
 
     private function getCacheFile(): SplFileInfo
     {
-        if ($this->cacheFile === null) {
+        if (!$this->cacheFile instanceof SplFileInfo) {
             $path = $this->getCacheDir() . $this->checksumCalculator->getCheckSum();
             $this->cacheFile = new SplFileInfo($path);
         }

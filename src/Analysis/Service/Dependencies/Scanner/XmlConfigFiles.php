@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
@@ -46,7 +47,6 @@ class XmlConfigFiles implements DependenciesScannerInterface
     /**
      * Search for dependencies in .xml inside the module directory.
      *
-     * @param Package $package
      *
      * @return ScannerResultInterface - list of packages founded as dependencies inside package's files.
      */

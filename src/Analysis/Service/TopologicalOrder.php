@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service;
 
@@ -8,8 +10,6 @@ use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Graph;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Kahn;
 use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\Package;
-use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
-use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 
 class TopologicalOrder implements AnalyzerInterface
 {
@@ -24,7 +24,6 @@ class TopologicalOrder implements AnalyzerInterface
 
     /**
      * @param Package[] $packages
-     * @return iterable
      */
     public function analyse(iterable $packages): iterable
     {
@@ -33,9 +32,8 @@ class TopologicalOrder implements AnalyzerInterface
 
         if ($this->explain) {
             return $kahn->explain($this->explain);
-        } else {
-            return $kahn->getOrderedPackagesToRemove();
         }
+        return $kahn->getOrderedPackagesToRemove();
     }
 
     private function getGraph(iterable $packages): Graph

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Application\Dependencies;
 
@@ -50,8 +52,6 @@ class Console implements ConsoleInterface
 
     /**
      * Print result message for package.
-     *
-     * @param DefectiveResultInterface|Result $result
      */
     public function printOutput(DefectiveResultInterface|Result $result): void
     {
@@ -63,7 +63,8 @@ class Console implements ConsoleInterface
 
         $this->cli->out('------------------------------------------------------------');
         $this->cli->out(
-            sprintf('Package %s has %s(s).',
+            sprintf(
+                'Package %s has %s(s).',
                 $result->getPackageName(),
                 $result->hasDefects() ? 'defect' : 'notice'
             )
@@ -92,8 +93,6 @@ class Console implements ConsoleInterface
 
     /**
      * Format and print.
-     *
-     * @param array $missedDependencies
      */
     private function printModuleXmlMissedDependencies(array $missedDependencies): void
     {
@@ -117,8 +116,6 @@ class Console implements ConsoleInterface
 
     /**
      * Format and print.
-     *
-     * @param array $missedDependencies
      */
     private function printComposerMissedDependencies(array $missedDependencies): void
     {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
@@ -25,10 +26,10 @@ class DbDDL implements DependenciesScannerInterface
         $packageName = $package->getName();
         $dependencies = array_filter(
             array_map(
-                fn(string $table) => $this->tablesOwnershipMap->getSchemaOwnerPackageName($table),
+                $this->tablesOwnershipMap->getSchemaOwnerPackageName(...),
                 $this->packageTablesUsageRegistry->get($package)
             ),
-            fn(?string $dependency) => $dependency && $dependency !== $packageName
+            fn (?string $dependency): bool => $dependency && $dependency !== $packageName
         );
 
         if ($dependencies) {

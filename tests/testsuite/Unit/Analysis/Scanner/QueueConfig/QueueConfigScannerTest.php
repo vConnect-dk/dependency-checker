@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Tests\Unit\Analysis\Scanner\QueueConfig;
@@ -10,6 +11,7 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResul
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
 use Vconnect\IntegrityChecker\Domain\Package;
 use Vconnect\IntegrityChecker\Domain\Package\Config\Queue;
+use Vconnect\IntegrityChecker\Domain\Package\Config;
 
 class QueueConfigScannerTest extends TestCase
 {
@@ -33,7 +35,7 @@ class QueueConfigScannerTest extends TestCase
         $package = $this->createStub(Package::class);
         $package->method('getName')->willReturn('test/pkg');
 
-        $configMock = $this->createStub(\Vconnect\IntegrityChecker\Domain\Package\Config::class);
+        $configMock = $this->createStub(Config::class);
         $configMock->method('getQueueConfig')->willReturn($queueConfig);
         $package->method('getConfig')->willReturn($configMock);
 

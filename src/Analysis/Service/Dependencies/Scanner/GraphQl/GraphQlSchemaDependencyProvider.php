@@ -1,8 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\GraphQl;
-
 
 use Vconnect\IntegrityChecker\Domain\GraphQlSchema\GraphQlReader;
 use Vconnect\IntegrityChecker\Domain\Package;
@@ -20,10 +20,6 @@ class GraphQlSchemaDependencyProvider
     ) {
     }
 
-    /**
-     * @param Package $package
-     * @return array
-     */
     public function getPackageDependencies(Package $package): array
     {
         $hardDependencies = [];
@@ -38,7 +34,7 @@ class GraphQlSchemaDependencyProvider
             );
         }
 
-        $excludeSelf = fn(?string $dependencyName) => $dependencyName !== null && $dependencyName != $packageName;
+        $excludeSelf = fn (?string $dependencyName): bool => $dependencyName !== null && $dependencyName !== $packageName;
         $hardDependencies = array_filter(array_unique($hardDependencies), $excludeSelf);
         $softDependencies = array_filter(array_unique($softDependencies), $excludeSelf);
 

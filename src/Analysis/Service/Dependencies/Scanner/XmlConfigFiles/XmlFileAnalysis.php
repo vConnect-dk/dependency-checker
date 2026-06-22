@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\XmlConfigFiles;
@@ -18,8 +19,6 @@ class XmlFileAnalysis
     /**
      * Analyze file to find dependencies
      *
-     * @param Package $package
-     * @param array $nodeMap
      * @return string[]
      */
     public function analyze(Package $package, array $nodeMap): array
@@ -61,11 +60,13 @@ class XmlFileAnalysis
             foreach ($nodes as $node) {
                 foreach ($attributeNames as $attributeName) {
                     $referenceModule = $this->getModuleNamespace($node->getAttribute($attributeName));
-                    if (
-                        !$referenceModule ||
-                        \in_array($referenceModule, $currentModuleNamespaces) ||
-                        !($dependency = $this->packagesRegistry->getPackageNameByNamespace($referenceModule))
-                    ) {
+                    if (!$referenceModule) {
+                        continue;
+                    }
+                    if (\in_array($referenceModule, $currentModuleNamespaces)) {
+                        continue;
+                    }
+                    if (!($dependency = $this->packagesRegistry->getPackageNameByNamespace($referenceModule))) {
                         continue;
                     }
                     $dependencies[] = $dependency;
@@ -76,12 +77,6 @@ class XmlFileAnalysis
         return $dependencies;
     }
 
-    /**
-     * @param \DOMDocument $dom
-     * @param array $expressions
-     * @param array $currentModuleNamespaces
-     * @return array
-     */
     private function getDependenciesByTextNodes(
         \DOMDocument $dom,
         array        $expressions,
@@ -94,11 +89,13 @@ class XmlFileAnalysis
             /** @var \DOMElement $node */
             foreach ($textNodes as $node) {
                 $referenceModule = $this->getModuleNamespace($node->nodeValue);
-                if (
-                    !$referenceModule ||
-                    \in_array($referenceModule, $currentModuleNamespaces) ||
-                    !($dependency = $this->packagesRegistry->getPackageNameByNamespace($referenceModule))
-                ) {
+                if (!$referenceModule) {
+                    continue;
+                }
+                if (\in_array($referenceModule, $currentModuleNamespaces)) {
+                    continue;
+                }
+                if (!($dependency = $this->packagesRegistry->getPackageNameByNamespace($referenceModule))) {
                     continue;
                 }
 
@@ -111,9 +108,6 @@ class XmlFileAnalysis
 
     /**
      * Extract Vendor\Module namespace prefix from a fully-qualified class/interface path.
-     *
-     * @param string $path
-     * @return string|null
      */
     public function getModuleNamespace(string $path): ?string
     {

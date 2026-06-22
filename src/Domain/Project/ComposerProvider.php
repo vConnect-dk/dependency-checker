@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Project;
@@ -13,7 +14,7 @@ class ComposerProvider
 {
     private LockArrayRepository $composerLockRepo;
     /** @var string[] */
-    private array $devPackages;
+    private readonly array $devPackages;
 
     public function __construct()
     {

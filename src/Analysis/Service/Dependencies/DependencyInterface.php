@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies;
@@ -16,31 +17,13 @@ interface DependencyInterface
     public const TYPE_EXPECTED = 'expected';
 
 
-    /**
-     * @param array $hardDependency
-     * @return void
-     */
     public function setHardDependencies(array $hardDependency): void;
 
-    /**
-     * @param array $softDependency
-     * @return void
-     */
     public function setSoftDependencies(array $softDependency): void;
 
-    /**
-     * @return array
-     */
     public function getHardDependencies(): array;
 
-    /**
-     * @return array
-     */
     public function getSoftDependencies(): array;
 
-    /**
-     * @param ScannerResultInterface $scannerResult
-     * @return void
-     */
     public function mergeDependencies(ScannerResultInterface $scannerResult): void;
 }

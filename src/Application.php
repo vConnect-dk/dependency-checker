@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker;
@@ -11,7 +12,7 @@ use Psr\Container\ContainerInterface;
 
 class Application
 {
-    private ContainerInterface&FactoryInterface&InvokerInterface $container;
+    private readonly ContainerInterface&FactoryInterface&InvokerInterface $container;
     private static ?self $instance = null;
 
     /**
@@ -24,14 +25,14 @@ class Application
 
     private function buildContainer(): ContainerInterface&FactoryInterface&InvokerInterface
     {
-        $containerBuilder = new ContainerBuilder;
+        $containerBuilder = new ContainerBuilder();
         $containerBuilder->addDefinitions(__DIR__ . '/etc/di.php');
         return $containerBuilder->build();
     }
 
     public static function get(): self
     {
-        if (self::$instance === null) {
+        if (!self::$instance instanceof Application) {
             self::$instance = new self();
         }
         return self::$instance;

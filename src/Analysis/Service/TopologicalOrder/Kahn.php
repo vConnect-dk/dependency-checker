@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder;
 
@@ -10,7 +12,8 @@ class Kahn
         private readonly Graph $graph,
         private readonly array $whitelist = [],
         private readonly array $nonMagento = []
-    ) {}
+    ) {
+    }
 
     public function processGraph(): void
     {
@@ -23,19 +26,15 @@ class Kahn
         $notRemovable = array_merge($this->whitelist, $this->nonMagento);
 
         foreach ($nodes as $node) {
-            if (isset($notRemovable[$node->getName()])) {
-                $representation[$node->getName()] = INF;
-            } else {
-                $representation[$node->getName()] = count($node->getInEdges());
-            }
+            $representation[$node->getName()] = isset($notRemovable[$node->getName()]) ? INF : count($node->getInEdges());
 
             if ($representation[$node->getName()] === 0) {
                 $queue[] = $node->getName();
             }
         }
 
-        while (!empty($queue)) {
-            while (!empty($queue)) {
+        while ($queue !== []) {
+            while ($queue !== []) {
                 $module = array_shift($queue);
                 $node = $nodes[$module];
 
@@ -91,7 +90,7 @@ class Kahn
         $notMagento = $this->nonMagento;
         $finished = [];
 
-        $dfs = function(Node $node, $num, $prefix) use (
+        $dfs = function (Node $node, string $num, string $prefix) use (
             &$visited,
             &$finished,
             &$results,
@@ -100,7 +99,7 @@ class Kahn
             $orderedNodes,
             $nodes,
             &$dfs
-        ) {
+        ): void {
             $prefix .= '-' . $num;
 
             if (isset($finished[$node->getName()])) {
@@ -177,9 +176,7 @@ class Kahn
     /**
      * Run BFS to showcase the roadmap how extension can be removed
      *
-     * @param string $moduleName
      *
-     * @return array
      */
     private function nodeRemoveSequences(string $moduleName): array
     {
@@ -187,7 +184,7 @@ class Kahn
         $nodes = $this->graph->getAllNodes();
         $queue = [$nodes[$moduleName]];
 
-        while (!empty($queue)) {
+        while ($queue !== []) {
             /** @var Node $node */
             $node = array_shift($queue);
             foreach ($node->getInEdges() as $edge) {

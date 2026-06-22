@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
@@ -29,7 +30,7 @@ class Routes implements DependenciesScannerInterface
 
         $deps = array_filter(
             array_unique($deps),
-            fn(?string $dep) => $dep && $dep !== $package->getName()
+            fn (?string $dep): bool => $dep && $dep !== $package->getName()
         );
 
         $scannerResult->addHardDependencies($deps);

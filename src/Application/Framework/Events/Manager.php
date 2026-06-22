@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Application\Framework\Events;
@@ -24,7 +25,7 @@ readonly class Manager
         }
 
         foreach ($subscriptions as $observer) {
-            if ($this->invoker !== null) {
+            if ($this->invoker instanceof InvokerInterface) {
                 $this->invoker->call([$observer, 'execute'], ['eventData' => $eventData]);
             } elseif (is_object($observer) && method_exists($observer, 'execute')) {
                 // Direct instance (e.g. unit tests without a container invoker)

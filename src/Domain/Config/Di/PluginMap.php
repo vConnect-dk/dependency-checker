@@ -1,9 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Config\Di;
 
-use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 use Vconnect\IntegrityChecker\Domain\Project\Config\Root;
 

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\Layout;
@@ -43,10 +44,6 @@ class LayoutFileScanner
      *
      * Ex.: <block class="{name}">
      *      <block template="{path}">
-     *
-     * @param array $deps
-     * @param string $contents
-     * @return void
      */
     private function getBlockClassAndTemplateDeps(array &$deps, string $contents): void
     {
@@ -71,7 +68,7 @@ class LayoutFileScanner
             $availableVendors = [];
 
             foreach ($namespaces as $namespace) {
-                $availableVendors[] = explode('\\', $namespace)[0];
+                $availableVendors[] = explode('\\', (string) $namespace)[0];
             }
             $this->namespaces = implode('|', array_unique($availableVendors));
         }
@@ -83,11 +80,6 @@ class LayoutFileScanner
      * Check layout handles updates
      *
      * Ex.: <update handle="{name}" />
-     *
-     * @param array $deps
-     * @param \SimpleXMLElement $xml
-     * @param string $area
-     * @return void
      */
     private function getLayoutHandleUpdateDeps(array &$deps, \SimpleXMLElement $xml, string $area): void
     {
@@ -103,12 +95,6 @@ class LayoutFileScanner
      * Check layout references
      *
      * Ex.: <referenceBlock name="{name}">
-     *
-     * @param array $deps
-     * @param \SimpleXMLElement $xml
-     * @param string $area
-     * @param string $layoutHandle
-     * @return void
      */
     protected function getReferenceDependencies(array &$deps, \SimpleXMLElement $xml, string $area, string $layoutHandle): void
     {
@@ -120,7 +106,7 @@ class LayoutFileScanner
         }
     }
 
-    private function extractDependenciesByRegexp(array &$deps, $contents, $patterns = []): void
+    private function extractDependenciesByRegexp(array &$deps, string $contents, array $patterns = []): void
     {
         foreach ($patterns as $pattern => $type) {
             if (preg_match_all($pattern, $contents, $matches, PREG_SET_ORDER)) {
@@ -135,7 +121,7 @@ class LayoutFileScanner
         }
     }
 
-    private function getLayoutHandleDependency($area, $handle): ?string
+    private function getLayoutHandleDependency(string $area, string $handle): ?string
     {
         $routePath = str_replace('_', '/', $handle);
         return $this->routeMapper->getDependencyByRouteParams($routePath, $area);

@@ -1,25 +1,19 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Package\Composer;
 
 class Json
 {
-    private string $path;
-
     private ?array $content = null;
 
-    /**
-     * @param string $path
-     */
-    public function __construct(string $path)
+    public function __construct(private readonly string $path)
     {
-        $this->path = $path;
     }
 
     /**
      * Get module directory path.
-     *
-     * @return string
      */
     public function getDirPath(): string
     {
@@ -28,8 +22,6 @@ class Json
 
     /**
      * Get Package Name
-     *
-     * @return string|null
      */
     public function getPackageName(): ?string
     {
@@ -38,8 +30,6 @@ class Json
 
     /**
      * Get Package Type (e.g. library, magento2-module etc).
-     *
-     * @return string|null
      */
     public function getPackageType(): ?string
     {
@@ -49,7 +39,6 @@ class Json
     /**
      * Get psr-4 package namespaces. Some packages could declare more than one namespace.
      * //@TODO add support of PSR-0
-     * @return array
      */
     public function getNamespaces(): array
     {
@@ -58,8 +47,6 @@ class Json
 
     /**
      * Return packages specified in 'require' section.
-     *
-     * @return array
      */
     public function getRequire(): array
     {
@@ -77,8 +64,6 @@ class Json
 
     /**
      * Return packages specified in 'suggest' section.
-     *
-     * @return array
      */
     public function getSuggest(): array
     {
@@ -95,22 +80,14 @@ class Json
         return $this->filterComposerPackages($dependencies);
     }
 
-    /**
-     * @param array $dependencies
-     * @return array
-     */
     private function filterComposerPackages(array $dependencies): array
     {
         $dependencies = array_keys($dependencies);
-        return array_filter($dependencies, function (string $dependency): bool {
-            return str_contains($dependency, '/');
-        });
+        return array_filter($dependencies, fn (string $dependency): bool => str_contains($dependency, '/'));
     }
 
     /**
      * Get composer.json content structured into array.
-     *
-     * @return array
      */
     private function getContent(): array
     {
@@ -124,8 +101,6 @@ class Json
 
     /**
      * Get Autoload section.
-     *
-     * @return array
      */
     public function getAutoload(): array
     {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder;
@@ -14,7 +15,7 @@ class WhitelistProcessor
      */
     public function process(array $whitelist, iterable $packages): array
     {
-        list($plainPackages, $wildcards) = $this->splitWhitelist($whitelist);
+        [$plainPackages, $wildcards] = $this->splitWhitelist($whitelist);
         foreach ($packages as $package) {
             $name = $package->getName();
             if (isset($plainPackages[$name])) {
@@ -36,7 +37,7 @@ class WhitelistProcessor
         $wildcardItems = [];
 
         foreach ($whitelist as $key => $index) {
-            if (str_contains($key, '*')) {
+            if (str_contains((string) $key, '*')) {
                 $wildcardItems[] = $this->buildRegexpFromWildcard($key);
             } else {
                 $plainPackages[$key] = $index;

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Scanner;
 
@@ -54,11 +56,7 @@ class FileSystemPackagesProvider
     /**
      * Lookup and get directory path to composer.json files.
      *
-     * @param string $path
-     * @param string $fileMask
-     * @param callable|null $filter
      *
-     * @return array
      */
     private function getMatchedFilesFolders(string $path, string $fileMask, ?callable $filter): array
     {
@@ -71,6 +69,6 @@ class FileSystemPackagesProvider
             $matchedFiles = array_filter($matchedFiles, $filter);
         }
 
-        return array_map(fn(\SplFileInfo $file) => dirname($file->getRealPath()), $matchedFiles);
+        return array_map(fn (\SplFileInfo $file): string => dirname($file->getRealPath()), $matchedFiles);
     }
 }

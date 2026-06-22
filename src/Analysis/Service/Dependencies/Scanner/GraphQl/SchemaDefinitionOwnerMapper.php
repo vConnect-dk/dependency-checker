@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\GraphQl;
@@ -21,8 +22,6 @@ class SchemaDefinitionOwnerMapper
 
     /**
      *  We treat extending types as soft dependencies.
-     * @param string $definitionType
-     * @return string|null
      */
     public function getSoftDependency(string $definitionType): ?string
     {
@@ -31,15 +30,12 @@ class SchemaDefinitionOwnerMapper
 
     /**
      * Implementing interfaces, using types for fields we treat as hard dependencies.
-     *
-     * @param string $definition
-     * @return array
      */
     public function getHardDependencies(string $definition): array
     {
         $typesUsed = $this->getTypesUsedInDefinition($definition);
 
-        return array_map(fn(string $type) => $this->getOwner($type), $typesUsed);
+        return array_map($this->getOwner(...), $typesUsed);
     }
 
     private function getOwner(string $definitionType): ?string
@@ -87,20 +83,20 @@ class SchemaDefinitionOwnerMapper
     private function getTypeOwnerPriorityRules(): array
     {
         return [
-            [$this, 'isMagentoCoreType'],
-            [$this, 'isInterfaceWithTypeResolver'],
-            [$this, 'hasInterfaceImplementation'],
-            [$this, 'hasDescription'],
-            fn(string $package, array $parsedAST) => 1
+            $this->isMagentoCoreType(...),
+            $this->isInterfaceWithTypeResolver(...),
+            $this->hasInterfaceImplementation(...),
+            $this->hasDescription(...),
+            fn (string $package, array $parsedAST): int => 1
         ];
     }
 
-    private function isMagentoCoreType(string $package, array $parsedAST): int
+    private function isMagentoCoreType(string $package): int
     {
         return $this->packagesRegistry->getTopologicallySortedCorePackages()[$package] ?? 0;
     }
 
-    private function isInterfaceWithTypeResolver(string $package, array $parsedAST): int
+    private function isInterfaceWithTypeResolver(array $parsedAST): int
     {
         $parsedAST = dot($parsedAST);
         $isInterface = $parsedAST['definitions.0.kind'] === 'InterfaceTypeDefinition';
@@ -115,7 +111,7 @@ class SchemaDefinitionOwnerMapper
         return 0;
     }
 
-    private function hasInterfaceImplementation(string $package, array $parsedAST): int
+    private function hasInterfaceImplementation(array $parsedAST): int
     {
         $parsedAST = dot($parsedAST);
         if ($parsedAST['definitions.0.kind'] === 'ObjectTypeDefinition') {
@@ -129,7 +125,7 @@ class SchemaDefinitionOwnerMapper
         return 0;
     }
 
-    private function hasDescription(string $package, array $parsedAST): int
+    private function hasDescription(array $parsedAST): int
     {
         $parsedAST = dot($parsedAST);
         foreach ($parsedAST->get('definitions.0.directives', []) as $directive) {
@@ -151,7 +147,7 @@ class SchemaDefinitionOwnerMapper
         }
 
         foreach (dot($ast->get('fields', []))->flatten() as $flattenKey => $fieldProperty) {
-            if (str_ends_with($flattenKey, '.type.name.value') && !in_array($fieldProperty, Type::STANDARD_TYPE_NAMES)) {
+            if (str_ends_with((string) $flattenKey, '.type.name.value') && !in_array($fieldProperty, Type::STANDARD_TYPE_NAMES)) {
                 $types[] = $fieldProperty;
             }
         }

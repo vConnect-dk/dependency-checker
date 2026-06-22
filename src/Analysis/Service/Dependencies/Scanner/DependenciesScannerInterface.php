@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
@@ -7,9 +9,5 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResul
 
 interface DependenciesScannerInterface
 {
-    /**
-     * @param Package $package
-     * @return ScannerResultInterface
-     */
     public function lookupDependencies(Package $package): ScannerResultInterface;
 }

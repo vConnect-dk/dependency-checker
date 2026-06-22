@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Package;
@@ -17,7 +18,7 @@ class LoaderChain implements LoaderInterface
     {
         return array_reduce(
             $this->loaders,
-            fn ($packages, LoaderInterface $loader) => $packages + $loader->loadPackages(),
+            fn ($packages, LoaderInterface $loader): array => $packages + $loader->loadPackages(),
             []
         );
     }

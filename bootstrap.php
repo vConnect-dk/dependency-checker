@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Vconnect\IntegrityChecker\Application;
+use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 
 /**
  * @throws ErrorException
@@ -24,7 +25,7 @@ if (isset($argv[1])) {
     $rootDir = realpath($argv[1]) . '/';
     /**
      * @deprecated
-     * @see \Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry
+     * @see DirectoryRegistry
      */
     define('ROOT_DIR', $rootDir);
 }

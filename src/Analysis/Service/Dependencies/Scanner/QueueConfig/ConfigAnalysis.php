@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\QueueConfig;
 
@@ -6,7 +8,6 @@ use Vconnect\IntegrityChecker\Domain\Package\Config\Queue;
 use Vconnect\IntegrityChecker\Domain\Package\Config\Queue\Communication;
 use Vconnect\IntegrityChecker\Domain\Package\Config\Queue\Consumer;
 use Vconnect\IntegrityChecker\Domain\Package\Config\Queue\Publisher;
-use Vconnect\IntegrityChecker\Domain\Package\Config\Queue\Topology;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 
 class ConfigAnalysis
@@ -26,7 +27,7 @@ class ConfigAnalysis
                 $this->analyzeCommunication($config->getCommunication(), $packageName),
                 $this->analyzeConsumers($config->getConsumer(), $packageName),
                 $this->analyzePublisher($config->getPublisher()),
-            //  $this->analyzeTopology($config->getTopology())
+                //  $this->analyzeTopology($config->getTopology())
             )
         );
     }
@@ -50,7 +51,7 @@ class ConfigAnalysis
     {
         $content = $communication->getContent();
         $dependencies = [];
-        if (empty($content)) {
+        if ($content === []) {
             return $dependencies;
         }
         foreach ($content as $topic) {
@@ -66,7 +67,10 @@ class ConfigAnalysis
             }
 
             foreach ($topic['handlers'] as $handler) {
-                if (!$handler['type'] || $handler['disabled'] === 'true') {
+                if (!$handler['type']) {
+                    continue;
+                }
+                if ($handler['disabled'] === 'true') {
                     continue;
                 }
                 $dep = $this->getDependencyByType($handler['type']);
@@ -85,7 +89,7 @@ class ConfigAnalysis
         $content = $consumer->getContent();
         $dependencies = [];
 
-        if (empty($content)) {
+        if ($content === []) {
             return $dependencies;
         }
 
@@ -118,7 +122,7 @@ class ConfigAnalysis
         $content = $publisher->getContent();
         $dependencies = [];
 
-        if (empty($content)) {
+        if ($content === []) {
             return $dependencies;
         }
 
@@ -139,15 +143,5 @@ class ConfigAnalysis
         }
 
         return $dependencies;
-    }
-
-    // Placeholder for bright future
-
-    /** @noinspection PhpUnusedPrivateMethodInspection
-     * @noinspection PhpUnusedParameterInspection
-     */
-    private function analyzeTopology(Topology $topology): array
-    {
-        return [];
     }
 }

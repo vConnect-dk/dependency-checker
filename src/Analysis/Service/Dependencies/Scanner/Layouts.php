@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
@@ -29,15 +30,15 @@ class Layouts implements DependenciesScannerInterface
         $hardDeps = [];
         foreach (self::LAYOUT_AREA_PATHS as $area => $path) {
             foreach ($package->getFiles($path) as $layoutFile) {
-                list ($soft, $hard) = $this->layoutFileScanner->getDependenciesFromLayoutFile($layoutFile, $area);
+                [$soft, $hard] = $this->layoutFileScanner->getDependenciesFromLayoutFile($layoutFile, $area);
                 $softDeps = array_merge($softDeps, $soft);
                 $hardDeps = array_merge($hardDeps, $hard);
             }
         }
 
-        $postProcess = fn($deps) => array_filter(
+        $postProcess = fn ($deps): array => array_filter(
             array_unique($deps),
-            fn(?string $dep) => $dep && $dep !== $package->getName()
+            fn (?string $dep): bool => $dep && $dep !== $package->getName()
         );
 
         $scannerResult = $this->scannerResultFactory->create();

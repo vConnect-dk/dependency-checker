@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Package\Config\Queue;
 
@@ -24,7 +26,7 @@ class Publisher
     {
         $this->content = [];
 
-        if ($this->source === null) {
+        if (!$this->source instanceof \DomDocument) {
             return;
         }
 

@@ -1,9 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Config\DbSchema;
 
-use Vconnect\IntegrityChecker\Application\Filesystem\DirectoryRegistry;
 use Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
 use Vconnect\IntegrityChecker\Domain\Project\Config\Root;
@@ -41,8 +41,6 @@ class ModulesSchemaCollector
 
     /**
      * Collect relations from packages.
-     *
-     * @return array
      */
     private function collectRelations(): array
     {
@@ -62,13 +60,11 @@ class ModulesSchemaCollector
             }
         }
 
-        return array_map(fn(\SplPriorityQueue $candidates): string => $candidates->top(), $candidates);
+        return array_map(fn (\SplPriorityQueue $candidates): string => $candidates->top(), $candidates);
     }
 
     /**
      * Collect DB Schema Config from root app/etc/db_schema.xml.
-     *
-     * @return array
      */
     private function collectRootConfig(): array
     {
@@ -96,11 +92,7 @@ class ModulesSchemaCollector
      * Collect candidates to be owner of that table.
      *
      * @param \SplPriorityQueue[] $candidates
-     * @param string $tableName
-     * @param array $tableDefinition
-     * @param string $packageName
      *
-     * @return void
      */
     private function collectOwnerCandidates(
         array &$candidates,
@@ -124,17 +116,17 @@ class ModulesSchemaCollector
     private function getTableOwnerCandidatesPriorityRules(): array
     {
         return [
-            [$this, 'isMagentoCorePackage'],
-            [$this, 'hasResourceAndPrimaryKey'],
-            [$this, 'hasPrimaryKey'],
-            [$this, 'hasResource'],
-            [$this, 'hasConstraint'],
-            [$this, 'hasIndex'],
-            fn(string $packageName, array $tableDefinition) => 1
+            $this->isMagentoCorePackage(...),
+            $this->hasResourceAndPrimaryKey(...),
+            $this->hasPrimaryKey(...),
+            $this->hasResource(...),
+            $this->hasConstraint(...),
+            $this->hasIndex(...),
+            fn (string $packageName, array $tableDefinition): int => 1
         ];
     }
 
-    private function isMagentoCorePackage(string $packageName, array $tableDefinition): int
+    private function isMagentoCorePackage(string $packageName): int
     {
         return $this->packagesRegistry->getTopologicallySortedCorePackages()[$packageName] ?? 0;
     }
@@ -144,18 +136,15 @@ class ModulesSchemaCollector
      * Typically, you often define table resource and primary key when you create it - so they are 2 main criteria to
      * be first priority
      *
-     * @param string $packageName
-     * @param array $tableDefinition
      *
-     * @return int
      */
     private function hasResourceAndPrimaryKey(string $packageName, array $tableDefinition): int
     {
-        return $this->hasResource($packageName, $tableDefinition) &&
-        $this->hasPrimaryKey($packageName, $tableDefinition) ? 6 : 0;
+        return $this->hasResource($tableDefinition) &&
+        $this->hasPrimaryKey($tableDefinition) ? 6 : 0;
     }
 
-    private function hasPrimaryKey(string $packageName, array $tableDefinition): int
+    private function hasPrimaryKey(array $tableDefinition): int
     {
         foreach ($tableDefinition['constraint'] ?? [] as $constraint) {
             if ($constraint['type'] == 'primary') {
@@ -166,18 +155,18 @@ class ModulesSchemaCollector
         return 0;
     }
 
-    private function hasResource(string $packageName, array $tableDefinition): int
+    private function hasResource(array $tableDefinition): int
     {
-        return !empty($tableDefinition['resource']) ? 4 : 0;
+        return empty($tableDefinition['resource']) ? 0 : 4;
     }
 
-    private function hasConstraint(string $packageName, array $tableDefinition): int
+    private function hasConstraint(array $tableDefinition): int
     {
-        return !empty($tableDefinition['constraint']) ? 3 : 0;
+        return empty($tableDefinition['constraint']) ? 0 : 3;
     }
 
-    private function hasIndex(string $packageName, array $tableDefinition): int
+    private function hasIndex(array $tableDefinition): int
     {
-        return !empty($tableDefinition['index']) ? 2 : 0;
+        return empty($tableDefinition['index']) ? 0 : 2;
     }
 }

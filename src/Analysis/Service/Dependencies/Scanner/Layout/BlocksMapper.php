@@ -1,10 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\Layout;
 
 use Vconnect\IntegrityChecker\Domain\MagentoArea;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
+use Vconnect\IntegrityChecker\Domain\Package;
 
 class BlocksMapper
 {
@@ -73,13 +75,17 @@ class BlocksMapper
     }
 
     private function parseLayoutBlocks(
-        \SimpleXMLElement $xml, string $handle, array &$map, string $area, string $module
+        \SimpleXMLElement $xml,
+        string $handle,
+        array &$map,
+        string $area,
+        string $module
     ): void {
         foreach ((array)$xml->xpath('//container | //block') as $element) {
             /** @var \SimpleXMLElement $element */
             $attributes = $element->attributes();
             $block = (string)$attributes->name;
-            if (!empty($block)) {
+            if ($block !== '' && $block !== '0') {
                 $map[$area][$block][$handle][$module] = $module;
             }
         }
@@ -113,7 +119,7 @@ class BlocksMapper
         }
 
         $modulesDependencies = [];
-        foreach ($modules as $module => $layoutHandle) {
+        foreach (array_keys($modules) as $module) {
             $package = $this->packagesRegistry->getPackage($module);
             $modulesDependencies[$module] = array_unique(
                 array_merge(
@@ -123,7 +129,7 @@ class BlocksMapper
             );
         }
 
-        uasort($modulesDependencies, fn($a, $b) => count($a) <=> count($b));
+        uasort($modulesDependencies, fn ($a, $b): int => count($a) <=> count($b));
 
         foreach ($modulesDependencies as $module => $dependencyList) {
             foreach ($dependencyList as $dependency) {
@@ -134,17 +140,18 @@ class BlocksMapper
         }
 
         $magentoOnlyModules = array_filter(
-            $modules, fn(string $module) => str_starts_with($module, 'magento/')
+            $modules,
+            fn (string $module): bool => str_starts_with($module, 'magento/')
         ) ?: null;
         $deps = $magentoOnlyModules ?? $modules;
 
         return current($deps);
     }
 
-    private function getModuleXmlDependencies($package): array
+    private function getModuleXmlDependencies(?Package $package): array
     {
         return array_map(
-            fn(string $moduleName) => $this->packagesRegistry->getPackageNameByNamespace(
+            fn (string $moduleName): ?string => $this->packagesRegistry->getPackageNameByNamespace(
                 str_replace('_', '\\', $moduleName)
             ),
             $package->getModuleXmlDependencies()

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Tests\Integration;
@@ -26,7 +27,7 @@ class DependenciesAnalyzerIntegrationTest extends SandboxIntegrationTestCase
 
         $fixtures = array_filter(
             $registry->getAllPackages(),
-            fn($p) => in_array($p->getName(), self::FIXTURE_PACKAGES, true)
+            fn ($p) => in_array($p->getName(), self::FIXTURE_PACKAGES, true)
         );
 
         /** @var Dependencies $analyzer */
@@ -69,7 +70,7 @@ class DependenciesAnalyzerIntegrationTest extends SandboxIntegrationTestCase
 
         $clean = array_filter(
             $registry->getAllPackages(),
-            fn($p) => $p->getName() === self::FIXTURE_CLEAN
+            fn ($p) => $p->getName() === self::FIXTURE_CLEAN
         );
 
         /** @var Dependencies $analyzer */

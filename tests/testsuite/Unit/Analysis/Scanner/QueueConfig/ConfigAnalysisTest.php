@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Tests\Unit\Analysis\Scanner\QueueConfig;
@@ -8,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\QueueConfig\ConfigAnalysis;
 use Vconnect\IntegrityChecker\Domain\Package\Config\Queue;
 use Vconnect\IntegrityChecker\Domain\PackagesRegistry;
+use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
 
 class ConfigAnalysisTest extends TestCase
 {
@@ -35,8 +37,12 @@ XML);
         $queue = new Queue($this->makeFileInfo($dom), null, null, null);
 
         $this->registry->method('getRealPackageNamespace')->willReturnCallback(function (string $type) {
-            if (str_contains($type, 'TestVendor\\Order')) return 'TestVendor\\Order';
-            if (str_contains($type, 'TestVendor\\Email')) return 'TestVendor\\Email';
+            if (str_contains($type, 'TestVendor\\Order')) {
+                return 'TestVendor\\Order';
+            }
+            if (str_contains($type, 'TestVendor\\Email')) {
+                return 'TestVendor\\Email';
+            }
             return null;
         });
         $this->registry->method('getPackageNameByNamespace')->willReturnMap([
@@ -117,7 +123,7 @@ XML);
         // We only need something that Queue will call getContents() on? No, Queue takes FileInfo or null.
         // For simplicity we pass a minimal object that Queue accepts (it checks for FileInfo).
         // Actually Queue expects FileInfo|null. Let's create a stub.
-        $fileInfo = $this->createStub(\Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo::class);
+        $fileInfo = $this->createStub(FileInfo::class);
         $fileInfo->method('getContents')->willReturn($dom->saveXML());
         return $fileInfo;
     }

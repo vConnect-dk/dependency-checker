@@ -1,25 +1,19 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Package\Config;
 
 class ModuleXml
 {
-    private string $path;
-
     private ?array $content = null;
 
-    /**
-     * @param string $path
-     */
-    public function __construct(string $path)
+    public function __construct(private readonly string $path)
     {
-        $this->path = $path;
     }
 
     /**
      * Get module name from etc/module.xml. Name in format: Vendor_Module.
-     *
-     * @return string|null
      */
     public function getModuleName(): ?string
     {
@@ -28,8 +22,6 @@ class ModuleXml
 
     /**
      * Get dependencies declared in 'sequence' section of module.xml.
-     *
-     * @return array
      */
     public function getDependencies(): array
     {
@@ -38,8 +30,6 @@ class ModuleXml
 
     /**
      * Get module.xml content.
-     *
-     * @return array
      */
     private function getContent(): array
     {
@@ -52,8 +42,6 @@ class ModuleXml
 
     /**
      * Parse module.xml file and load all required data.
-     *
-     * @return void
      */
     private function parseModuleXmlFile(): void
     {

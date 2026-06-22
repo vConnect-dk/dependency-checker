@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service;
 
@@ -27,9 +29,7 @@ class Dependencies implements AnalyzerInterface
     /**
      * Analyze PackagesProvider dependencies and compare between declared dependencies and actually used.
      *
-     * @param iterable $packages
      *
-     * @return \Generator
      * @throws FileNotFoundException
      */
     public function analyse(iterable $packages): \Generator
@@ -51,10 +51,7 @@ class Dependencies implements AnalyzerInterface
     /**
      * Compare package dependencies with discovered dependencies.
      *
-     * @param Package $package
-     * @param Dependency $dependencies
      *
-     * @return Result
      * @throws FileNotFoundException
      */
     private function compareDependencies(Package $package, Dependency $dependencies): Result
@@ -69,10 +66,7 @@ class Dependencies implements AnalyzerInterface
     /**
      * Compare found dependencies with dependencies in module.xml.
      *
-     * @param Package $package
-     * @param Dependency $dependencies
      *
-     * @return array
      * @throws FileNotFoundException
      */
     private function compareModuleXmlDependencies(Package $package, Dependency $dependencies): array
@@ -96,10 +90,7 @@ class Dependencies implements AnalyzerInterface
     /**
      * Compare found dependencies with dependencies in composer.json.
      *
-     * @param Package $package
-     * @param Dependency $dependencies
      *
-     * @return array
      */
     private function compareComposerDependencies(Package $package, Dependency $dependencies): array
     {
@@ -144,29 +135,26 @@ class Dependencies implements AnalyzerInterface
      * Check if found dependency is already defined in require section in composer.json
      * and delete it from soft dependencies array if so
      *
-     * @param array $collectedSoftDeps
-     * @param array $composerHardDeps
      *
-     * @return array
      */
     private function deleteRedundantSoftDeps(array $collectedSoftDeps, array $composerHardDeps): array
     {
         return array_filter(
             $collectedSoftDeps,
-            fn(string $softDependency) => !in_array($softDependency, $composerHardDeps)
+            fn (string $softDependency): bool => !in_array($softDependency, $composerHardDeps)
         );
     }
 
     private function extractModuleXmlDependencies(array $dependencies): array
     {
         return array_map(
-            fn(string $packageName) => $this->packagesRegistry->getPackage($packageName)
+            fn (string $packageName): ?string => $this->packagesRegistry->getPackage($packageName)
                                                               ->getConfig()
                                                               ->getModuleXml()
                                                               ->getModuleName(),
             array_filter(
                 $dependencies,
-                fn(string $packageName) => $this->packagesRegistry->getPackageType($packageName)
+                fn (string $packageName): bool => $this->packagesRegistry->getPackageType($packageName)
                     === Package::MAGENTO_PACKAGE_TYPE
             )
         );

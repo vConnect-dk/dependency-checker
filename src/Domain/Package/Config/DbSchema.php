@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Domain\Package\Config;
 
@@ -15,8 +17,6 @@ class DbSchema
 
     /**
      * Get Db Schema Package Content;
-     *
-     * @return array
      */
     public function getContent(): array
     {
@@ -28,9 +28,7 @@ class DbSchema
      * So we do not need root elements in result, only table names.
      * So proposed to select only tables from all DOMDocument.
      *
-     * @param \DOMDocument $element
      *
-     * @return \DOMNodeList
      */
     private function getTablesNode(\DOMDocument $element): \DOMNodeList
     {
@@ -40,9 +38,7 @@ class DbSchema
     /**
      * Convert elements.
      *
-     * @param \Traversable $source
      *
-     * @return array
      */
     private function recursiveConvert(\Traversable $source): array
     {
@@ -71,37 +67,30 @@ class DbSchema
     /**
      * Provide the value of the ID attribute for each element.
      *
-     * @param \DOMElement $element
      *
-     * @return string
      */
     private function getIdAttributeValue(\DOMElement $element): string
     {
         $idAttributeValue = '';
-        switch ($element->tagName) {
-            case ('table'):
-            case ('column'):
-                $idAttributeValue = $element->getAttribute('name');
-                break;
-            case ('index'):
-            case ('constraint'):
-                $idAttributeValue = $element->getAttribute('referenceId');
-                break;
-        }
 
-        return $idAttributeValue;
+        return match ($element->tagName) {
+            'table', 'column' => $element->getAttribute('name'),
+            'index', 'constraint' => $element->getAttribute('referenceId'),
+            default => $idAttributeValue,
+        };
     }
 
     /**
      * Check whether we have any attributes except ID attribute.
      *
-     * @param \DOMElement $element
      *
-     * @return bool
      */
     private function hasAttributesExceptIdAttribute(\DOMElement $element): bool
     {
-        return $element->hasAttribute('xsi:type') || $element->attributes->length >= 2;
+        if ($element->hasAttribute('xsi:type')) {
+            return true;
+        }
+        return $element->attributes->length >= 2;
     }
 
     /**
@@ -109,9 +98,7 @@ class DbSchema
      *
      * So if you will not have some attribute in schema - it will be taken from default one.
      *
-     * @param \DOMElement $domElement
      *
-     * @return array
      */
     private function interpretAttributes(\DOMElement $domElement): array
     {
@@ -128,16 +115,13 @@ class DbSchema
     /**
      * Convert XML attributes into raw array with attributes.
      *
-     * @param \DOMElement $element
      *
-     * @return array
      */
     private function getAttributes(\DOMElement $element): array
     {
         $attributes = [];
         $attributeNodes = $element->attributes;
 
-        /** @var \DOMAttr $attribute */
         foreach ($attributeNodes as $domAttr) {
             $attributes[$domAttr->name] = $domAttr->value;
         }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Tests\Unit\Analysis\Scanner\DbSchema;
@@ -33,7 +34,7 @@ class DbSchemaScannerTest extends TestCase
 
         $resultFactory->method('create')->willReturn($scannerResult);
 
-        $dbSchema = $this->createStub(\Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema::class);
+        $dbSchema = $this->createStub(Config\DbSchema::class);
         $dbSchema->method('getContent')->willReturn([
             'table' => [
                 'testvendor_main_table' => [
@@ -64,7 +65,7 @@ class DbSchemaScannerTest extends TestCase
     {
         $schemaCollector = $this->createStub(ModulesSchemaCollector::class);
         $schemaCollector->method('getSchemaOwnerPackageName')
-            ->willReturnCallback(fn(string $t) => $t === 'testvendor_own_table' ? 'testvendor/own' : null);
+            ->willReturnCallback(fn (string $t) => $t === 'testvendor_own_table' ? 'testvendor/own' : null);
 
         $resultFactory = $this->createStub(ScannerResultFactory::class);
         $scannerResult = $this->createStub(ScannerResultInterface::class);
@@ -73,7 +74,7 @@ class DbSchemaScannerTest extends TestCase
 
         $resultFactory->method('create')->willReturn($scannerResult);
 
-        $dbSchema = $this->createStub(\Vconnect\IntegrityChecker\Domain\Package\Config\DbSchema::class);
+        $dbSchema = $this->createStub(Config\DbSchema::class);
         $dbSchema->method('getContent')->willReturn([
             'table' => [
                 'testvendor_own_table' => ['name' => 'testvendor_own_table']

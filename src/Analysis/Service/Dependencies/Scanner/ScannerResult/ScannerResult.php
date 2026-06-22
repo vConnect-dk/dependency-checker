@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult;
@@ -10,7 +11,6 @@ class ScannerResult implements ScannerResultInterface
 
     /**
      * @param string[] $dependencies
-     * @return void
      */
     public function addSoftDependencies(array $dependencies): void
     {
@@ -19,7 +19,6 @@ class ScannerResult implements ScannerResultInterface
 
     /**
      * @param string[] $dependencies
-     * @return void
      */
     public function addHardDependencies(array $dependencies): void
     {

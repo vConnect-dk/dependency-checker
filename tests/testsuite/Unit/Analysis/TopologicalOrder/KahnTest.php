@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Tests\Unit\Analysis\TopologicalOrder;
@@ -6,7 +7,6 @@ namespace Vconnect\IntegrityChecker\Tests\Unit\Analysis\TopologicalOrder;
 use PHPUnit\Framework\TestCase;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Graph;
 use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Kahn;
-use Vconnect\IntegrityChecker\Analysis\Service\TopologicalOrder\Node;
 
 class KahnTest extends TestCase
 {

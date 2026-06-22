@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Tests\System;
@@ -112,7 +113,7 @@ abstract class CliSystemTestCase extends TestCase
         // and strip a final trailing newline so file fixtures and exec()/implode() compare cleanly.
         $output = str_replace(["\r\n", "\r"], "\n", $output);
         $lines = explode("\n", $output);
-        $lines = array_map(static fn(string $line): string => rtrim($line), $lines);
+        $lines = array_map(static fn (string $line): string => rtrim($line), $lines);
 
         return rtrim(implode("\n", $lines), "\n");
     }

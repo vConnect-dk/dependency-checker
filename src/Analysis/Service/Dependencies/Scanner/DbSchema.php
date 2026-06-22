@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
@@ -19,7 +20,6 @@ class DbSchema implements DependenciesScannerInterface
     /**
      * Search for dependencies in db_schema.xml
      *
-     * @param Package $package
      *
      * @return ScannerResultInterface - list of packages founded as dependencies inside package's files.
      */
@@ -34,7 +34,7 @@ class DbSchema implements DependenciesScannerInterface
                 $hard += $this->getHardSchemaDependencies($table);
             }
 
-            $excludeItself = fn(string $packageName) => $packageName != $package->getName();
+            $excludeItself = fn (string $packageName): bool => $packageName !== $package->getName();
 
             $soft = array_filter($soft, $excludeItself);
             $hard = array_filter($hard, $excludeItself);
@@ -47,8 +47,6 @@ class DbSchema implements DependenciesScannerInterface
     }
 
     /**
-     * @param array $table
-     *
      * @return string[]
      */
     private function getSoftSchemaDependencies(array $table): array
@@ -59,8 +57,6 @@ class DbSchema implements DependenciesScannerInterface
     }
 
     /**
-     * @param array $table
-     *
      * @return string[]
      */
     private function getHardSchemaDependencies(array $table): array

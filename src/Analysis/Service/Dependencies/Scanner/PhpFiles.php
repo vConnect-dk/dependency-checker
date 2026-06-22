@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
@@ -28,7 +30,6 @@ class PhpFiles implements DependenciesScannerInterface
      * Scan *.php and *.phtml files for PHP classes with regexp and collect corresponding modules which are required
      * by the package to work properly.
      *
-     * @param Package $package
      *
      * @return ScannerResult - interface of packages founded as dependencies inside package's files.
      */
@@ -59,12 +60,7 @@ class PhpFiles implements DependenciesScannerInterface
     /**
      * Determine dependencies from plugin class
      *
-     * @param Package $package
-     * @param FileInfo $file
-     * @param array $collectedDependencies
-     * @param ScannerResult $scannerResult
      *
-     * @return ScannerResult
      */
     private function determineDependencies(
         Package $package,
@@ -83,7 +79,7 @@ class PhpFiles implements DependenciesScannerInterface
                 continue;
             }
 
-            if (array_key_exists($classReference, $pluginMap) && str_starts_with($pluginMap[$classReference], $dependency)) {
+            if (array_key_exists($classReference, $pluginMap) && str_starts_with((string) $pluginMap[$classReference], (string) $dependency)) {
                 $softDependencies[] = $packageName;
                 unset($collectedDependencies[$i]);
             } else {
