@@ -13,8 +13,6 @@ use Vconnect\IntegrityChecker\Tests\Support\TestApplication;
  * System tests exec bin/* and therefore use the real bootstrap + App() path.
  */
 
-require_once __DIR__ . '/../vendor/autoload.php';
-
 $sandboxPath = __DIR__ . '/sandbox';
 
 if (file_exists($sandboxPath . '/composer.json') && !file_exists($sandboxPath . '/composer.lock')) {
@@ -27,7 +25,10 @@ if (file_exists($sandboxPath . '/composer.json') && !file_exists($sandboxPath . 
     if ($returnVar !== 0) {
         echo "Composer install failed in sandbox!" . PHP_EOL;
         echo implode(PHP_EOL, $output) . PHP_EOL;
+        @unlink($sandboxPath . '/composer.lock');
         exit(1);
     }
     echo "Composer install completed successfully in sandbox." . PHP_EOL;
 }
+
+require_once __DIR__ . '/../vendor/autoload.php';
