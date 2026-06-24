@@ -40,7 +40,7 @@ class DbSchema implements DependenciesScannerInterface
             $hard = array_filter($hard, $excludeItself);
 
             $scannerResult->addSoftDependencies($soft);
-            $scannerResult->addSoftDependencies($hard);
+            $scannerResult->addHardDependencies($hard);
         }
 
         return $scannerResult;
