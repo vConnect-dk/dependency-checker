@@ -13,7 +13,7 @@ use Vconnect\IntegrityChecker\Application\Observer\PhpFilesAnalysis\UrlRoutesCol
  * class names and invoke execute(). Listeners can be class-strings (resolved
  * via container) or pre-instantiated objects (for tests).
  *
- * @return array<string, class-string<Vconnect\IntegrityChecker\Application\Framework\Events\ObserverInterface>[]>
+ * @return array<string, list<class-string<\Vconnect\IntegrityChecker\Application\Framework\Events\ObserverInterface>|\Vconnect\IntegrityChecker\Application\Framework\Events\ObserverInterface>>
  */
 return [
     RegExpFileAnalysis::EVENT_NAME => [
