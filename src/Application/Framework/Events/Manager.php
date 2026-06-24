@@ -9,7 +9,7 @@ use Invoker\InvokerInterface;
 readonly class Manager
 {
     /**
-     * @param array<string, class-string<ObserverInterface>|ObserverInterface> $listeners
+     * @param array<string, list<class-string<ObserverInterface>|ObserverInterface>> $listeners
      */
     public function __construct(
         private InvokerInterface $invoker,
