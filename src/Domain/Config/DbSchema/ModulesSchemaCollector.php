@@ -140,11 +140,11 @@ class ModulesSchemaCollector
      */
     private function hasResourceAndPrimaryKey(string $packageName, array $tableDefinition): int
     {
-        return $this->hasResource($tableDefinition) &&
-        $this->hasPrimaryKey($tableDefinition) ? 6 : 0;
+        return $this->hasResource($packageName, $tableDefinition) &&
+        $this->hasPrimaryKey($packageName, $tableDefinition) ? 6 : 0;
     }
 
-    private function hasPrimaryKey(array $tableDefinition): int
+    private function hasPrimaryKey(string $packageName, array $tableDefinition): int
     {
         foreach ($tableDefinition['constraint'] ?? [] as $constraint) {
             if ($constraint['type'] == 'primary') {
@@ -155,17 +155,17 @@ class ModulesSchemaCollector
         return 0;
     }
 
-    private function hasResource(array $tableDefinition): int
+    private function hasResource(string $packageName, array $tableDefinition): int
     {
         return empty($tableDefinition['resource']) ? 0 : 4;
     }
 
-    private function hasConstraint(array $tableDefinition): int
+    private function hasConstraint(string $packageName, array $tableDefinition): int
     {
         return empty($tableDefinition['constraint']) ? 0 : 3;
     }
 
-    private function hasIndex(array $tableDefinition): int
+    private function hasIndex(string $packageName, array $tableDefinition): int
     {
         return empty($tableDefinition['index']) ? 0 : 2;
     }

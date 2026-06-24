@@ -7,10 +7,13 @@ use Vconnect\IntegrityChecker\Application\Observer\PhpFilesAnalysis\CollectDbTab
 use Vconnect\IntegrityChecker\Application\Observer\PhpFilesAnalysis\UrlRoutesCollector;
 
 /**
- * Event subscriptions: event name => list of observer class names.
- * Wired into Events\Manager via di.php constructor injection.
+ * Event subscriptions: event name => list of observer class names (or instances).
  *
- * @return array<string, class-string[]>
+ * The Manager uses the injected InvokerInterface (the DI container) to resolve
+ * class names and invoke execute(). Listeners can be class-strings (resolved
+ * via container) or pre-instantiated objects (for tests).
+ *
+ * @return array<string, class-string<Vconnect\IntegrityChecker\Application\Framework\Events\ObserverInterface>[]>
  */
 return [
     RegExpFileAnalysis::EVENT_NAME => [

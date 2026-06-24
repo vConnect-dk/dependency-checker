@@ -4,19 +4,17 @@ This document provides essential information for AI agents and developers workin
 
 ## Project Overview
 
-`vconnect/integrity-checker` is a static analysis tool for Magento 2 module packages. It ensures package integrity by checking dependencies in `composer.json` and `module.xml`, and verifying the package structure.
+`vconnect/integrity-checker` is a static analysis tool for Magento 2 module packages. It ensures package integrity by checking dependencies in `composer.json` and `module.xml`.
 
 ## Core Functionality
 
 1.  **Dependencies Checker (`bin/dependencies`)**: Checks if all used classes/modules in PHP, PHTML, and XML files are declared in `composer.json` and `etc/module.xml`.
-2.  **Module Structure Checker (`bin/structure`)**: Verifies if modules follow the standard Magento 2 structure.
-3.  **Disassembling Roadmap (`bin/disassembling`)**: Analyzes module dependencies to provide a roadmap for disassembling/removing modules while maintaining a functional store.
+2.  **Disassembling Roadmap (`bin/disassembling`)**: Analyzes module dependencies to provide a roadmap for disassembling/removing modules while maintaining a functional store.
 
 ## Project Structure
 
 - `bin/`: Executable scripts (entry points).
   - `dependencies`: Dependency analysis tool.
-  - `structure`: Structure verification tool.
   - `disassembling`: Roadmap generation tool.
 - `src/`: Source code (PSR-4 namespace `Vconnect\IntegrityChecker\`).
   - `Analysis/`: Core analysis logic, services, and data models.
@@ -54,7 +52,6 @@ vendor/bin/phpunit -c tests/phpunit.xml
 You can run the tools directly from the `bin` directory:
 ```bash
 php bin/dependencies {magento_root} {folder}
-php bin/structure {magento_root} {folder}
 php bin/disassembling {magento_root} {whitelist_or_file}
 ```
 

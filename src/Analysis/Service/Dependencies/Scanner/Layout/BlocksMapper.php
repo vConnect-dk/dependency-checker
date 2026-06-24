@@ -154,7 +154,7 @@ class BlocksMapper
             fn (string $moduleName): ?string => $this->packagesRegistry->getPackageNameByNamespace(
                 str_replace('_', '\\', $moduleName)
             ),
-            $package->getModuleXmlDependencies()
+            $package?->getModuleXmlDependencies() ?? []
         );
     }
 }

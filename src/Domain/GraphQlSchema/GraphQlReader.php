@@ -103,7 +103,7 @@ class GraphQlReader
             $graphQlSchemaContent,
             $matches
         );
-        return array_combine($matches[2], $matches[0]);
+        return count($matches) > 2 ? array_combine($matches[2], $matches[0]) : [];
     }
 
     private function collectGraphQlSchemaFiles(): array

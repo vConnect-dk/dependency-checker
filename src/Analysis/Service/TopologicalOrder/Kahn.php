@@ -90,7 +90,7 @@ class Kahn
         $notMagento = $this->nonMagento;
         $finished = [];
 
-        $dfs = function (Node $node, string $num, string $prefix) use (
+        $dfs = function (Node $node, int $num, string $prefix) use (
             &$visited,
             &$finished,
             &$results,

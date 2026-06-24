@@ -8,8 +8,6 @@ Package allows to run static analysis on Magento 2 Module Packages to provide an
   and check if corresponding module/package is declared as required in composer.json.
 - **Module.xml dependencies checker** - analyse if packages' etc/module.xml file contains in 'sequence' section all
   magneto 2 modules which classes are used in *.php, *.phtml, di.xml, system.xml, extension_attributes.xml files of the package.
-- **Package structure checker** - verify if all newly added Magneto 2 modules has a proper structure with all required
-  files.
 
 ### Standalone Installation ###
 1. Install project from Vconnect satis
@@ -39,25 +37,6 @@ bin/dependencies {magento root} {folder} {folder2} {folder3}
 Tool require composer.lock to be defined.
 All packages inside {folder}'s will be recognized by composer.json file. {folder} - expected to be relative inside the
 magento root folder. Dependencies check will be run for composer.json and etc/module.xml together.
-
-#### Module Structure Checker ####
-
-```bash
-bin/structure {magento root} {folder} {folder2} {folder3}
-```
-
-{magento root} - path to Magento 2 project root directory.
-Tool collects all packages in {folder} by registration.php files. For each module it compares
-current structure with Standard structure and print diff, if Standard structure was not followed.
-
-Standard package structure:
-
-```bash
-composer.json
-registration.php
-etc
-  module.xml
-```
 
 #### Disassembling Roadmap ####
 

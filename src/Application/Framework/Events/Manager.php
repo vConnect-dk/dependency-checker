@@ -9,28 +9,18 @@ use Invoker\InvokerInterface;
 readonly class Manager
 {
     /**
-     * @param array<string, class-string<ObserverInterface>[]> $listeners Event name => observer class names
+     * @param array<string, class-string<ObserverInterface>|ObserverInterface> $listeners
      */
     public function __construct(
-        private ?InvokerInterface $invoker = null,
+        private InvokerInterface $invoker,
         private array $listeners = []
     ) {
     }
 
     public function dispatchEvent(string $eventName, array $eventData): void
     {
-        $subscriptions = $this->listeners[$eventName] ?? null;
-        if ($subscriptions === null) {
-            return;
-        }
-
-        foreach ($subscriptions as $observer) {
-            if ($this->invoker instanceof InvokerInterface) {
-                $this->invoker->call([$observer, 'execute'], ['eventData' => $eventData]);
-            } elseif (is_object($observer) && method_exists($observer, 'execute')) {
-                // Direct instance (e.g. unit tests without a container invoker)
-                $observer->execute(['eventData' => $eventData]);
-            }
+        foreach ($this->listeners[$eventName] ?? [] as $observer) {
+            $this->invoker->call([$observer, 'execute'], [$eventData]);
         }
     }
 }

@@ -91,12 +91,12 @@ class SchemaDefinitionOwnerMapper
         ];
     }
 
-    private function isMagentoCoreType(string $package): int
+    private function isMagentoCoreType(string $package, array $parsedAST): int
     {
         return $this->packagesRegistry->getTopologicallySortedCorePackages()[$package] ?? 0;
     }
 
-    private function isInterfaceWithTypeResolver(array $parsedAST): int
+    private function isInterfaceWithTypeResolver(string $package, array $parsedAST): int
     {
         $parsedAST = dot($parsedAST);
         $isInterface = $parsedAST['definitions.0.kind'] === 'InterfaceTypeDefinition';
@@ -111,7 +111,7 @@ class SchemaDefinitionOwnerMapper
         return 0;
     }
 
-    private function hasInterfaceImplementation(array $parsedAST): int
+    private function hasInterfaceImplementation(string $package, array $parsedAST): int
     {
         $parsedAST = dot($parsedAST);
         if ($parsedAST['definitions.0.kind'] === 'ObjectTypeDefinition') {
@@ -125,7 +125,7 @@ class SchemaDefinitionOwnerMapper
         return 0;
     }
 
-    private function hasDescription(array $parsedAST): int
+    private function hasDescription(string $package, array $parsedAST): int
     {
         $parsedAST = dot($parsedAST);
         foreach ($parsedAST->get('definitions.0.directives', []) as $directive) {
