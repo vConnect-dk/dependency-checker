@@ -118,11 +118,8 @@ XML);
         $this->assertEmpty($deps);
     }
 
-    private function makeFileInfo(DOMDocument $dom): object
+    private function makeFileInfo(DOMDocument $dom): FileInfo
     {
-        // We only need something that Queue will call getContents() on? No, Queue takes FileInfo or null.
-        // For simplicity we pass a minimal object that Queue accepts (it checks for FileInfo).
-        // Actually Queue expects FileInfo|null. Let's create a stub.
         $fileInfo = $this->createStub(FileInfo::class);
         $fileInfo->method('getContents')->willReturn($dom->saveXML());
         return $fileInfo;
