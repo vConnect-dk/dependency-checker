@@ -109,6 +109,7 @@ final class TestApplication
     private static function discardApplicationSingleton(): void
     {
         $property = new \ReflectionProperty(Application::class, 'instance');
+        $property->setAccessible(true);
         $property->setValue(null, null);
     }
 }
