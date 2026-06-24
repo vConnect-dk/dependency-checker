@@ -27,8 +27,7 @@ class NotMagentoExtensionsProcessorTest extends TestCase
         $this->assertArrayNotHasKey('magento/module-catalog', $result);
         $this->assertArrayNotHasKey('testvendor/base', $result);
 
-        // Only PACKAGE and LIBRARY are kept as removable candidates.
-        // COMPONENT and other types are treated as non-magento (protected from removal).
+        // Only magento2-module and magento2-library are considered Magento packages; everything else is treated as non-magento (protected from removal).
         $this->assertArrayHasKey('external/component', $result);
         $this->assertArrayHasKey('some/library', $result);
         $this->assertArrayHasKey('random/package', $result);
