@@ -126,7 +126,7 @@ class ModulesSchemaCollector
         ];
     }
 
-    private function isMagentoCorePackage(string $packageName): int
+    private function isMagentoCorePackage(string $packageName, array $tableDefinition): int
     {
         return $this->packagesRegistry->getTopologicallySortedCorePackages()[$packageName] ?? 0;
     }
