@@ -109,12 +109,7 @@ class PackagesRegistry
             $this->getAllPackages();
         }
 
-        $real = $this->getRealPackageNamespace($namespace);
-        if ($real === null) {
-            return null;
-        }
-
-        return $this->packagesNamespaceMap[$real] ?? null;
+        return $this->packagesNamespaceMap[$this->getRealPackageNamespace($namespace)] ?? null;
     }
 
     public function getRealPackageNamespace(string $namespace): ?string
