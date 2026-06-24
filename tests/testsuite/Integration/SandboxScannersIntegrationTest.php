@@ -33,14 +33,13 @@ class SandboxScannersIntegrationTest extends SandboxIntegrationTestCase
         $scanner = $this->container->get(DbSchema::class);
         $result = $scanner->lookupDependencies($package);
 
-        // FK to testvendor_base_entity + table ownership maps to testvendor/base.
-        // DbSchema currently surfaces FK/table ownership as soft dependencies.
-        $soft = $this->softDeps($result);
+        // FK to testvendor_base_entity is a hard dependency; table ownership maps to testvendor/base.
+        $hard = $this->hardDeps($result);
         $this->assertContains(
             self::FIXTURE_BASE,
-            $soft,
-            'DbSchema should report testvendor/base from Dependent db_schema.xml '
-            . '(FK to testvendor_base_entity). Got soft=' . json_encode($soft)
+            $hard,
+            'DbSchema should report testvendor/base as hard dep from Dependent db_schema.xml '
+            . '(FK to testvendor_base_entity). Got hard=' . json_encode($hard)
         );
     }
 

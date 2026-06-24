@@ -29,8 +29,8 @@ class DbSchemaScannerTest extends TestCase
         $resultFactory = $this->createStub(ScannerResultFactory::class);
         $scannerResult = $this->createMock(ScannerResultInterface::class);
 
-        // Production code currently calls addSoftDependencies twice (once for soft, once for hard)
-        $scannerResult->expects($this->exactly(2))->method('addSoftDependencies');
+        $scannerResult->expects($this->once())->method('addSoftDependencies');
+        $scannerResult->expects($this->once())->method('addHardDependencies');
 
         $resultFactory->method('create')->willReturn($scannerResult);
 
