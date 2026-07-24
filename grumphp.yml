@@ -1,0 +1,56 @@
+grumphp:
+  parallel:
+    enabled: false
+  extensions:
+    - YieldStudio\GrumPHPLaravelPint\ExtensionLoader
+  tasks:
+    phpcs:
+      standard: phpcs.xml
+      triggered_by: [ php ]
+    phpstan:
+      autoload_file: vendor/autoload.php
+      configuration: phpstan.neon
+      force_patterns: [ ]
+      ignore_patterns: [ ]
+      triggered_by: [ 'php' ]
+      memory_limit: "-1"
+      use_grumphp_paths: true
+    rector:
+      config: rector.php
+      triggered_by: [ 'php' ]
+      ignore_patterns: [ ]
+      clear_cache: false
+      no_diffs: false
+    laravel_pint:
+      # These are all optional and have been set to sensible defaults.
+      config: pint.json
+      # Auto fix Laravel Pint issues
+      # Can be false, true, 'run' or 'pre_commit' (default)
+      auto_fix: pre_commit
+      # Auto stage files after auto fix
+      # Can be false, true, 'run' or 'pre_commit' (default)
+      # Works only if the task has been auto fixed (Without GrumPHP having to ask for it)
+      auto_stage: 'pre_commit'
+      triggered_by:
+        - php
+#    phpunit:
+#      config_file: tests/phpunit.xml
+#      testsuite: ~
+#      group: [ ]
+#      exclude_group: [ ]
+#      always_execute: false
+#      order: null
+#      coverage-clover: null
+#      coverage-html: null
+#      coverage-php: null
+#      coverage-xml: null
+    composer:
+      file: ./composer.json
+      no_check_all: false
+      no_check_lock: false
+      no_check_publish: true
+      no_local_repository: false
+      with_dependencies: false
+      strict: false
+    jsonlint:
+      detect_key_conflicts: true

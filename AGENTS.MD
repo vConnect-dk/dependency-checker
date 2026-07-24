@@ -28,7 +28,7 @@ This document provides essential information for AI agents and developers workin
 
 ## Technical Stack
 
-- **PHP**: `~8.2.0 | ~8.3.0 | ~8.4.0`
+- **PHP**: `~8.2.0 | ~8.3.0 | ~8.4.0 | ~8.5.0`
 - **Dependencies**:
   - `league/climate`: CLI output formatting.
   - `composer/composer`: Working with composer files and repositories.

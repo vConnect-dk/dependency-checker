@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles\RegExpFileAnalysis;
 use Vconnect\IntegrityChecker\Application\Observer\PhpFilesAnalysis\CollectDbTablesUsageFromFile;
 use Vconnect\IntegrityChecker\Application\Observer\PhpFilesAnalysis\UrlRoutesCollector;
+use Vconnect\IntegrityChecker\Application\Framework\Events\ObserverInterface;
 
 /**
  * Event subscriptions: event name => list of observer class names (or instances).
@@ -13,7 +14,7 @@ use Vconnect\IntegrityChecker\Application\Observer\PhpFilesAnalysis\UrlRoutesCol
  * class names and invoke execute(). Listeners can be class-strings (resolved
  * via container) or pre-instantiated objects (for tests).
  *
- * @return array<string, list<class-string<\Vconnect\IntegrityChecker\Application\Framework\Events\ObserverInterface>|\Vconnect\IntegrityChecker\Application\Framework\Events\ObserverInterface>>
+ * @return array<string, list<class-string<ObserverInterface>|ObserverInterface>>
  */
 return [
     RegExpFileAnalysis::EVENT_NAME => [
