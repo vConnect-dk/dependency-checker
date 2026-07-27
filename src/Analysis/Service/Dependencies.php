@@ -17,11 +17,11 @@ class Dependencies implements AnalyzerInterface
     private const ANALYSIS_SCOPE = [
         Package::MAGENTO_PACKAGE_TYPE,
         Package::MAGENTO_LIBRARY_TYPE,
-        Package::MAGENTO_COMPONENT_TYPE
+        Package::MAGENTO_COMPONENT_TYPE,
     ];
 
     public function __construct(
-        private readonly ScannerPool      $scanners,
+        private readonly ScannerPool $scanners,
         private readonly PackagesRegistry $packagesRegistry
     ) {
     }
@@ -36,7 +36,7 @@ class Dependencies implements AnalyzerInterface
     {
         /** @var Package $package */
         foreach ($packages as $package) {
-            if (!in_array($package->getPackageType(), self::ANALYSIS_SCOPE)) {
+            if (! in_array($package->getPackageType(), self::ANALYSIS_SCOPE)) {
                 continue;
             }
 
@@ -82,16 +82,19 @@ class Dependencies implements AnalyzerInterface
         $optionalDeps = $this->extractModuleXmlDependencies($dependencies->getSoftDependencies());
         $possibleDeps = array_merge($requiredDeps, $optionalDeps);
 
+        $excessive = array_diff($declaredDeps, $possibleDeps);
+        $expected = array_diff($requiredDeps, $declaredDeps);
+        sort($excessive);
+        sort($expected);
+
         return [
-            DependencyInterface::TYPE_EXCESSIVE => (array_diff($declaredDeps, $possibleDeps)),
-            DependencyInterface::TYPE_EXPECTED => array_diff($requiredDeps, $declaredDeps)
+            DependencyInterface::TYPE_EXCESSIVE => $excessive,
+            DependencyInterface::TYPE_EXPECTED => $expected,
         ];
     }
 
     /**
      * Compare found dependencies with dependencies in composer.json.
-     *
-     *
      */
     private function compareComposerDependencies(Package $package, Dependency $dependencies): array
     {
@@ -129,20 +132,22 @@ class Dependencies implements AnalyzerInterface
         );
         $result[DependencyInterface::TYPE_EXCESSIVE] = array_unique(array_merge($excessiveHardDeps, $excessiveSoftDeps));
 
+        sort($result[DependencyInterface::TYPE_SOFT]);
+        sort($result[DependencyInterface::TYPE_HARD]);
+        sort($result[DependencyInterface::TYPE_EXCESSIVE]);
+
         return $result;
     }
 
     /**
      * Check if found dependency is already defined in require section in composer.json
      * and delete it from soft dependencies array if so
-     *
-     *
      */
     private function deleteRedundantSoftDeps(array $collectedSoftDeps, array $composerHardDeps): array
     {
         return array_filter(
             $collectedSoftDeps,
-            fn (string $softDependency): bool => !in_array($softDependency, $composerHardDeps)
+            fn (string $softDependency): bool => ! in_array($softDependency, $composerHardDeps)
         );
     }
 
@@ -150,9 +155,9 @@ class Dependencies implements AnalyzerInterface
     {
         return array_map(
             fn (string $packageName): ?string => $this->packagesRegistry->getPackage($packageName)
-                                                              ->getConfig()
-                                                              ->getModuleXml()
-                                                              ->getModuleName(),
+                ->getConfig()
+                ->getModuleXml()
+                ->getModuleName(),
             array_filter(
                 $dependencies,
                 fn (string $packageName): bool => $this->packagesRegistry->getPackageType($packageName)

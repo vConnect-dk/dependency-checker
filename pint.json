@@ -1,5 +1,12 @@
 {
   "preset": "psr12",
+  "exclude": [
+    "tests/sandbox"
+  ],
+  "include": [
+    "src",
+    "tests/testsuite"
+  ],
   "rules": {
     "declare_strict_types": true,
     "no_unused_imports": true,

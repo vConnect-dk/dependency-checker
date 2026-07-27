@@ -53,6 +53,12 @@ class Kahn
             $generation++;
             $nextGeneration = [];
         }
+
+        // Intra-layer order is otherwise readdir-dependent; modules within one generation are interchangeable.
+        array_walk(
+            $this->orderedNodes,
+            static fn (array &$generationNodes): true => ksort($generationNodes)
+        );
     }
 
     public function getOrderedPackagesToRemove(): array
