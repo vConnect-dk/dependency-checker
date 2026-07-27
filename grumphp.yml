@@ -47,7 +47,7 @@ grumphp:
     composer:
       file: ./composer.json
       no_check_all: false
-      no_check_lock: false
+      no_check_lock: true
       no_check_publish: true
       no_local_repository: false
       with_dependencies: false

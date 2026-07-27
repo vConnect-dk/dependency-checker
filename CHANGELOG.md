@@ -1,4 +1,8 @@
-2.13.0
+2.13.1
+===========
+* Cosmetic composer.json changes and license for the packagist publishing 
+
+* 2.13.0
 ===========
 * [Improvement] Add PHP 8.5 support; widen constraint to ~8.2.0|~8.3.0|~8.4.0|~8.5.0
 * [Improvement] Add PHPCompatibility (phpcs) cross-version check for PHP 8.2-8.5

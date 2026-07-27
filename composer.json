@@ -1,8 +1,9 @@
 {
     "name": "vconnect/integrity-checker",
     "description": "Static analysis tool for Magento 2 module packages: checks composer.json/module.xml dependency integrity and generates module disassembling roadmaps.",
-    "type": "project",
-    "version": "2.13.0",
+    "type": "library",
+    "version": "2.13.1",
+    "license": "AGPL-3.0-only",
     "bin": [
         "bin/dependencies",
         "bin/disassembling"
