@@ -1,5 +1,7 @@
 ## Integrity checker
 
+[![CI](https://github.com/vConnect-dk/dependency-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/vConnect-dk/dependency-checker/actions/workflows/ci.yml)
+
 Package allows to run static analysis on Magento 2 Module Packages to provide an integrity check of package.
 
 ### Supported tools: ###

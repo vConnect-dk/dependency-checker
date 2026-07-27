@@ -43,7 +43,8 @@
         "phpro/grumphp-shim": "^2.23",
         "yieldstudio/grumphp-laravel-pint": "^1.0",
         "phpstan/phpstan": "^2.2",
-        "symfony/options-resolver": "^8.1"
+        "symfony/options-resolver": "^8.1",
+        "brianium/paratest": "^7.23"
     },
     "config": {
         "allow-plugins": {

@@ -3,6 +3,9 @@ grumphp:
     enabled: false
   extensions:
     - YieldStudio\GrumPHPLaravelPint\ExtensionLoader
+  fixer:
+    enabled: true
+    fix_by_default: true
   tasks:
     phpcs:
       standard: phpcs.xml
@@ -33,13 +36,12 @@ grumphp:
       auto_stage: 'pre_commit'
       triggered_by:
         - php
-    phpunit:
-      config_file: tests/phpunit.xml
-      testsuite: ~
+    paratest:
+      configuration: tests/phpunit.xml
+      testsuite: unit
+      processes: 4
       group: [ ]
-      exclude_group: [ ]
       always_execute: false
-      order: null
       coverage-clover: null
       coverage-html: null
       coverage-php: null

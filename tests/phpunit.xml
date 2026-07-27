@@ -8,8 +8,14 @@
          failOnRisky="true"
          failOnWarning="true">
     <testsuites>
-        <testsuite name="default">
-            <directory>testsuite</directory>
+        <testsuite name="unit">
+            <directory>testsuite/Unit</directory>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>testsuite/Integration</directory>
+        </testsuite>
+        <testsuite name="system">
+            <directory>testsuite/System</directory>
         </testsuite>
     </testsuites>
 
