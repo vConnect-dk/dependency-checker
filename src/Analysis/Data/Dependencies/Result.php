@@ -10,8 +10,8 @@ use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\DependencyInterface;
 class Result implements DefectiveResultInterface
 {
     /**
-     * @param string[] $composerDefects
-     * @param string[] $moduleXmlDefects
+     * @param array<string, array<string>> $composerDefects
+     * @param array<string, array<string>> $moduleXmlDefects
      */
     public function __construct(
         private readonly string $packageName,
@@ -51,6 +51,8 @@ class Result implements DefectiveResultInterface
      *          'Module_Two',
      *        ]
      * ]
+     *
+     * @return array<string, array<string, array<string>>>
      */
     public function getResult(): array
     {

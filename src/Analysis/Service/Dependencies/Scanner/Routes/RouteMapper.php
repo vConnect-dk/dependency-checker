@@ -128,10 +128,10 @@ class RouteMapper
     ) {
     }
 
-    public function getDependencyByRouteParams(string $path, ?string $phpFilePath = null, ?string $area = null): ?string
+    public function getDependencyByRouteParams(string $path, ?string $phpFilePath = null, MagentoArea|string|null $area = null): ?string
     {
-        if ($area) {
-            $area = MagentoArea::from($area)->value;
+        if (is_string($area)) {
+            $area = MagentoArea::from($area);
         }
 
         if ($phpFilePath && str_contains($path, '*')) {
@@ -208,9 +208,10 @@ class RouteMapper
         $routePath = strtolower($routePath);
         $areas = $area ? [$area->value] : self::AREAS;
 
-        foreach ($areas as $area) {
-            if ($this->getActionsMap()[$area]->has($routePath)) {
-                return $this->getActionsMap()[$area]->get($routePath);
+        foreach ($areas as $areaName) {
+            $actionsMap = $this->getActionsMap();
+            if (isset($actionsMap[$areaName]) && $actionsMap[$areaName]->has($routePath)) {
+                return $actionsMap[$areaName]->get($routePath);
             }
         }
 

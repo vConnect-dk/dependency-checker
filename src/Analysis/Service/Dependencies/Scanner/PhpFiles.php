@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner;
 
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\PhpFiles\RegExpFileAnalysis;
-use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResult;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultFactory;
 use Vconnect\IntegrityChecker\Analysis\Service\Dependencies\Scanner\ScannerResult\ScannerResultInterface;
 use Vconnect\IntegrityChecker\Application\Filesystem\Data\FileInfo;
@@ -31,7 +30,7 @@ class PhpFiles implements DependenciesScannerInterface
      * by the package to work properly.
      *
      *
-     * @return ScannerResult - interface of packages founded as dependencies inside package's files.
+     * @return ScannerResultInterface - interface of packages founded as dependencies inside package's files.
      */
     public function lookupDependencies(Package $package): ScannerResultInterface
     {
@@ -66,8 +65,8 @@ class PhpFiles implements DependenciesScannerInterface
         Package $package,
         FileInfo $file,
         array $collectedDependencies,
-        ScannerResult $scannerResult
-    ): ScannerResult {
+        ScannerResultInterface $scannerResult
+    ): ScannerResultInterface {
         $classReference = $package->getClassReferenceByPath($file);
         $pluginMap = $this->pluginMap->getPluginMap();
         $softDependencies = [];

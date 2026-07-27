@@ -53,7 +53,7 @@ class Console implements ConsoleInterface
     /**
      * Print result message for package.
      */
-    public function printOutput(DefectiveResultInterface|Result $result): void
+    public function printOutput(DefectiveResultInterface $result): void
     {
         $this->defectsState->registerResult($result);
 

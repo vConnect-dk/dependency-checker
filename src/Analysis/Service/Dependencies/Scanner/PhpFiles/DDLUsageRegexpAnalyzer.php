@@ -15,6 +15,6 @@ class DDLUsageRegexpAnalyzer
             return [];
         }
 
-        return $matches['tableName'] ?? [];
+        return $matches['tableName'];
     }
 }

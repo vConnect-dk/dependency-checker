@@ -25,7 +25,6 @@ class Cache
     }
 
     /**
-     * @param string $vendorPath
      * @return Package[]
      */
     public function loadCache(): array

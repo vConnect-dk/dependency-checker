@@ -10,7 +10,7 @@ use Vconnect\IntegrityChecker\Domain\Package;
 /**
  * Provide information on the dependency between the modules according to the GraphQL schema.
  *
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
+ * @SuppressWarnings("PHPMD.ExcessiveClassComplexity")
  */
 class GraphQlSchemaDependencyProvider
 {
