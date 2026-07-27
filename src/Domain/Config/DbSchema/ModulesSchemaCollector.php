@@ -76,6 +76,7 @@ class ModulesSchemaCollector
         if (!$config->getContent()) {
             return $candidates;
         }
+
         foreach ($config->getContent()['table'] as $tableName => $tableDefinition) {
             $this->collectOwnerCandidates(
                 $candidates,
@@ -107,6 +108,7 @@ class ModulesSchemaCollector
                 break;
             }
         }
+
         $candidates[$tableName] = $tableCandidates;
     }
 

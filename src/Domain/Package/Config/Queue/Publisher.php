@@ -34,6 +34,7 @@ class Publisher
             if (!$element instanceof \DOMElement) {
                 continue;
             }
+
             $node = [
                 'topic' => $element->getAttribute('name'),
                 'disabled' => $element->getAttribute('disabled'),
@@ -50,6 +51,7 @@ class Publisher
                     'disabled' => $connection->getAttribute('disabled')
                 ];
             }
+
             $this->content[] = $node;
         }
     }

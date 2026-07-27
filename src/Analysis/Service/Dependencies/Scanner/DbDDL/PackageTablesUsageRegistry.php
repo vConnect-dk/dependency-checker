@@ -24,6 +24,7 @@ class PackageTablesUsageRegistry
                 $usages[$table] = true;
             }
         }
+
         $this->usagesPerPackage[$package] = $usages;
     }
 

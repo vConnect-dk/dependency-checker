@@ -30,7 +30,7 @@ class FileInfo
     {
         $contents = file_get_contents($this->pathname);
         if ($contents === false) {
-            throw new \RuntimeException("Failed to read file '{$this->pathname}'");
+            throw new \RuntimeException(sprintf("Failed to read file '%s'", $this->pathname));
         }
 
         return $contents;

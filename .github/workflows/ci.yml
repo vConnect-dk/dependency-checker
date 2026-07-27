@@ -2,8 +2,14 @@ name: CI
 
 on:
   push:
+    branches: [master]
+    tags: ['*']
   pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:
@@ -50,8 +56,8 @@ jobs:
       - name: Pint (check)
         run: vendor/bin/pint --test
 
-  test:
-    name: Tests (PHP ${{ matrix.php }})
+  test-unit:
+    name: Unit tests (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
 
     strategy:
@@ -84,8 +90,51 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: PHPUnit
-        run: vendor/bin/phpunit -c tests/phpunit.xml
+      - name: PHPUnit (unit)
+        run: vendor/bin/phpunit -c tests/phpunit.xml --testsuite unit
+
+  test-heavy:
+    name: Integration & System tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer:v2
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-8.5-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-8.5-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Cache Mage-OS sandbox
+        id: sandbox-cache
+        uses: actions/cache@v4
+        with:
+          path: tests/sandbox
+          key: sandbox-v1-${{ hashFiles('tests/sandbox/composer.json', 'tests/sandbox/composer.lock') }}-${{ hashFiles('tests/sandbox/app/code/**') }}
+
+      - name: Install Mage-OS sandbox
+        if: steps.sandbox-cache.outputs.cache-hit != 'true'
+        run: composer install -d tests/sandbox --no-interaction --no-progress --no-dev --prefer-dist
+
+      - name: PHPUnit (integration + system)
+        run: vendor/bin/paratest -c tests/phpunit.xml --processes=4 --testsuite integration,system
 
   security:
     name: Security

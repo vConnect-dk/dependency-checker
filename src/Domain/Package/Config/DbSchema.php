@@ -90,6 +90,7 @@ class DbSchema
         if ($element->hasAttribute('xsi:type')) {
             return true;
         }
+
         return $element->attributes->length >= 2;
     }
 

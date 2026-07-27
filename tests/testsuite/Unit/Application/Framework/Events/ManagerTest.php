@@ -16,7 +16,10 @@ class ManagerTest extends TestCase
         $received = null;
 
         $observer = new class ($received) implements ObserverInterface {
-            public function __construct(private &$received) {}
+            public function __construct(
+                private &$received
+            ) {
+            }
             public function execute(array $eventData): void
             {
                 $this->received = $eventData;
@@ -24,7 +27,7 @@ class ManagerTest extends TestCase
         };
 
         // Test double invoker that actually performs the call (for tests that want real execution)
-        $invoker = new class implements InvokerInterface {
+        $invoker = new class () implements InvokerInterface {
             public function call($callable, array $parameters = []): mixed
             {
                 return $callable(...$parameters);
@@ -52,15 +55,27 @@ class ManagerTest extends TestCase
         $calls = [];
 
         $observer1 = new class ($calls) implements ObserverInterface {
-            public function __construct(private array &$calls) {}
-            public function execute(array $eventData): void { $this->calls[] = 'obs1'; }
+            public function __construct(
+                private array &$calls
+            ) {
+            }
+            public function execute(array $eventData): void
+            {
+                $this->calls[] = 'obs1';
+            }
         };
         $observer2 = new class ($calls) implements ObserverInterface {
-            public function __construct(private array &$calls) {}
-            public function execute(array $eventData): void { $this->calls[] = 'obs2'; }
+            public function __construct(
+                private array &$calls
+            ) {
+            }
+            public function execute(array $eventData): void
+            {
+                $this->calls[] = 'obs2';
+            }
         };
 
-        $invoker = new class implements InvokerInterface {
+        $invoker = new class () implements InvokerInterface {
             public function call($callable, array $parameters = []): mixed
             {
                 return $callable(...$parameters);
@@ -83,7 +98,7 @@ class ManagerTest extends TestCase
             ->method('call')
             ->with(
                 ['Some\\ObserverClass', 'execute'],
-                $this->callback(fn(array $p) => $p[0] === ['key' => 'value'])
+                $this->callback(fn (array $p) => $p[0] === ['key' => 'value'])
             );
 
         $manager = new Manager($invoker, [

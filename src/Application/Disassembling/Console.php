@@ -68,6 +68,7 @@ class Console implements ConsoleInterface
         if ($this->cli->arguments->defined(self::ARG_NO_CACHE)) {
             return $this->cli->arguments->get(self::ARG_NO_CACHE);
         }
+
         return false;
     }
 
@@ -100,7 +101,9 @@ class Console implements ConsoleInterface
 
     private function printExplainOutput(ResultInterface $result): void
     {
-        foreach ($result->getResult() as $message) {
+        /** @var array<int, array{message: string, problem: bool}> $messages */
+        $messages = $result->getResult();
+        foreach ($messages as $message) {
             if ($message['problem']) {
                 $this->cli->red()->bold($message['message']);
             } else {
@@ -111,10 +114,12 @@ class Console implements ConsoleInterface
 
     private function printReplaceOutput(ResultInterface $result): void
     {
-        foreach ($result->getResult() as $generation => $modules) {
-            $this->cli->out(sprintf('Layer %s ', $generation));
-            foreach ($modules as $result) {
-                $this->cli->tab()->out(sprintf('"%s": "*",', $result));
+        /** @var array<int|string, array<int|string, string>> $layers */
+        $layers = $result->getResult();
+        foreach ($layers as $generation => $modules) {
+            $this->cli->out(sprintf('Layer %s ', (string)$generation));
+            foreach ($modules as $module) {
+                $this->cli->tab()->out(sprintf('"%s": "*",', $module));
             }
         }
     }
@@ -133,8 +138,8 @@ class Console implements ConsoleInterface
 
         try {
             $this->parseArguments();
-        } catch (InvalidArgumentException $e) {
-            $this->cli->backgroundLightRed($e->getMessage());
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            $this->cli->backgroundLightRed($invalidArgumentException->getMessage());
 
             return false;
         }

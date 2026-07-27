@@ -21,6 +21,7 @@ class WhitelistProcessor
             if (isset($plainPackages[$name])) {
                 $plainPackages[$name] = $name;
             }
+
             foreach ($wildcards as $wildcard) {
                 if (preg_match($wildcard, $name)) {
                     $plainPackages[$name] = $name;

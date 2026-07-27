@@ -43,6 +43,7 @@ class UrlRoutesCollector implements ObserverInterface
                 $usages[$urlPath] = $phpFilePath;
             }
         }
+
         $this->routesUsedPerPackage[$package] = $usages;
     }
 

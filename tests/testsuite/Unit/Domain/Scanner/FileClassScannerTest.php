@@ -42,8 +42,9 @@ PHP);
     private function fileInfoWithContents(string $contents): FileInfo
     {
         return new class ($contents) extends FileInfo {
-            public function __construct(private readonly string $inMemoryContents)
-            {
+            public function __construct(
+                private readonly string $inMemoryContents
+            ) {
                 parent::__construct(
                     fileName: 'Example.php',
                     pathname: '/virtual/Example.php',

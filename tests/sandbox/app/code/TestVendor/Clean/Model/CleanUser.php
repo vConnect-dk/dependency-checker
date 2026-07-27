@@ -8,8 +8,9 @@ use TestVendor\Base\Model\SomeService;
 
 class CleanUser
 {
-    public function __construct(private readonly SomeService $svc)
-    {
+    public function __construct(
+        private readonly SomeService $svc
+    ) {
     }
 
     public function work(): string

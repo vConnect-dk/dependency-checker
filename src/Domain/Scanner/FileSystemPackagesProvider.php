@@ -40,7 +40,6 @@ class FileSystemPackagesProvider
         $collectedPaths = [];
         $paths = array_unique($paths);
         foreach ($paths as $path) {
-            /* @phpstan-ignore-next-line */
             $file = new \SplFileInfo(DirectoryRegistry::getRoot() . $path . DIRECTORY_SEPARATOR . $rootPackageFileName);
 
             if ($file->isFile()) {

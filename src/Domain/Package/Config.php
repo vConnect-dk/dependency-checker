@@ -35,8 +35,10 @@ class Config
     private ?\DOMDocument $extensionAttributes = null;
     private ?Queue $queue = null;
 
-    public function __construct(private readonly Package $package, private readonly Root $rootConfig)
-    {
+    public function __construct(
+        private readonly Package $package,
+        private readonly Root $rootConfig
+    ) {
     }
 
     public function __sleep(): array
@@ -47,14 +49,14 @@ class Config
 
     public function getDbSchema(): DbSchema
     {
-        if ($this->dbSchema) {
+        if ($this->dbSchema !== null) {
             return $this->dbSchema;
         }
 
         $content = null;
         $file = $this->package->getFile(self::DB_SCHEMA);
 
-        if ($file) {
+        if ($file !== null) {
             $content = new \DOMDocument();
             $content->loadXML($file->getContents());
         }
@@ -66,7 +68,7 @@ class Config
 
     public function getQueueConfig(): Queue
     {
-        if (!$this->queue) {
+        if ($this->queue === null) {
             $this->queue = new Queue(
                 $this->package->getFile(self::QUEUE_COMMUNICATION),
                 $this->package->getFile(self::QUEUE_CONSUMER),
@@ -83,13 +85,13 @@ class Config
      */
     public function getModuleXml(): ModuleXml
     {
-        if ($this->moduleXml) {
+        if ($this->moduleXml !== null) {
             return $this->moduleXml;
         }
 
         $file = $this->package->getFile(self::MODULE_XML);
 
-        if (!$file) {
+        if ($file === null) {
             throw new FileNotFoundException(self::MODULE_XML, $this->package->getPath());
         }
 
@@ -132,14 +134,14 @@ class Config
 
     public function getSystemXmlConfig(): \DOMDocument
     {
-        if ($this->systemXml) {
+        if ($this->systemXml !== null) {
             return $this->systemXml;
         }
 
         $file = $this->package->getFile(self::ADMIN_UI);
         $dom = new \DOMDocument();
 
-        if ($file) {
+        if ($file !== null) {
             $dom->loadXML($file->getContents());
         }
 
@@ -150,16 +152,17 @@ class Config
 
     public function getExtensionAttributes(): \DOMDocument
     {
-        if ($this->extensionAttributes) {
+        if ($this->extensionAttributes !== null) {
             return $this->extensionAttributes;
         }
 
         $file = $this->package->getFile(self::EXT_ATR);
         $dom = new \DOMDocument();
 
-        if ($file) {
+        if ($file !== null) {
             $dom->loadXML($file->getContents());
         }
+
         $this->extensionAttributes = $dom;
 
         return $this->extensionAttributes;

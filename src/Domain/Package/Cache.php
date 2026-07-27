@@ -15,7 +15,7 @@ class Cache
     private ?SplFileInfo $cacheFile = null;
 
     public function __construct(
-        private readonly ChecksumCalculator $checksumCalculator,
+        private readonly ChecksumCalculator $checksumCalculator
     ) {
     }
 
@@ -25,7 +25,6 @@ class Cache
     }
 
     /**
-     * @param string $vendorPath
      * @return Package[]
      */
     public function loadCache(): array
@@ -33,6 +32,7 @@ class Cache
         if (!$this->hasCache()) {
             throw new RuntimeException('Cache is missing');
         }
+
         $cache = $this->getCacheFile();
         $cacheContent = $cache->openFile()->fread($cache->getSize());
         return unserialize(gzuncompress($cacheContent));
@@ -58,6 +58,7 @@ class Cache
             foreach ($files as $file) {
                 unlink($file);
             }
+
             rmdir($directory);
         }
     }
@@ -73,6 +74,7 @@ class Cache
             $path = $this->getCacheDir() . $this->checksumCalculator->getCheckSum();
             $this->cacheFile = new SplFileInfo($path);
         }
+
         return $this->cacheFile;
     }
 

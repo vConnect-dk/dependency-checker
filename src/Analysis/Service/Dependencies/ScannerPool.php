@@ -23,7 +23,6 @@ class ScannerPool implements \IteratorAggregate
     }
 
     /**
-     * @return Traversable|DependenciesScannerInterface[]
      * @noinspection PhpDocSignatureInspection
      */
     public function getIterator(): Traversable

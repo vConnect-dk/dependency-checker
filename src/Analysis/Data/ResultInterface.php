@@ -7,7 +7,7 @@ namespace Vconnect\IntegrityChecker\Analysis\Data;
 interface ResultInterface
 {
     /**
-     * @return string[]
+     * @return iterable<mixed>
      */
     public function getResult(): iterable;
 }

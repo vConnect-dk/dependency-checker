@@ -11,5 +11,7 @@ interface DefectiveResultInterface extends ResultInterface
 {
     public function hasDefects(): bool;
 
+    public function hasNotices(): bool;
+
     public function getPackageName(): string;
 }

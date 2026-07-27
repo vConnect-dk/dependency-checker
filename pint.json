@@ -1,10 +1,18 @@
 {
   "preset": "psr12",
+  "exclude": [
+    "tests/sandbox"
+  ],
+  "include": [
+    "src",
+    "tests/testsuite"
+  ],
   "rules": {
     "declare_strict_types": true,
     "no_unused_imports": true,
     "fully_qualified_strict_types": {
       "import_symbols": true
-    }
+    },
+    "multiline_promoted_properties": true
   }
 }

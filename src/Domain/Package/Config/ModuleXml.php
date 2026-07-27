@@ -8,8 +8,9 @@ class ModuleXml
 {
     private ?array $content = null;
 
-    public function __construct(private readonly string $path)
-    {
+    public function __construct(
+        private readonly string $path
+    ) {
     }
 
     /**

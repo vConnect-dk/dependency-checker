@@ -70,6 +70,7 @@ class LayoutFileScanner
             foreach ($namespaces as $namespace) {
                 $availableVendors[] = explode('\\', (string) $namespace)[0];
             }
+
             $this->namespaces = implode('|', array_unique($availableVendors));
         }
 

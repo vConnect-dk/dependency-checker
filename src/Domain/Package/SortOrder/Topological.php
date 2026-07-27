@@ -10,8 +10,9 @@ use Vconnect\IntegrityChecker\Exception\FileNotFoundException;
 
 class Topological
 {
-    public function __construct(private readonly PackagesRegistry $packagesRegistry)
-    {
+    public function __construct(
+        private readonly PackagesRegistry $packagesRegistry
+    ) {
     }
 
     public function getTopologicallyOrderedMagentoPackages(): array
@@ -22,6 +23,7 @@ class Topological
                 $packages[] = $package;
             }
         }
+
         $graph = $this->buildGraph($packages);
 
         return $this->orderPackages($graph);

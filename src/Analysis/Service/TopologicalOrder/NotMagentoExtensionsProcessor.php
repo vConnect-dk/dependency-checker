@@ -20,6 +20,7 @@ class NotMagentoExtensionsProcessor
                 $notMagento[$package->getName()] = $package->getName();
             }
         }
+
         return $notMagento;
     }
 }

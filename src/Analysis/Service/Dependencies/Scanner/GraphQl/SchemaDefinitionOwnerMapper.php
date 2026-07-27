@@ -162,6 +162,7 @@ class SchemaDefinitionOwnerMapper
         } catch (Exception) {
             $parsedAST = [];
         }
+
         return $parsedAST;
     }
 }

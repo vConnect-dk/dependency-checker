@@ -35,6 +35,7 @@ class Application
         if (!self::$instance instanceof Application) {
             self::$instance = new self();
         }
+
         return self::$instance;
     }
 

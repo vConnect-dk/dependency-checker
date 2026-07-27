@@ -87,7 +87,10 @@ class PackagesRegistry
         if ($this->allPackages !== []) {
             return $this->allPackages;
         }
+
         $packages = $this->loader->loadPackages();
+        ksort($packages);
+
         foreach ($packages as $package) {
             foreach ($package->getPackageNamespaces() as $namespace) {
                 $this->packagesNamespaceMap[$namespace] = $package->getName();

@@ -33,6 +33,7 @@ class TopologicalOrder implements AnalyzerInterface
         if ($this->explain) {
             return $kahn->explain($this->explain);
         }
+
         return $kahn->getOrderedPackagesToRemove();
     }
 
