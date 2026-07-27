@@ -33,17 +33,17 @@ grumphp:
       auto_stage: 'pre_commit'
       triggered_by:
         - php
-#    phpunit:
-#      config_file: tests/phpunit.xml
-#      testsuite: ~
-#      group: [ ]
-#      exclude_group: [ ]
-#      always_execute: false
-#      order: null
-#      coverage-clover: null
-#      coverage-html: null
-#      coverage-php: null
-#      coverage-xml: null
+    phpunit:
+      config_file: tests/phpunit.xml
+      testsuite: ~
+      group: [ ]
+      exclude_group: [ ]
+      always_execute: false
+      order: null
+      coverage-clover: null
+      coverage-html: null
+      coverage-php: null
+      coverage-xml: null
     composer:
       file: ./composer.json
       no_check_all: false
