@@ -1,3 +1,10 @@
+2.13.0
+===========
+* [Improvement] Add PHP 8.5 support; widen constraint to ~8.2.0|~8.3.0|~8.4.0|~8.5.0
+* [Improvement] Add PHPCompatibility (phpcs) cross-version check for PHP 8.2-8.5
+* [Improvement] Bump Rector target to PHP 8.5 set
+* [Internal] Add GitHub Actions CI (lint, phpcs, rector, phpunit matrix 8.2-8.5)
+
 2.11.4
 ===========
 * [Bugfix] Resolve packages even if in the absolute path contains 'test' keyword

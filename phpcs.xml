@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<ruleset name="PHP Compatibility">
+    <description>Check for PHP cross-version compatibility from PHP 8.2 to PHP 8.5</description>
+    <rule ref="PHPCompatibility"/>
+    <config name="testVersion" value="8.2-8.5"/>
+    <file>src</file>
+    <arg name="extensions" value="php"/>
+</ruleset>
