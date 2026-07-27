@@ -5,6 +5,7 @@
     "no_unused_imports": true,
     "fully_qualified_strict_types": {
       "import_symbols": true
-    }
+    },
+    "multiline_promoted_properties": true
   }
 }

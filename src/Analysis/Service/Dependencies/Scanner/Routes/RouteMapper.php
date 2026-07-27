@@ -133,9 +133,11 @@ class RouteMapper
         if ($area) {
             $area = MagentoArea::from($area)->value;
         }
+
         if ($phpFilePath && str_contains($path, '*')) {
             return $this->processWildcardUrl($path, $phpFilePath, $area);
         }
+
         return $this->processStandardUrl($path, $area);
     }
 
@@ -179,7 +181,7 @@ class RouteMapper
             $actionName .= 'action';
         }
 
-        return $this->getDependency("$routeId/$controllerName/$actionName", $area);
+        return $this->getDependency(sprintf('%s/%s/%s', $routeId, $controllerName, $actionName), $area);
     }
 
 
@@ -190,6 +192,7 @@ class RouteMapper
         if (!preg_match($pattern, $path, $match)) {
             return null;
         }
+
         $routeId = $match['route_id'];
         $controllerName = $match['controller_name'] ?? 'index';
         $actionName = $match['action_name'] ?? 'index';
@@ -197,7 +200,7 @@ class RouteMapper
             $actionName .= 'action';
         }
 
-        return $this->getDependency("$routeId/$controllerName/$actionName", $area);
+        return $this->getDependency(sprintf('%s/%s/%s', $routeId, $controllerName, $actionName), $area);
     }
 
     public function getDependency(string $routePath, ?MagentoArea $area): ?string
@@ -248,6 +251,7 @@ class RouteMapper
                 if (!isset($this->routers[$routerId][$routeId])) {
                     $this->routers[$routerId][$routeId] = [];
                 }
+
                 if (!in_array($module, $this->routers[$routerId][$routeId])) {
                     $this->routers[$routerId][$routeId][] = $module;
                 }
@@ -289,6 +293,7 @@ class RouteMapper
                         if (empty($files[$packageName])) {
                             continue;
                         }
+
                         $actionsMapPerArea[$routeId] ??= [];
                         $this->setModuleActionsMapping(
                             actions: $actionsMapPerArea[$routeId],
@@ -298,8 +303,10 @@ class RouteMapper
                         );
                     }
                 }
+
                 $actionsMap[$routerId] = new Dot($actionsMapPerArea, delimiter: '/');
             }
+
             $this->actions = $actionsMap;
         }
 

@@ -126,12 +126,14 @@ class Console implements ConsoleInterface
                 $this->cli->tab()->out(sprintf('"%s": "*",', $suggest));
             }
         }
+
         if ($missedDependencies[DependencyInterface::TYPE_HARD]) {
             $this->cli->bold()->yellow('Require:');
             foreach ($missedDependencies[DependencyInterface::TYPE_HARD] as $require) {
                 $this->cli->tab()->out(sprintf('"%s": "*",', $require));
             }
         }
+
         $this->cli->br();
     }
 
@@ -159,8 +161,8 @@ class Console implements ConsoleInterface
 
         try {
             $this->parseArguments();
-        } catch (InvalidArgumentException $e) {
-            $this->cli->backgroundLightRed($e->getMessage());
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            $this->cli->backgroundLightRed($invalidArgumentException->getMessage());
 
             return false;
         }
@@ -171,6 +173,7 @@ class Console implements ConsoleInterface
 
             return false;
         }
+
         $root = realpath($m2root) . '/';
         DirectoryRegistry::setRoot($root);
 

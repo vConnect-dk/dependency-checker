@@ -55,6 +55,7 @@ class XmlFileAnalysis
                 );
                 continue;
             }
+
             $nodes = $dom->getElementsByTagName($tagName);
             /** @var \DOMElement $node */
             foreach ($nodes as $node) {
@@ -63,12 +64,15 @@ class XmlFileAnalysis
                     if (!$referenceModule) {
                         continue;
                     }
+
                     if (\in_array($referenceModule, $currentModuleNamespaces)) {
                         continue;
                     }
+
                     if (!($dependency = $this->packagesRegistry->getPackageNameByNamespace($referenceModule))) {
                         continue;
                     }
+
                     $dependencies[] = $dependency;
                 }
             }
@@ -92,9 +96,11 @@ class XmlFileAnalysis
                 if (!$referenceModule) {
                     continue;
                 }
+
                 if (\in_array($referenceModule, $currentModuleNamespaces)) {
                     continue;
                 }
+
                 if (!($dependency = $this->packagesRegistry->getPackageNameByNamespace($referenceModule))) {
                     continue;
                 }
@@ -115,6 +121,7 @@ class XmlFileAnalysis
         if (count($parts) < 2) {
             return null;
         }
+
         $moduleNameParts = array_slice($parts, 0, 2);
 
         return implode('\\', $moduleNameParts);

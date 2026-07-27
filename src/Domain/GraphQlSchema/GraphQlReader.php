@@ -26,12 +26,15 @@ class GraphQlReader
                     if ($type === 'Query') {
                         continue;
                     }
+
                     if ($type === 'Mutation') {
                         continue;
                     }
+
                     $definitions[$type][$package] = $partialSchemaType;
                 }
             }
+
             $this->definitionsRuntimeCache = $definitions;
         }
 
@@ -99,7 +102,7 @@ class GraphQlReader
         $spacePattern = '[\s\t\n\r]+';
 
         preg_match_all(
-            "/{$typeKindsPattern}{$spacePattern}{$typeNamePattern}{$spacePattern}{$typeDefinitionPattern}/i",
+            sprintf('/%s%s%s%s%s/i', $typeKindsPattern, $spacePattern, $typeNamePattern, $spacePattern, $typeDefinitionPattern),
             $graphQlSchemaContent,
             $matches
         );

@@ -13,8 +13,11 @@ class Result implements DefectiveResultInterface
      * @param string[] $composerDefects
      * @param string[] $moduleXmlDefects
      */
-    public function __construct(private readonly string $packageName, private array $composerDefects, private array $moduleXmlDefects)
-    {
+    public function __construct(
+        private readonly string $packageName,
+        private array $composerDefects,
+        private array $moduleXmlDefects
+    ) {
     }
 
     public function hasDefects(): bool

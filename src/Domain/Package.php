@@ -224,7 +224,7 @@ class Package
      */
     public function getFilesTree(): Dot|array
     {
-        if (!$this->filesTree) {
+        if ($this->filesTree === null) {
             $packageFiles = [];
             $iterator = new \CallbackFilterIterator(
                 new \RecursiveIteratorIterator(
@@ -241,6 +241,7 @@ class Package
                 $key = str_replace($this->path . DIRECTORY_SEPARATOR, '', $path);
                 $packageFiles[$key] = FileInfo::fromSplFileInfo($fileInfo);
             }
+
             $this->filesTree = new Dot($packageFiles, parse: true, delimiter: '/');
         }
 
@@ -254,15 +255,15 @@ class Package
      */
     private function getComposerJson(): Json
     {
-        if ($this->composerJson) {
+        if ($this->composerJson !== null) {
             return $this->composerJson;
         }
 
-        if ($file = $this->getFile('composer.json')) {
+        if (($file = $this->getFile('composer.json')) !== null) {
             $this->composerJson = new Json($file->getPathname());
         }
 
-        if (!$this->composerJson) {
+        if ($this->composerJson === null) {
             foreach ($this->getFiles() as $file) {
                 if ($file->getFilename() === 'composer.json') {
                     $this->composerJson = new Json($file->getPathname());
@@ -271,7 +272,7 @@ class Package
             }
         }
 
-        if (!$this->composerJson) {
+        if ($this->composerJson === null) {
             throw new FileNotFoundException('composer.json', $this->path);
         }
 
@@ -300,6 +301,7 @@ class Package
         if (!isset($this->loadedFileClasses[$cacheKey])) {
             $this->loadedFileClasses[$cacheKey] = $this->fileClassScanner->getClassName($file);
         }
+
         return $this->loadedFileClasses[$cacheKey];
     }
 }

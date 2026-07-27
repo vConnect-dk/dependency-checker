@@ -34,6 +34,7 @@ class Consumer
             if (!$element instanceof \DOMElement) {
                 continue;
             }
+
             $this->content[] = [
                 'name' => $element->getAttribute('name'),
                 'queue' => $element->getAttribute('queue'),

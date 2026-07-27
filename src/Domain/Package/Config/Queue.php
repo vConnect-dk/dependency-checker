@@ -28,15 +28,16 @@ class Queue
 
     public function getCommunication(): Communication
     {
-        if ($this->communicationConfig) {
+        if ($this->communicationConfig !== null) {
             return $this->communicationConfig;
         }
 
         $config = null;
-        if ($this->communication) {
+        if ($this->communication !== null) {
             $config = new \DOMDocument();
             $config->loadXML($this->communication->getContents());
         }
+
         $this->communicationConfig = new Communication($config);
 
         return $this->communicationConfig;
@@ -44,15 +45,16 @@ class Queue
 
     public function getConsumer(): Consumer
     {
-        if ($this->consumerConfig) {
+        if ($this->consumerConfig !== null) {
             return $this->consumerConfig;
         }
 
         $config = null;
-        if ($this->consumer) {
+        if ($this->consumer !== null) {
             $config = new \DOMDocument();
             $config->loadXML($this->consumer->getContents());
         }
+
         $this->consumerConfig = new Consumer($config);
 
         return $this->consumerConfig;
@@ -60,15 +62,16 @@ class Queue
 
     public function getPublisher(): Publisher
     {
-        if ($this->publisherConfig) {
+        if ($this->publisherConfig !== null) {
             return $this->publisherConfig;
         }
 
         $config = null;
-        if ($this->publisher) {
+        if ($this->publisher !== null) {
             $config = new \DomDocument();
             $config->loadXML($this->publisher->getContents());
         }
+
         $this->publisherConfig = new Publisher($config);
 
         return $this->publisherConfig;
@@ -76,12 +79,12 @@ class Queue
 
     public function getTopology(): Topology
     {
-        if ($this->topologyConfig) {
+        if ($this->topologyConfig !== null) {
             return $this->topologyConfig;
         }
 
         $config = null;
-        if ($this->topology) {
+        if ($this->topology !== null) {
             $config = new \DomDocument();
             $config->loadXML($this->topology->getContents());
         }

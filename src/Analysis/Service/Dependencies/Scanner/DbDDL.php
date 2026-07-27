@@ -32,7 +32,7 @@ class DbDDL implements DependenciesScannerInterface
             fn (?string $dependency): bool => $dependency && $dependency !== $packageName
         );
 
-        if ($dependencies) {
+        if ($dependencies !== []) {
             $scannerResult->addHardDependencies(array_unique($dependencies));
         }
 

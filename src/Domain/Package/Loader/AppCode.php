@@ -12,7 +12,7 @@ class AppCode implements LoaderInterface
     private const MAGENTO_LOCAL = 'app/code';
 
     public function __construct(
-        private readonly FileSystemPackagesProvider $fsScanner,
+        private readonly FileSystemPackagesProvider $fsScanner
     ) {
     }
 

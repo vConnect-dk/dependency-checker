@@ -34,6 +34,7 @@ class Communication
             if (!$element instanceof \DOMElement) {
                 continue;
             }
+
             $node = [
                 'name' => $element->getAttribute('name'),
                 'request' => $element->getAttribute('request'),
@@ -47,6 +48,7 @@ class Communication
                 if (!$handler instanceof \DOMElement) {
                     continue;
                 }
+
                 $node['handlers'][] = [
                     'name' => $handler->getAttribute('name'),
                     'type' => $handler->getAttribute('type'),
@@ -54,6 +56,7 @@ class Communication
                     'disabled' => $handler->getAttribute('disabled')
                 ];
             }
+
             $this->content[] = $node;
         }
     }

@@ -34,6 +34,7 @@ class Topology
             if (!$element instanceof \DOMElement) {
                 continue;
             }
+
             $node = [
                 'name' => $element->getAttribute('name'),
                 'type' => $element->getAttribute('type'),
@@ -57,6 +58,7 @@ class Topology
                     'disabled' => $binding->getAttribute('disabled')
                 ];
             }
+
             $this->content[] = $node;
         }
 

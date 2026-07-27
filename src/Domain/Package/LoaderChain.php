@@ -10,7 +10,7 @@ class LoaderChain implements LoaderInterface
      * @param LoaderInterface[] $loaders
      */
     public function __construct(
-        private readonly array $loaders,
+        private readonly array $loaders
     ) {
     }
 

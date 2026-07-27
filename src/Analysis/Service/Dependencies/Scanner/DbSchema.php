@@ -28,17 +28,16 @@ class DbSchema implements DependenciesScannerInterface
         $scannerResult = $this->scannerResultFactory->create();
         $schema = $package->getConfig()->getDbSchema();
         if ($schema->getContent()) {
-            $soft = $hard = [];
+            $soft = [];
+            $hard = [];
             foreach ($schema->getContent()['table'] as $table) {
                 $soft += $this->getSoftSchemaDependencies($table);
                 $hard += $this->getHardSchemaDependencies($table);
             }
 
             $excludeItself = fn (string $packageName): bool => $packageName !== $package->getName();
-
             $soft = array_filter($soft, $excludeItself);
             $hard = array_filter($hard, $excludeItself);
-
             $scannerResult->addSoftDependencies($soft);
             $scannerResult->addHardDependencies($hard);
         }

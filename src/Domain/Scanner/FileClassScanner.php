@@ -48,6 +48,7 @@ class FileClassScanner
             } elseif ($token === '}') {
                 $braceLevel--;
             }
+
             // The namespace keyword was found in the last loop
             if ($triggerNamespace) {
                 // A string ; or a discovered namespace that looks like "namespace name { }"
@@ -56,6 +57,7 @@ class FileClassScanner
                     $namespaceParts[] = '\\';
                     continue;
                 }
+
                 $namespaceParts[] = $token[1];
 
                 // `class` token is not used with a valid class name
@@ -79,6 +81,7 @@ class FileClassScanner
                     if ($braceLevel === 0 || ($bracedNamespace && $braceLevel === 1)) {
                         $triggerClass = true;
                     }
+
                     break;
             }
 
@@ -87,6 +90,7 @@ class FileClassScanner
                 return trim(implode('', $namespaceParts)) . trim($class);
             }
         }
+
         return $class;
     }
 
@@ -101,9 +105,11 @@ class FileClassScanner
                 if ($tokens[$index] === ';') {
                     return false;
                 }
+
                 if ($tokens[$index] === '{') {
                     return true;
                 }
+
                 continue;
             }
 
@@ -111,6 +117,7 @@ class FileClassScanner
                 throw new InvalidFileException('Namespace not defined properly');
             }
         }
+
         throw new InvalidFileException('Could not find namespace termination');
     }
 }

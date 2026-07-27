@@ -68,6 +68,7 @@ class Console implements ConsoleInterface
         if ($this->cli->arguments->defined(self::ARG_NO_CACHE)) {
             return $this->cli->arguments->get(self::ARG_NO_CACHE);
         }
+
         return false;
     }
 
@@ -133,8 +134,8 @@ class Console implements ConsoleInterface
 
         try {
             $this->parseArguments();
-        } catch (InvalidArgumentException $e) {
-            $this->cli->backgroundLightRed($e->getMessage());
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            $this->cli->backgroundLightRed($invalidArgumentException->getMessage());
 
             return false;
         }

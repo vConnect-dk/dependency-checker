@@ -44,6 +44,7 @@ class Dependencies implements AnalyzerInterface
             foreach ($this->scanners as $scanner) {
                 $dependencyModel->mergeDependencies($scanner->lookupDependencies($package));
             }
+
             yield $this->compareDependencies($package, $dependencyModel);
         }
     }

@@ -54,6 +54,7 @@ class ConfigAnalysis
         if ($content === []) {
             return $dependencies;
         }
+
         foreach ($content as $topic) {
             foreach (['response', 'request', 'schema'] as $attribute) {
                 if (!$topic[$attribute]) {
@@ -70,9 +71,11 @@ class ConfigAnalysis
                 if (!$handler['type']) {
                     continue;
                 }
+
                 if ($handler['disabled'] === 'true') {
                     continue;
                 }
+
                 $dep = $this->getDependencyByType($handler['type']);
 
                 if ($dep && $dep !== $packageName) {
