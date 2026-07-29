@@ -109,7 +109,12 @@ class PackagesRegistry
             $this->getAllPackages();
         }
 
-        return $this->packagesNamespaceMap[$this->getRealPackageNamespace($namespace)] ?? null;
+        $realNamespace = $this->getRealPackageNamespace($namespace);
+        if ($realNamespace === null) {
+            return null;
+        }
+
+        return $this->packagesNamespaceMap[$realNamespace] ?? null;
     }
 
     public function getRealPackageNamespace(string $namespace): ?string
@@ -138,7 +143,7 @@ class PackagesRegistry
     public function getPackageType(string $packageName): string
     {
         $package = $this->getPackage($packageName);
-        return $package ? $package->getPackageType() : Package::UNKNOWN_PACKAGE_TYPE;
+        return $package instanceof Package ? $package->getPackageType() : Package::UNKNOWN_PACKAGE_TYPE;
     }
 
     public function getAllProjectNamespaces(): array
